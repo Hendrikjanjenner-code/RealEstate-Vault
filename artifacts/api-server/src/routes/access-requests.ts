@@ -1,6 +1,6 @@
 import { toJson } from "../lib/serialize";
 import { Router, type IRouter } from "express";
-import { desc, eq, or, isNull, inArray } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import {
   db,
   accessRequestsTable,
@@ -32,16 +32,11 @@ router.get("/access-requests", async (req, res): Promise<void> => {
 
   let requests;
   if (req.user.role === "broker") {
-    // Brokers see requests on deals they list (plus legacy unowned seed deals).
+    // Brokers only see requests on deals they own.
     const ownedDeals = await db
       .select({ id: dealsTable.id })
       .from(dealsTable)
-      .where(
-        or(
-          eq(dealsTable.brokerUserId, req.user.id),
-          isNull(dealsTable.brokerUserId),
-        ),
-      );
+      .where(eq(dealsTable.brokerUserId, req.user.id));
     const dealIds = ownedDeals.map((d) => d.id);
     requests = dealIds.length
       ? await db
@@ -106,12 +101,11 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
     .from(dealsTable)
     .where(eq(dealsTable.id, existing.dealId));
 
-  // Only the listing broker may advance the NDA lifecycle. Legacy seed deals
-  // (no owner) are manageable by any broker-role user.
+  // Only the listing broker may advance the NDA lifecycle.
   const isListingBroker =
     deal != null &&
-    (deal.brokerUserId === req.user.id ||
-      (deal.brokerUserId == null && req.user.role === "broker"));
+    deal.brokerUserId != null &&
+    deal.brokerUserId === req.user.id;
 
   if (!isListingBroker) {
     res

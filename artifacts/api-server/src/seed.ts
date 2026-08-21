@@ -9,7 +9,9 @@ import {
   threadsTable,
   messagesTable,
   activityTable,
+  usersTable,
 } from "@workspace/db";
+import { asc, eq, isNull } from "drizzle-orm";
 const logger = { info: (m: unknown) => console.log(m), error: (o: unknown, m?: unknown) => console.error(m ?? o, o) };
 
 const daysAgo = (n: number, h = 10) => {
@@ -123,6 +125,23 @@ async function seed() {
     .returning();
 
   const b = (i: number) => brokers[i];
+
+  // Seeded listings must have a real broker owner so only they can manage
+  // access requests. Assign them to the earliest broker-role user; if none
+  // exists yet, the first user to take the broker role claims them
+  // (see the role-selection claim flow in routes/auth.ts).
+  const [ownerUser] = await db
+    .select({ id: usersTable.id })
+    .from(usersTable)
+    .where(eq(usersTable.role, "broker"))
+    .orderBy(asc(usersTable.createdAt))
+    .limit(1);
+  const brokerUserId = ownerUser?.id ?? null;
+  logger.info(
+    brokerUserId
+      ? "Assigning seeded deals to existing broker user"
+      : "No broker user yet; seeded deals will be claimed by the first broker",
+  );
 
   logger.info("Seeding deals");
   const deals = await db
@@ -357,6 +376,13 @@ async function seed() {
       },
     ])
     .returning();
+
+  if (brokerUserId) {
+    await db
+      .update(dealsTable)
+      .set({ brokerUserId })
+      .where(isNull(dealsTable.brokerUserId));
+  }
 
   const d = (i: number) => deals[i];
 

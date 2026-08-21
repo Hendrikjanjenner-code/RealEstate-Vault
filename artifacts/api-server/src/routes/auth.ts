@@ -6,8 +6,8 @@ import {
   SetMyRoleBody,
   SetMyRoleResponse,
 } from '@workspace/api-zod';
-import { db, usersTable } from '@workspace/db';
-import { eq } from 'drizzle-orm';
+import { db, dealsTable, usersTable } from '@workspace/db';
+import { eq, isNull } from 'drizzle-orm';
 import { Router, type IRouter, type Request, type Response } from 'express';
 import * as oidc from 'openid-client';
 
@@ -160,6 +160,23 @@ router.post('/users/me/role', async (req: Request, res: Response) => {
     .set({ role: parsed.data.role })
     .where(eq(usersTable.id, req.user.id))
     .returning();
+
+  // Claim flow for seeded demo listings: unowned deals (no broker owner)
+  // are assigned to the first user who takes the broker role, so every
+  // listing always has a real owner controlling access requests.
+  if (user.role === 'broker') {
+    const claimed = await db
+      .update(dealsTable)
+      .set({ brokerUserId: user.id })
+      .where(isNull(dealsTable.brokerUserId))
+      .returning({ id: dealsTable.id });
+    if (claimed.length > 0) {
+      req.log.info(
+        { count: claimed.length },
+        'Assigned unowned seeded deals to new broker',
+      );
+    }
+  }
 
   // Keep the session snapshot in sync so req.user reflects the new role.
   const sid = getSessionId(req);
