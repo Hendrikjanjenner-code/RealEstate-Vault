@@ -2,6 +2,7 @@ import React from 'react';
 import {
   FlatList,
   Platform,
+  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
@@ -9,6 +10,7 @@ import {
 } from 'react-native';
 import { useListMandates } from '@workspace/api-client-react';
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useColors } from '@/hooks/useColors';
 import colors from '@/constants/colors';
 import { Badge, Card, EmptyState, ErrorState, LoadingState, ScreenHeader } from '@/components/VaultUI';
@@ -46,6 +48,11 @@ export default function MandatesScreen() {
             />
           }
           renderItem={({ item: mandate }) => (
+            <Pressable
+              testID={`mandate-card-${mandate.id}`}
+              onPress={() => router.push(`/mandate/${mandate.id}`)}
+              style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+            >
             <Card>
               <View style={{ padding: 16, gap: 10 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
@@ -111,8 +118,15 @@ export default function MandatesScreen() {
                     </Text>
                   </View>
                 )}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+                  <Text style={{ color: c.primary, fontSize: 12, fontFamily: 'Inter_600SemiBold' }}>
+                    View matching deals
+                  </Text>
+                  <Feather name="chevron-right" size={14} color={c.primary} />
+                </View>
               </View>
             </Card>
+            </Pressable>
           )}
         />
       )}

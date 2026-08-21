@@ -44,7 +44,7 @@ function isOwner(deal: Deal, userId: string): boolean {
  * Resolve the viewer's access status for a set of deals in one query.
  * "granted" = non-confidential, owned by the viewer, or NDA signed.
  */
-async function getAccessStatuses(
+export async function getAccessStatuses(
   deals: Deal[],
   userId: string,
 ): Promise<Map<number, AccessStatus>> {
@@ -89,7 +89,7 @@ async function getAccessStatuses(
 }
 
 /** Deal ids the viewer has saved, out of the given set. */
-async function getSavedDealIds(
+export async function getSavedDealIds(
   dealIds: number[],
   userId: string,
 ): Promise<Set<number>> {
@@ -111,7 +111,11 @@ async function getSavedDealIds(
  * to: title, exact location, description, and financials are withheld
  * server-side.
  */
-function presentDeal(deal: Deal, accessStatus: AccessStatus, saved: boolean) {
+export function presentDeal(
+  deal: Deal,
+  accessStatus: AccessStatus,
+  saved: boolean,
+) {
   if (accessStatus === "granted") {
     return { ...deal, accessStatus, saved };
   }

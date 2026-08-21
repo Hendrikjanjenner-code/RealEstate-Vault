@@ -1,5 +1,6 @@
 import { formatMillions } from "@/lib/utils";
 import { useState } from "react";
+import { Link } from "wouter";
 import { useListMandates, useCreateMandate, getListMandatesQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -103,8 +104,10 @@ export default function Mandates() {
                 </div>
 
                 <div className="mt-auto pt-4 border-t border-white/5 flex gap-3">
-                  <Button className="flex-1 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20">
-                    <Search className="w-4 h-4 mr-2" /> Find Matches
+                  <Button asChild className="flex-1 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20">
+                    <Link href={`/demo/mandates/${mandate.id}/matches`}>
+                      <Search className="w-4 h-4 mr-2" /> Find Matches
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
@@ -135,7 +138,7 @@ function CreateMandateForm({ onSuccess }: { onSuccess: () => void }) {
         ...formData,
         minSize: Number(formData.minSize) * 1_000_000,
         maxSize: Number(formData.maxSize) * 1_000_000,
-        assetClasses: ["office", "hotel"], // Simplified for demo
+        assetClasses: ["Offices", "Hotels"], // Simplified for demo
         countries: ["Germany", "Austria", "Switzerland"], // Simplified for demo
       } as any
     }, {

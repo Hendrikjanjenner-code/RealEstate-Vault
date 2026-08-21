@@ -1,9 +1,16 @@
 import { toJson } from "../lib/serialize";
+import { dealMatchesMandate } from "../lib/mandateMatching";
+import {
+  getAccessStatuses,
+  getSavedDealIds,
+  presentDeal,
+} from "./deals";
 import { Router, type IRouter } from "express";
 import { desc, eq } from "drizzle-orm";
 import {
   db,
   brokersTable,
+  dealsTable,
   mandatesTable,
   transactionsTable,
   activityTable,
@@ -13,6 +20,8 @@ import {
   GetBrokerParams,
   GetBrokerResponse,
   ListMandatesResponse,
+  ListMandateMatchesParams,
+  ListMandateMatchesResponse,
   CreateMandateBody,
   CreateMandateResponse,
   ListTransactionsResponse,
@@ -50,12 +59,60 @@ router.get("/brokers/:id", async (req, res): Promise<void> => {
 });
 
 router.get("/mandates", async (_req, res): Promise<void> => {
-  const mandates = await db
+  const [mandates, deals] = await Promise.all([
+    db.select().from(mandatesTable).orderBy(desc(mandatesTable.createdAt)),
+    db.select().from(dealsTable),
+  ]);
+
+  // Compute the matches count live so it always reflects the same logic
+  // as the /mandates/:id/matches endpoint.
+  const withMatches = mandates.map((mandate) => ({
+    ...mandate,
+    matches: deals.filter((deal) => dealMatchesMandate(deal, mandate)).length,
+  }));
+
+  res.json(ListMandatesResponse.parse(toJson(withMatches)));
+});
+
+router.get("/mandates/:id/matches", async (req, res): Promise<void> => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const params = ListMandateMatchesParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [mandate] = await db
     .select()
     .from(mandatesTable)
-    .orderBy(desc(mandatesTable.createdAt));
+    .where(eq(mandatesTable.id, params.data.id));
 
-  res.json(ListMandatesResponse.parse(toJson(mandates)));
+  if (!mandate) {
+    res.status(404).json({ error: "Mandate not found" });
+    return;
+  }
+
+  const allDeals = await db
+    .select()
+    .from(dealsTable)
+    .orderBy(desc(dealsTable.createdAt));
+  const matching = allDeals.filter((deal) => dealMatchesMandate(deal, mandate));
+
+  const [statuses, savedIds] = await Promise.all([
+    getAccessStatuses(matching, req.user.id),
+    getSavedDealIds(
+      matching.map((d) => d.id),
+      req.user.id,
+    ),
+  ]);
+  const presented = matching.map((deal) =>
+    presentDeal(deal, statuses.get(deal.id) ?? "none", savedIds.has(deal.id)),
+  );
+
+  res.json(ListMandateMatchesResponse.parse(toJson(presented)));
 });
 
 router.post("/mandates", async (req, res): Promise<void> => {

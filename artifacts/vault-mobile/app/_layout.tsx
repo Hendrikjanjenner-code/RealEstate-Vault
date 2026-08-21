@@ -29,6 +29,7 @@ function RootLayoutNav() {
     <Stack screenOptions={{ headerBackTitle: 'Back', headerShown: false, contentStyle: { backgroundColor: '#081F1B' } }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="deal/[id]" />
+      <Stack.Screen name="mandate/[id]" />
       <Stack.Screen name="thread/[id]" />
     </Stack>
   );

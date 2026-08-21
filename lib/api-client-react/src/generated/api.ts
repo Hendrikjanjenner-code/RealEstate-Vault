@@ -1672,6 +1672,83 @@ export const useCreateMandate = <TError = ErrorType<unknown>,
       return useMutation(getCreateMandateMutationOptions(options));
     }
 
+export const getListMandateMatchesUrl = (id: number,) => {
+
+
+
+
+  return `/api/mandates/${id}/matches`
+}
+
+/**
+ * @summary Deals matching a mandate's asset classes, countries, and size range
+ */
+export const listMandateMatches = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<Deal[]> => {
+
+  return customFetch<Deal[]>(getListMandateMatchesUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMandateMatchesQueryKey = (id: number,) => {
+    return [
+    `/api/mandates/${id}/matches`
+    ] as const;
+    }
+
+
+export const getListMandateMatchesQueryOptions = <TData = Awaited<ReturnType<typeof listMandateMatches>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMandateMatches>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMandateMatchesQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMandateMatches>>> = ({ signal }) => listMandateMatches(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMandateMatches>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMandateMatchesQueryResult = NonNullable<Awaited<ReturnType<typeof listMandateMatches>>>
+export type ListMandateMatchesQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Deals matching a mandate's asset classes, countries, and size range
+ */
+
+export function useListMandateMatches<TData = Awaited<ReturnType<typeof listMandateMatches>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMandateMatches>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMandateMatchesQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getListTransactionsUrl = () => {
 
 

@@ -19,6 +19,7 @@ import DealCreate from '@/pages/deals/new';
 // We will create these shortly
 import AccessRequests from '@/pages/access-requests';
 import Mandates from '@/pages/mandates';
+import MandateMatches from '@/pages/mandates/matches';
 import Brokers from '@/pages/brokers';
 import Messages from '@/pages/messages';
 import Transactions from '@/pages/transactions';
@@ -111,6 +112,7 @@ function AppShellRouter() {
         <Route path="/demo/deals/:id" component={DealDetail} />
         <Route path="/demo/access-requests" component={AccessRequests} />
         <Route path="/demo/mandates" component={Mandates} />
+        <Route path="/demo/mandates/:id/matches" component={MandateMatches} />
         <Route path="/demo/brokers" component={Brokers} />
         <Route path="/demo/messages" component={Messages} />
         <Route path="/demo/transactions" component={Transactions} />

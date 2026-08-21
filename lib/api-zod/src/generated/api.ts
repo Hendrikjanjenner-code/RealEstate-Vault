@@ -543,6 +543,48 @@ export const CreateMandateResponse = zod.object({
 
 
 /**
+ * @summary Deals matching a mandate's asset classes, countries, and size range
+ */
+export const ListMandateMatchesParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const ListMandateMatchesResponseItem = zod.object({
+  "id": zod.int(),
+  "title": zod.string(),
+  "dealType": zod.string(),
+  "assetClass": zod.string(),
+  "country": zod.string(),
+  "city": zod.string(),
+  "region": zod.string().nullish(),
+  "locationPrivacy": zod.string().nullish(),
+  "askingPrice": zod.number().nullish(),
+  "priceMax": zod.number().nullish(),
+  "currency": zod.string(),
+  "grossYield": zod.number().nullish(),
+  "netYield": zod.number().nullish(),
+  "areaSqm": zod.number().nullish(),
+  "keys": zod.int().nullish(),
+  "constructionYear": zod.int().nullish(),
+  "occupancyPct": zod.number().nullish(),
+  "status": zod.string(),
+  "confidential": zod.boolean(),
+  "saved": zod.boolean(),
+  "teaser": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "brokerId": zod.int().nullish(),
+  "brokerName": zod.string().nullish(),
+  "brokerCompany": zod.string().nullish(),
+  "views": zod.int(),
+  "accessRequests": zod.int(),
+  "createdAt": zod.string(),
+  "accessStatus": zod.string().nullish().describe('Current viewer\'s access to confidential details: granted | pending | approved | nda_sent | rejected | none')
+})
+export const ListMandateMatchesResponse = zod.array(ListMandateMatchesResponseItem)
+
+
+/**
  * @summary Verified closed transactions
  */
 export const ListTransactionsResponseItem = zod.object({
