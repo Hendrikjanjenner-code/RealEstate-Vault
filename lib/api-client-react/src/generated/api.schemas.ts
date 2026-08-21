@@ -308,6 +308,23 @@ export interface DashboardStats {
   assetClassBreakdown: AssetClassCount[];
 }
 
+export interface Notification {
+  id: number;
+  /** e.g. access_request_status */
+  type: string;
+  message: string;
+  /** @nullable */
+  dealId?: number | null;
+  /** @nullable */
+  accessRequestId?: number | null;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface MarkNotificationsReadResult {
+  success: boolean;
+}
+
 export interface ActivityItem {
   id: number;
   type: string;

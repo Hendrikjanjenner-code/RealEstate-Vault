@@ -6,6 +6,7 @@ import accessRequestsRouter from "./access-requests";
 import networkRouter from "./network";
 import messagesRouter from "./messages";
 import dashboardRouter from "./dashboard";
+import notificationsRouter from "./notifications";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(accessRequestsRouter);
 router.use(networkRouter);
 router.use(messagesRouter);
 router.use(dashboardRouter);
+router.use(notificationsRouter);
 
 export default router;

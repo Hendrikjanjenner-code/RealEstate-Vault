@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Shield, LayoutDashboard, Briefcase, Users, FileText, Send, ScrollText, Handshake, LogOut } from "lucide-react";
 import { VaultLogo } from "@/components/logo";
+import { NotificationsBell } from "@/components/notifications-bell";
 import { useAuth } from "@workspace/replit-auth-web";
 
 export function AppLayout({ children }: { children: ReactNode }) {
@@ -112,7 +113,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               </h1>
             </div>
             <div className="flex items-center gap-4">
-               {/* Additional header items could go here */}
+              <NotificationsBell />
             </div>
           </header>
           <main className="flex-1 overflow-auto">

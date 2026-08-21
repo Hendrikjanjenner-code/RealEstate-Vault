@@ -15,6 +15,7 @@ tags:
   - name: access
   - name: messages
   - name: dashboard
+  - name: notifications
   - name: transactions
   - name: Auth
     description: Browser and mobile authentication endpoints.
@@ -501,6 +502,30 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Message" }
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: Current user's in-app notifications, newest first
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Notification" }
+  /notifications/mark-read:
+    post:
+      operationId: markNotificationsRead
+      tags: [notifications]
+      summary: Mark all of the current user's notifications as read
+      responses:
+        "200":
+          description: Marked read
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MarkNotificationsReadResult" }
   /dashboard/stats:
     get:
       operationId: getDashboardStats
@@ -859,6 +884,22 @@ components:
         assetClass: { type: string }
         count: { type: integer }
         value: { type: number }
+    Notification:
+      type: object
+      required: [id, type, message, read, createdAt]
+      properties:
+        id: { type: integer }
+        type: { type: string, description: "e.g. access_request_status" }
+        message: { type: string }
+        dealId: { type: ["integer", "null"] }
+        accessRequestId: { type: ["integer", "null"] }
+        read: { type: boolean }
+        createdAt: { type: string }
+    MarkNotificationsReadResult:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean }
     ActivityItem:
       type: object
       required: [id, type, description, createdAt]

@@ -31,6 +31,7 @@ function RootLayoutNav() {
       <Stack.Screen name="deal/[id]" />
       <Stack.Screen name="mandate/[id]" />
       <Stack.Screen name="thread/[id]" />
+      <Stack.Screen name="notifications" />
     </Stack>
   );
 }

@@ -7,6 +7,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { useColors } from '@/hooks/useColors';
 import { Card, EmptyState, ErrorState, LoadingState, ScreenHeader } from '@/components/VaultUI';
+import { NotificationsBell } from '@/components/NotificationsBell';
 import { formatMillions, timeAgo } from '@/lib/format';
 
 const ACTIVITY_ICONS: Record<string, keyof typeof Feather.glyphMap> = {
@@ -30,7 +31,11 @@ export default function DashboardScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
-      <ScreenHeader title="RealEstate Vault" subtitle="Private Deals. Trusted Access." />
+      <ScreenHeader
+        title="RealEstate Vault"
+        subtitle="Private Deals. Trusted Access."
+        right={<NotificationsBell />}
+      />
       <ScrollView
         contentContainerStyle={{
           padding: 20,

@@ -662,6 +662,29 @@ export const SendMessageResponse = zod.object({
 
 
 /**
+ * @summary Current user's in-app notifications, newest first
+ */
+export const ListNotificationsResponseItem = zod.object({
+  "id": zod.int(),
+  "type": zod.string().describe('e.g. access_request_status'),
+  "message": zod.string(),
+  "dealId": zod.int().nullish(),
+  "accessRequestId": zod.int().nullish(),
+  "read": zod.boolean(),
+  "createdAt": zod.string()
+})
+export const ListNotificationsResponse = zod.array(ListNotificationsResponseItem)
+
+
+/**
+ * @summary Mark all of the current user's notifications as read
+ */
+export const MarkNotificationsReadResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
  * @summary Aggregated dashboard KPIs and chart series
  */
 export const GetDashboardStatsResponse = zod.object({

@@ -6,6 +6,7 @@ import {
   accessRequestsTable,
   activityTable,
   dealsTable,
+  notificationsTable,
 } from "@workspace/db";
 import {
   ListAccessRequestsResponse,
@@ -119,6 +120,30 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
     .set({ status: body.data.status })
     .where(eq(accessRequestsTable.id, params.data.id))
     .returning();
+
+  // Notify the requesting investor when their request status changes.
+  if (request.requesterUserId && request.status !== existing.status) {
+    // Keep confidential deal titles masked until the NDA is signed.
+    const displayTitle =
+      deal.confidential && request.status !== "nda_signed"
+        ? `Confidential ${deal.assetClass ?? ""} Opportunity`.replace("  ", " ")
+        : request.dealTitle;
+    const messageByStatus: Record<string, string> = {
+      approved: `Your access request for ${displayTitle} was approved.`,
+      nda_sent: `The NDA for ${displayTitle} is ready for your signature.`,
+      rejected: `Your access request for ${displayTitle} was declined.`,
+      pending: `Your access request for ${displayTitle} was moved back to pending.`,
+    };
+    await db.insert(notificationsTable).values({
+      userId: request.requesterUserId,
+      type: "access_request_status",
+      message:
+        messageByStatus[request.status] ??
+        `Your access request for ${displayTitle} was updated.`,
+      dealId: request.dealId,
+      accessRequestId: request.id,
+    });
+  }
 
   res.json(UpdateAccessRequestResponse.parse(toJson(request)));
 });
