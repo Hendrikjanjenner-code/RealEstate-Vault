@@ -1,3 +1,4 @@
+- [Dev DB schema drift after task merges](dev-db-schema-drift.md) — parallel task merges leave the shared dev DB behind the drizzle schema; on 500s from missing columns/tables, run lib/db `pnpm run push` (force if only dropping legacy columns).
 - [Orval zod codegen needs zod/v4 import](orval-zod-v4.md) — generated api-zod code uses zod v4 APIs; codegen rewrites the import, and API responses must serialize Dates to ISO strings before parse.
 - [Playwright e2e setup](playwright-e2e-setup.md) — use Nix playwright-driver's REPLIT_PLAYWRIGHT_CHROMIUM_EXECUTABLE with a version-matched @playwright/test; run via scripts package against localhost:80.
 - [Task-environment DB may lag schema](task-env-db-schema.md) — "relation does not exist" in a task env means run drizzle push; isolated DBs can miss tables from freshly merged tasks.

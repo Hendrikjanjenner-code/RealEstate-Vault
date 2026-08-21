@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, Clock, FileSignature, CheckCircle2, XCircle } from "lucide-react";
+import { Shield, Clock, FileSignature, CheckCircle2, XCircle, FileText } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@workspace/replit-auth-web";
@@ -132,6 +132,11 @@ export default function AccessRequests() {
                       {req.signerName && req.signedAt && (
                         <p className="text-[11px] text-muted-foreground mt-1">Signed by {req.signerName} on {new Date(req.signedAt).toLocaleDateString()}</p>
                       )}
+                      <a href={`/api/access-requests/${req.id}/nda-record`} target="_blank" rel="noopener noreferrer" className="w-full mt-3">
+                        <Button size="sm" variant="outline" className="w-full border-white/10 text-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 text-xs h-8" data-testid={`button-view-nda-record-${req.id}`}>
+                          <FileText className="w-3.5 h-3.5 mr-2" /> View Signed NDA
+                        </Button>
+                      </a>
                     </div>
                   )}
                   {req.status === 'rejected' && (

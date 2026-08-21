@@ -48,6 +48,7 @@ export default function DealDetail() {
   // Find this investor's own request for the deal so they can sign it.
   const { data: myRequests } = useListAccessRequests();
   const myRequest = myRequests?.find((r) => r.dealId === id && r.status === "nda_sent");
+  const mySignedRequest = myRequests?.find((r) => r.dealId === id && r.status === "nda_signed");
 
   const handleSignNda = (e: React.FormEvent) => {
     e.preventDefault();
@@ -318,6 +319,13 @@ export default function DealDetail() {
                 <p className="font-medium text-primary mb-1">Access Granted</p>
                 <p className="text-xs text-muted-foreground">You have full access to this confidential data room.</p>
               </div>
+            )}
+            {mySignedRequest && (
+              <a href={`/api/access-requests/${mySignedRequest.id}/nda-record`} target="_blank" rel="noopener noreferrer" className="block mt-3">
+                <Button variant="outline" className="w-full border-white/10 hover:bg-primary/10 hover:text-primary hover:border-primary/30" data-testid="button-view-nda-record">
+                  <FileText className="w-4 h-4 mr-2" /> View Signed NDA
+                </Button>
+              </a>
             )}
           </div>
 
