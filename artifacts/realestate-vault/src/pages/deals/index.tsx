@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, MapPin, Building2, Bookmark, BookmarkCheck, Filter } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQueryClient } from "@tanstack/react-query";
 import { getListDealsQueryKey } from "@workspace/api-client-react";
@@ -15,15 +16,25 @@ import { getListDealsQueryKey } from "@workspace/api-client-react";
 export default function DealsList() {
   const [search, setSearch] = useState("");
   const [assetClass, setAssetClass] = useState<string>("all");
-  const { data: deals, isLoading } = useListDeals({ search, assetClass: assetClass === "all" ? undefined : assetClass });
+  const [savedOnly, setSavedOnly] = useState(false);
+  const listParams = {
+    search,
+    assetClass: assetClass === "all" ? undefined : assetClass,
+    savedOnly: savedOnly || undefined,
+  };
+  const { data: deals, isLoading } = useListDeals(listParams);
   const toggleSave = useToggleSaveDeal();
   const queryClient = useQueryClient();
 
   const handleToggleSave = (id: number, currentSaved: boolean) => {
     toggleSave.mutate({ id }, {
       onSuccess: () => {
-         queryClient.setQueryData(getListDealsQueryKey({ search, assetClass: assetClass === "all" ? undefined : assetClass }), (old: any) => {
+         queryClient.setQueryData(getListDealsQueryKey(listParams), (old: any) => {
            if (!old) return old;
+           if (savedOnly && currentSaved) {
+             // Un-saving while the Saved filter is active removes it from the list
+             return old.filter((d: any) => d.id !== id);
+           }
            return old.map((d: any) => d.id === id ? { ...d, saved: !currentSaved } : d);
          });
       }
@@ -68,6 +79,19 @@ export default function DealsList() {
             </SelectContent>
           </Select>
         </div>
+        <Button
+          variant="outline"
+          onClick={() => setSavedOnly((v) => !v)}
+          aria-pressed={savedOnly}
+          data-testid="button-saved-only"
+          className={cn(
+            "border-white/10 h-10 w-full md:w-auto",
+            savedOnly && "bg-primary/15 text-primary border-primary/40 hover:bg-primary/25 hover:text-primary"
+          )}
+        >
+          {savedOnly ? <BookmarkCheck className="w-4 h-4 mr-2 fill-primary" /> : <Bookmark className="w-4 h-4 mr-2" />}
+          Saved only
+        </Button>
         <Button variant="outline" className="border-white/10 h-10 w-full md:w-auto">
           <Filter className="w-4 h-4 mr-2" /> More Filters
         </Button>
@@ -145,9 +169,19 @@ export default function DealsList() {
             </Card>
           ))}
           {deals?.length === 0 && (
-             <div className="col-span-full py-20 text-center text-muted-foreground">
-                <Building2 className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                <p>No deals found matching your criteria.</p>
+             <div className="col-span-full py-20 text-center text-muted-foreground" data-testid="text-empty-state">
+                {savedOnly ? (
+                  <>
+                    <Bookmark className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                    <p>You haven't saved any deals yet.</p>
+                    <p className="text-sm mt-1 opacity-70">Tap the bookmark on a deal to add it to your shortlist.</p>
+                  </>
+                ) : (
+                  <>
+                    <Building2 className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                    <p>No deals found matching your criteria.</p>
+                  </>
+                )}
              </div>
           )}
         </div>
