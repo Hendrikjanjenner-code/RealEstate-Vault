@@ -1,0 +1,24 @@
+kind = "mobile"
+previewPath = "/vault-mobile/"
+title = "RealEstate Vault Mobile"
+description = "A mobile companion app for RealEstate Vault, the private B2B commercial real estate marketplace. Brokers and investors browse confidential off-market deals, request access and sign NDAs, view secure data room documents, message counterparties, and track key stats from a dashboard — all in the vault brand style."
+version = "1.0.0"
+id = "artifacts/vault-mobile"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/vault-mobile/" ]
+localPort = 21991
+
+[services.development]
+run = "pnpm --filter @workspace/vault-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/vault-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/vault-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "21991"
+BASE_PATH = "/vault-mobile/"
