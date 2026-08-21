@@ -61,6 +61,8 @@ export const dealDocumentsTable = pgTable("deal_documents", {
   category: text("category").notNull(),
   sizeKb: integer("size_kb").notNull(),
   ndaRequired: boolean("nda_required").notNull().default(true),
+  objectPath: text("object_path"),
+  contentType: text("content_type"),
   uploadedAt: timestamp("uploaded_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -93,9 +95,14 @@ export const accessRequestsTable = pgTable("access_requests", {
   requesterCompany: text("requester_company").notNull(),
   message: text("message"),
   status: text("status").notNull().default("pending"),
-  // Recorded when the investor signs the NDA themselves.
+  // Capability token issued when the investor signs the NDA (Task 2: data room).
+  downloadToken: text("download_token"),
+  ndaSignedAt: timestamp("nda_signed_at", { withTimezone: true }),
+  // Recorded when the investor signs the NDA themselves via the signing form.
   signerName: text("signer_name"),
   signedAt: timestamp("signed_at", { withTimezone: true }),
+  // Unguessable key the requester uses to self-sign and check their own status.
+  requestKey: text("request_key"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

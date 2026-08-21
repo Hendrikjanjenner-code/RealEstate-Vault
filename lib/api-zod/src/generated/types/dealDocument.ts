@@ -13,5 +13,6 @@ export interface DealDocument {
   category: string;
   sizeKb: number;
   ndaRequired: boolean;
+  hasFile: boolean;
   uploadedAt: string;
 }

@@ -381,4 +381,24 @@ router.post('/mobile-auth/logout', async (req: Request, res: Response) => {
   res.json(LogoutMobileSessionResponse.parse({ success: true }));
 });
 
+// ── Broker passcode session endpoints ──────────────────────────────────────
+
+// Returns whether the current request carries broker credentials.
+router.get('/auth/session', (req: Request, res: Response) => {
+  const { isBroker } = require('../lib/brokerAuth') as typeof import('../lib/brokerAuth');
+  res.json({ broker: isBroker(req) });
+});
+
+// Validates the broker passcode and issues a signed cookie.
+router.post('/auth/broker-login', (req: Request, res: Response) => {
+  const { verifyBrokerPasscode, mintBrokerCookie } = require('../lib/brokerAuth') as typeof import('../lib/brokerAuth');
+  const { passcode } = req.body as { passcode?: string };
+  if (!passcode || !verifyBrokerPasscode(passcode)) {
+    res.status(401).json({ error: 'Invalid passcode' });
+    return;
+  }
+  mintBrokerCookie(res);
+  res.json({ broker: true });
+});
+
 export default router;

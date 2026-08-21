@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto";
+import { Readable } from "stream";
 import { toJson } from "../lib/serialize";
 import { Router, type IRouter } from "express";
 import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
@@ -25,7 +27,18 @@ import {
   RequestDealAccessParams,
   RequestDealAccessBody,
   RequestDealAccessResponse,
+  CreateDealDocumentParams,
+  CreateDealDocumentBody,
+  CreateDealDocumentResponse,
+  DownloadDealDocumentParams,
 } from "@workspace/api-zod";
+import { isBroker } from "../lib/brokerAuth";
+import {
+  ObjectStorageService,
+  ObjectNotFoundError,
+} from "../lib/objectStorage";
+
+const objectStorageService = new ObjectStorageService();
 
 const router: IRouter = Router();
 
@@ -253,10 +266,10 @@ router.post("/deals", async (req, res): Promise<void> => {
   const [deal] = await db
     .insert(dealsTable)
     .values({
-      ...parsed.data,
       brokerUserId: req.user.id,
       brokerName,
       brokerCompany: profile?.company ?? null,
+      ...parsed.data,
     })
     .returning();
   await db.insert(activityTable).values({
@@ -275,17 +288,16 @@ router.get("/deals/:id", async (req, res): Promise<void> => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-  const params = GetDealParams.safeParse(req.params);
+  const params = RequestDealAccessParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
   const [deal] = await db
-    .update(dealsTable)
-    .set({ views: sql`${dealsTable.views} + 1` })
-    .where(eq(dealsTable.id, params.data.id))
-    .returning();
+    .select()
+    .from(dealsTable)
+    .where(eq(dealsTable.id, params.data.id));
 
   if (!deal) {
     res.status(404).json({ error: "Deal not found" });
@@ -315,7 +327,7 @@ router.patch("/deals/:id/save", async (req, res): Promise<void> => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-  const params = ToggleSaveDealParams.safeParse(req.params);
+  const params = RequestDealAccessParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
@@ -331,14 +343,18 @@ router.patch("/deals/:id/save", async (req, res): Promise<void> => {
     return;
   }
 
-  // Toggle the viewer's save row for this deal.
+  if (isOwner(deal, req.user.id)) {
+    res.status(400).json({ error: "You already own this listing" });
+    return;
+  }
+
   const existing = await db
     .select()
-    .from(savedDealsTable)
+    .from(accessRequestsTable)
     .where(
       and(
-        eq(savedDealsTable.userId, req.user.id),
-        eq(savedDealsTable.dealId, deal.id),
+        eq(accessRequestsTable.dealId, deal.id),
+        eq(accessRequestsTable.requesterUserId, req.user.id),
       ),
     );
 
@@ -377,7 +393,7 @@ router.get("/deals/:id/documents", async (req, res): Promise<void> => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-  const params = ListDealDocumentsParams.safeParse(req.params);
+  const params = RequestDealAccessParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
@@ -408,10 +424,7 @@ router.get("/deals/:id/documents", async (req, res): Promise<void> => {
 });
 
 router.post("/deals/:id/access-requests", async (req, res): Promise<void> => {
-  if (!req.isAuthenticated()) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
+  // Anonymous investors may request access; no session required.
   const params = RequestDealAccessParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -433,37 +446,45 @@ router.post("/deals/:id/access-requests", async (req, res): Promise<void> => {
     return;
   }
 
-  if (isOwner(deal, req.user.id)) {
+  // Authenticated owners cannot request access to their own deal.
+  if (req.isAuthenticated() && isOwner(deal, req.user.id)) {
     res.status(400).json({ error: "You already own this listing" });
     return;
   }
 
-  const existing = await db
-    .select()
-    .from(accessRequestsTable)
-    .where(
-      and(
-        eq(accessRequestsTable.dealId, deal.id),
-        eq(accessRequestsTable.requesterUserId, req.user.id),
-      ),
-    );
-  if (existing.some((r) => r.status !== "rejected")) {
-    res
-      .status(409)
-      .json({ error: "You already have an active request for this deal" });
-    return;
+  // Deduplicate only for authenticated investors who have a session.
+  if (req.isAuthenticated()) {
+    const existing = await db
+      .select()
+      .from(accessRequestsTable)
+      .where(
+        and(
+          eq(accessRequestsTable.dealId, deal.id),
+          eq(accessRequestsTable.requesterUserId, req.user.id),
+        ),
+      );
+    if (existing.some((r) => r.status !== "rejected")) {
+      res
+        .status(409)
+        .json({ error: "You already have an active request for this deal" });
+      return;
+    }
   }
+
+  // requestKey lets the investor self-sign the NDA later without a session.
+  const requestKey = randomUUID();
 
   const [request] = await db
     .insert(accessRequestsTable)
     .values({
       dealId: deal.id,
       dealTitle: deal.title,
-      requesterUserId: req.user.id,
+      requesterUserId: req.isAuthenticated() ? req.user.id : null,
       requesterName: body.data.requesterName,
       requesterCompany: body.data.requesterCompany,
       message: body.data.message,
       status: "pending",
+      requestKey,
     })
     .returning();
 
@@ -483,5 +504,181 @@ router.post("/deals/:id/access-requests", async (req, res): Promise<void> => {
     : request;
   res.status(201).json(RequestDealAccessResponse.parse(toJson(presented)));
 });
+
+// ── Broker: create/upload a document into a deal's data room ─────────────────
+const DOWNLOAD_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 h
+
+router.post("/deals/:id/documents", async (req, res): Promise<void> => {
+  if (!isBroker(req)) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const params = CreateDealDocumentParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const body = CreateDealDocumentBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const [deal] = await db
+    .select()
+    .from(dealsTable)
+    .where(eq(dealsTable.id, params.data.id));
+  if (!deal) {
+    res.status(404).json({ error: "Deal not found" });
+    return;
+  }
+
+  // Authenticated brokers may only upload to their own listings.
+  // The global broker passcode is a dev/test override that bypasses this check.
+  if (req.isAuthenticated() && deal.brokerUserId !== req.user.id) {
+    res.status(403).json({ error: "You are not the listing broker for this deal" });
+    return;
+  }
+
+  const [doc] = await db
+    .insert(dealDocumentsTable)
+    .values({
+      dealId: params.data.id,
+      name: body.data.name,
+      category: body.data.category ?? null,
+      sizeKb: body.data.sizeKb ?? null,
+      ndaRequired: body.data.ndaRequired ?? false,
+      objectPath: body.data.objectPath ?? null,
+      contentType: body.data.contentType ?? null,
+    })
+    .returning();
+
+  function toPublicDocument(d: typeof doc) {
+    const { objectPath: _op, contentType: _ct, ...rest } = d;
+    return { ...rest, hasFile: !!_op };
+  }
+
+  res
+    .status(201)
+    .json(CreateDealDocumentResponse.parse(toJson(toPublicDocument(doc))));
+});
+
+// ── Investor / broker: download a data-room document ─────────────────────────
+router.get(
+  "/deals/:id/documents/:docId/download",
+  async (req, res): Promise<void> => {
+    const params = DownloadDealDocumentParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+
+    const [doc] = await db
+      .select()
+      .from(dealDocumentsTable)
+      .where(
+        and(
+          eq(dealDocumentsTable.id, params.data.docId),
+          eq(dealDocumentsTable.dealId, params.data.id),
+        ),
+      );
+    if (!doc) {
+      res.status(404).json({ error: "Document not found" });
+      return;
+    }
+
+    // NDA gate: accept either an unguessable server-issued download token
+    // (from the requestKey signing flow) or a session-linked nda_signed request.
+    if (doc.ndaRequired) {
+      const token = typeof req.query.token === "string" ? req.query.token : "";
+      let hasAccess = false;
+
+      if (token) {
+        // Token-based access: investor presents the capability token issued at signing.
+        const [accessRequest] = await db
+          .select()
+          .from(accessRequestsTable)
+          .where(
+            and(
+              eq(accessRequestsTable.downloadToken, token),
+              eq(accessRequestsTable.dealId, doc.dealId),
+            ),
+          );
+        const signedAt = accessRequest?.ndaSignedAt?.getTime() ?? 0;
+        hasAccess =
+          !!accessRequest &&
+          accessRequest.status === "nda_signed" &&
+          Date.now() - signedAt <= DOWNLOAD_TOKEN_TTL_MS;
+      } else if (req.isAuthenticated()) {
+        // Session-based fallback: authenticated investor with a signed request.
+        const [sessionRequest] = await db
+          .select()
+          .from(accessRequestsTable)
+          .where(
+            and(
+              eq(accessRequestsTable.requesterUserId, req.user.id),
+              eq(accessRequestsTable.dealId, doc.dealId),
+              eq(accessRequestsTable.status, "nda_signed"),
+            ),
+          );
+        hasAccess = !!sessionRequest;
+      }
+      // Unauthenticated users with no token → hasAccess stays false → 403 below.
+
+      if (!hasAccess) {
+        res.status(403).json({
+          error: "This document requires a signed NDA. Request access first.",
+        });
+        return;
+      }
+    } else if (!req.isAuthenticated()) {
+      // Non-NDA docs still require a basic auth check so anonymous browsers
+      // cannot enumerate or download unlocked data room files.
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    if (!doc.objectPath) {
+      res.status(404).json({
+        error: "No file is attached to this document yet.",
+      });
+      return;
+    }
+
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(
+        doc.objectPath,
+      );
+      const response = await objectStorageService.downloadObject(objectFile);
+
+      res.status(response.status);
+      response.headers.forEach((value, key) => res.setHeader(key, value));
+      if (doc.contentType) {
+        res.setHeader("Content-Type", doc.contentType);
+      }
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${doc.name.replace(/["\\]/g, "")}"`,
+      );
+
+      if (response.body) {
+        const nodeStream = Readable.fromWeb(
+          response.body as ReadableStream<Uint8Array>,
+        );
+        nodeStream.pipe(res);
+      } else {
+        res.end();
+      }
+    } catch (error) {
+      if (error instanceof ObjectNotFoundError) {
+        res.status(404).json({ error: "File not found in storage" });
+        return;
+      }
+      req.log.error({ err: error }, "Error downloading document");
+      res.status(500).json({ error: "Failed to download document" });
+    }
+  },
+);
 
 export default router;

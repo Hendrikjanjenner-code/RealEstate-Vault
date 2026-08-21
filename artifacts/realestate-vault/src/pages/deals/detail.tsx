@@ -1,17 +1,29 @@
 import { formatMillions } from "@/lib/utils";
 import { useState } from "react";
 import { Link, useRoute } from "wouter";
-import { useGetDeal, useListDealDocuments, useRequestDealAccess, useListAccessRequests, useSignAccessRequestNda, getGetDealQueryKey, getListDealDocumentsQueryKey } from "@workspace/api-client-react";
+import {
+  useGetDeal,
+  useListDealDocuments,
+  useRequestDealAccess,
+  useListAccessRequests,
+  useSignAccessRequestNda,
+  useCreateDealDocument,
+  useRequestUploadUrl,
+  useGetSession,
+  getGetDealQueryKey,
+  getListDealDocumentsQueryKey,
+  getListAccessRequestsQueryKey,
+} from "@workspace/api-client-react";
+import { ObjectUploader } from "@workspace/object-storage-web";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Building2, Lock, FileText, Download, CheckCircle2, AlertCircle, Clock, Info, Key, Shield, FileSignature } from "lucide-react";
+import { MapPin, Building2, Lock, FileText, Download, CheckCircle2, AlertCircle, Clock, Info, Key, Shield, FileSignature, Upload } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getListAccessRequestsQueryKey } from "@workspace/api-client-react";
 
 type AccessState = "locked" | "requested" | "nda_sent" | "granted" | "rejected";
 
@@ -31,6 +43,8 @@ function toAccessState(accessStatus: string | null | undefined): AccessState {
   }
 }
 
+const DOWNLOAD_TOKEN_KEY = (dealId: number) => `download_token_${dealId}`;
+
 export default function DealDetail() {
   const [, params] = useRoute("/demo/deals/:id");
   const id = Number(params?.id || 0);
@@ -38,17 +52,27 @@ export default function DealDetail() {
   const { data: docs, isLoading: docsLoading } = useListDealDocuments(id, { query: { enabled: !!id, queryKey: getListDealDocumentsQueryKey(id) } });
   const requestAccess = useRequestDealAccess();
   const signNda = useSignAccessRequestNda();
+  const createDoc = useCreateDealDocument();
+  const requestUploadUrl = useRequestUploadUrl();
+  const { data: session } = useGetSession();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [form, setForm] = useState({ requesterName: "", requesterCompany: "", message: "" });
   const [showNda, setShowNda] = useState(false);
   const [signerName, setSignerName] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [newDocName, setNewDocName] = useState("");
+  const [newDocNdaRequired, setNewDocNdaRequired] = useState(false);
+
+  const isBroker = !!session?.broker;
 
   // Find this investor's own request for the deal so they can sign it.
   const { data: myRequests } = useListAccessRequests();
   const myRequest = myRequests?.find((r) => r.dealId === id && r.status === "nda_sent");
   const mySignedRequest = myRequests?.find((r) => r.dealId === id && r.status === "nda_signed");
+
+  // Retrieve the capability download token from localStorage (stored at NDA sign time).
+  const storedDownloadToken = localStorage.getItem(DOWNLOAD_TOKEN_KEY(id));
 
   const handleSignNda = (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,12 +214,15 @@ export default function DealDetail() {
                   <Skeleton className="h-12 w-full" />
                   <Skeleton className="h-12 w-full" />
                 </div>
-              ) : docs?.length === 0 ? (
+              ) : docs?.length === 0 && !isBroker ? (
                 <div className="p-12 text-center text-muted-foreground">No documents uploaded yet.</div>
               ) : (
                 <div className="divide-y divide-white/5">
                   {docs?.map((doc) => {
                     const isDocLocked = doc.ndaRequired && effectiveAccess !== "granted";
+                    const downloadUrl = doc.ndaRequired && storedDownloadToken
+                      ? `/api/deals/${id}/documents/${doc.id}/download?token=${storedDownloadToken}`
+                      : `/api/deals/${id}/documents/${doc.id}/download`;
                     return (
                       <div key={doc.id} className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
                         <div className="flex items-center gap-4">
@@ -204,15 +231,100 @@ export default function DealDetail() {
                           </div>
                           <div>
                             <p className={`font-medium ${isDocLocked ? 'text-muted-foreground' : 'text-foreground'}`}>{doc.name}</p>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wider">{doc.category} • {(doc.sizeKb / 1024).toFixed(1)} MB</p>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                              {doc.category}{doc.sizeKb ? ` • ${(doc.sizeKb / 1024).toFixed(1)} MB` : ''}
+                              {doc.ndaRequired ? ' • NDA required' : ''}
+                            </p>
                           </div>
                         </div>
-                        <Button variant={isDocLocked ? "ghost" : "outline"} size="sm" disabled={isDocLocked} className={isDocLocked ? 'opacity-50 cursor-not-allowed' : 'border-white/10 hover:bg-primary/10 hover:text-primary hover:border-primary/30'}>
-                          <Download className="w-4 h-4 mr-2" /> Download
-                        </Button>
+                        {isDocLocked ? (
+                          <Button variant="ghost" size="sm" disabled className="opacity-50 cursor-not-allowed">
+                            <Lock className="w-4 h-4 mr-2" /> Locked
+                          </Button>
+                        ) : doc.hasFile ? (
+                          <a href={downloadUrl} download>
+                            <Button variant="outline" size="sm" className="border-white/10 hover:bg-primary/10 hover:text-primary hover:border-primary/30" data-testid={`btn-download-${doc.id}`}>
+                              <Download className="w-4 h-4 mr-2" /> Download
+                            </Button>
+                          </a>
+                        ) : (
+                          <span className="text-xs text-muted-foreground italic">No file yet</span>
+                        )}
                       </div>
                     );
                   })}
+
+                  {/* Broker upload panel */}
+                  {isBroker && (
+                    <div className="p-4 bg-card/50 border-t border-white/5">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-3">
+                        <Upload className="w-3 h-3 inline mr-1" /> Add Document
+                      </p>
+                      <div className="flex gap-2 items-end flex-wrap">
+                        <div className="flex-1 min-w-40">
+                          <Label htmlFor="doc-name" className="text-xs text-muted-foreground mb-1 block">Document Name</Label>
+                          <Input
+                            id="doc-name"
+                            value={newDocName}
+                            onChange={(e) => setNewDocName(e.target.value)}
+                            placeholder="e.g. Financial Model Q4"
+                            className="bg-background/50 border-white/10 h-8 text-sm"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2 pb-0.5">
+                          <Checkbox
+                            id="doc-nda"
+                            checked={newDocNdaRequired}
+                            onCheckedChange={(v) => setNewDocNdaRequired(v === true)}
+                          />
+                          <Label htmlFor="doc-nda" className="text-xs text-muted-foreground cursor-pointer">NDA required</Label>
+                        </div>
+                        <ObjectUploader
+                          maxNumberOfFiles={1}
+                          onGetUploadParameters={async (file) => {
+                            const res = await requestUploadUrl.mutateAsync({
+                              data: { name: file.name, size: file.size ?? 1, contentType: file.type || 'application/octet-stream' },
+                            });
+                            return { method: 'PUT' as const, url: res.uploadURL, headers: { 'Content-Type': file.type || 'application/octet-stream' } };
+                          }}
+                          onComplete={(result) => {
+                            const uploaded = (result.successful ?? [])[0];
+                            if (!uploaded || !newDocName.trim()) return;
+                            const objectPath = (uploaded.response?.body as { objectPath?: string })?.objectPath
+                              ?? uploaded.uploadURL?.split('?')[0].split('/').slice(-2).join('/') ?? undefined;
+                            createDoc.mutate(
+                              {
+                                id,
+                                data: {
+                                  name: newDocName.trim(),
+                                  category: 'document',
+                                  sizeKb: Math.round((uploaded.size ?? 0) / 1024),
+                                  ndaRequired: newDocNdaRequired,
+                                  objectPath: objectPath ?? '',
+                                  contentType: uploaded.type || 'application/octet-stream',
+                                },
+                              },
+                              {
+                                onSuccess: () => {
+                                  toast({ title: "Document Added", description: `${newDocName} uploaded to the data room.` });
+                                  setNewDocName("");
+                                  setNewDocNdaRequired(false);
+                                  queryClient.invalidateQueries({ queryKey: getListDealDocumentsQueryKey(id) });
+                                },
+                                onError: () => {
+                                  toast({ title: "Upload failed", description: "Could not register the document.", variant: "destructive" });
+                                },
+                              },
+                            );
+                          }}
+                          buttonClassName="h-8 px-3 text-sm border border-white/10 rounded-md bg-primary/10 text-primary hover:bg-primary/20"
+                        >
+                          <Upload className="w-3.5 h-3.5 mr-1.5" />
+                          {newDocName.trim() ? "Upload File" : "Choose File"}
+                        </ObjectUploader>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

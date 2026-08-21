@@ -161,9 +161,22 @@ export interface DealDocument {
   category: string;
   sizeKb: number;
   ndaRequired: boolean;
+  hasFile: boolean;
   uploadedAt: string;
 }
 
+export interface DealDocumentInput {
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  category: string;
+  /** @minimum 0 */
+  sizeKb: number;
+  ndaRequired?: boolean;
+  /** @minLength 1 */
+  objectPath: string;
+  contentType?: string;
+}
 export interface AccessRequest {
   id: number;
   dealId: number;
@@ -191,8 +204,39 @@ export interface AccessRequestInput {
 
 export interface AccessRequestUpdate {
   status: string;
+  /** Secret issued to the requester at creation; required to transition to nda_signed. */
+  requestKey?: string;
 }
 
+export interface AccessRequestCreateResult {
+  id: number;
+  dealId: number;
+  dealTitle: string;
+  requesterName: string;
+  requesterCompany: string;
+  /** @nullable */
+  message?: string | null;
+  status: string;
+  createdAt: string;
+  /** Secret capability returned only to the creator; needed later to sign the NDA. */
+  requestKey: string;
+}
+export interface AccessRequestUpdateResult {
+  id: number;
+  dealId: number;
+  dealTitle: string;
+  requesterName: string;
+  requesterCompany: string;
+  /** @nullable */
+  message?: string | null;
+  status: string;
+  createdAt: string;
+  /**
+     * Only returned by the request that transitions the status to nda_signed.
+     * @nullable
+     */
+  downloadToken?: string | null;
+}
 export interface SignNdaInput {
   /** @minLength 1 */
   signerName: string;
@@ -396,3 +440,17 @@ search?: string;
 savedOnly?: boolean;
 };
 
+export interface UploadUrlRequest {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata?: UploadUrlRequest;
+}

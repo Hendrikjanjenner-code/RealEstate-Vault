@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { toJson } from "../lib/serialize";
 import { Router, type IRouter } from "express";
 import { desc, eq, inArray } from "drizzle-orm";
@@ -8,6 +9,7 @@ import {
   dealsTable,
   notificationsTable,
 } from "@workspace/db";
+import { isBroker } from "../lib/brokerAuth";
 import {
   ListAccessRequestsResponse,
   UpdateAccessRequestParams,
@@ -21,10 +23,14 @@ import { NDA_TITLE, NDA_PREAMBLE, NDA_CLAUSES } from "../lib/ndaTerms";
 
 const router: IRouter = Router();
 
-// Brokers may move a request through the lifecycle up to sending the NDA.
-// The final "nda_signed" step is reserved for the requesting investor via
-// POST /access-requests/:id/sign.
-const BROKER_STATUSES = ["pending", "approved", "nda_sent", "rejected"];
+// Enforced lifecycle: a request cannot jump straight to nda_signed.
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  pending: ["approved", "rejected"],
+  approved: ["nda_sent", "rejected"],
+  nda_sent: ["nda_signed", "rejected"],
+  nda_signed: [],
+  rejected: [],
+};
 
 router.get("/access-requests", async (req, res): Promise<void> => {
   if (!req.isAuthenticated()) {
@@ -70,21 +76,21 @@ router.get("/access-requests", async (req, res): Promise<void> => {
     );
   }
 
-  res.json(ListAccessRequestsResponse.parse(toJson(requests)));
+  // Strip the download capability — it must never appear in listings.
+  const safe = requests.map(
+    ({ downloadToken: _t, ndaSignedAt: _s, requestKey: _k, ...rest }) => rest,
+  );
+  res.json(ListAccessRequestsResponse.parse(toJson(safe)));
 });
 
 router.patch("/access-requests/:id", async (req, res): Promise<void> => {
-  if (!req.isAuthenticated()) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
   const params = UpdateAccessRequestParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
   const body = UpdateAccessRequestBody.safeParse(req.body);
-  if (!body.success || !BROKER_STATUSES.includes(body.data.status)) {
+  if (!body.success || !(body.data.status in ALLOWED_TRANSITIONS)) {
     res.status(400).json({ error: "Invalid status" });
     return;
   }
@@ -103,30 +109,70 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
     .from(dealsTable)
     .where(eq(dealsTable.id, existing.dealId));
 
-  // Only the listing broker may advance the NDA lifecycle.
-  const isListingBroker =
-    deal != null &&
-    deal.brokerUserId != null &&
-    deal.brokerUserId === req.user.id;
+  const signing = body.data.status === "nda_signed";
+  const brokerAuthed =
+    isBroker(req) ||
+    (req.isAuthenticated() &&
+      req.user.role === "broker" &&
+      deal?.brokerUserId === req.user.id);
 
-  if (!isListingBroker) {
-    res
-      .status(403)
-      .json({ error: "Only the listing broker can manage this request" });
+  // Investors self-sign using their requestKey — no session required.
+  const isRequester =
+    signing &&
+    !!existing.requestKey &&
+    body.data.requestKey === existing.requestKey;
+
+  if (signing && !brokerAuthed && !isRequester) {
+    // A wrong requestKey is a 403 (credential present but invalid).
+    // No credential at all is a 401.
+    const hasCredential = !!body.data.requestKey || isBroker(req) || req.isAuthenticated();
+    res.status(hasCredential ? 403 : 401).json({
+      error: body.data.requestKey
+        ? "Invalid request key"
+        : "Authentication required",
+    });
     return;
   }
 
+  if (!signing && !brokerAuthed) {
+    // Unauthenticated attempt → 401; authenticated but wrong role → 403.
+    const hasCredential = isBroker(req) || req.isAuthenticated();
+    res.status(hasCredential ? 403 : 401).json({
+      error: hasCredential ? "Broker authentication required" : "Unauthorized",
+    });
+    return;
+  }
+
+  const allowed = ALLOWED_TRANSITIONS[existing.status] ?? [];
+  if (!allowed.includes(body.data.status)) {
+    res.status(409).json({
+      error: `Cannot move request from "${existing.status}" to "${body.data.status}"`,
+    });
+    return;
+  }
+
+  const downloadToken = signing ? randomUUID() : undefined;
+
   const [request] = await db
     .update(accessRequestsTable)
-    .set({ status: body.data.status })
+    .set({
+      status: body.data.status,
+      ...(signing ? { downloadToken, ndaSignedAt: new Date() } : {}),
+    })
     .where(eq(accessRequestsTable.id, params.data.id))
     .returning();
 
+  if (signing) {
+    await db.insert(activityTable).values({
+      type: "nda_signed",
+      description: `${request.requesterName} signed the NDA for ${request.dealTitle}`,
+    });
+  }
+
   // Notify the requesting investor when their request status changes.
   if (request.requesterUserId && request.status !== existing.status) {
-    // Keep confidential deal titles masked until the NDA is signed.
     const displayTitle =
-      deal.confidential && request.status !== "nda_signed"
+      deal?.confidential && request.status !== "nda_signed"
         ? `Confidential ${deal.assetClass ?? ""} Opportunity`.replace("  ", " ")
         : request.dealTitle;
     const messageByStatus: Record<string, string> = {
@@ -146,7 +192,18 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
     });
   }
 
-  res.json(UpdateAccessRequestResponse.parse(toJson(request)));
+  // Never echo the stored token except to the caller who just signed.
+  const {
+    downloadToken: _stored,
+    ndaSignedAt: _at,
+    requestKey: _key,
+    ...safe
+  } = request;
+  res.json(
+    UpdateAccessRequestResponse.parse(
+      toJson({ ...safe, downloadToken: signing ? downloadToken : null }),
+    ),
+  );
 });
 
 // Investor signs the NDA on their own request: nda_sent -> nda_signed.
@@ -242,6 +299,7 @@ router.get(
       deal != null &&
       deal.brokerUserId != null &&
       deal.brokerUserId === req.user.id;
+
     if (!isRequester && !isListingBroker) {
       res.status(403).json({
         error:

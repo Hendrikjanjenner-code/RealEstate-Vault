@@ -7,8 +7,10 @@
  */
 
 export * from './accessRequest';
+export * from './accessRequestCreateResult';
 export * from './accessRequestInput';
 export * from './accessRequestUpdate';
+export * from './accessRequestUpdateResult';
 export * from './activityItem';
 export * from './activityPoint';
 export * from './apiMessage';
@@ -23,6 +25,7 @@ export * from './brokerProfileInput';
 export * from './dashboardStats';
 export * from './deal';
 export * from './dealDocument';
+export * from './dealDocumentInput';
 export * from './dealInput';
 export * from './errorEnvelope';
 export * from './handleBrowserLoginCallbackParams';
@@ -43,3 +46,5 @@ export * from './setRoleBody';
 export * from './setRoleBodyRole';
 export * from './signNdaInput';
 export * from './transaction';
+export * from './uploadUrlRequest';
+export * from './uploadUrlResponse';

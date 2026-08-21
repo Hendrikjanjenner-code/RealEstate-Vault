@@ -13,12 +13,15 @@ tags:
   - name: brokers
   - name: mandates
   - name: access
+  - name: auth
   - name: messages
   - name: dashboard
   - name: notifications
   - name: transactions
   - name: Auth
     description: Browser and mobile authentication endpoints.
+  - name: Storage
+    description: Object storage upload and serving endpoints.
 paths:
   /auth/user:
     get:
@@ -277,6 +280,139 @@ paths:
               schema:
                 type: array
                 items: { $ref: "#/components/schemas/DealDocument" }
+    post:
+      operationId: createDealDocument
+      tags: [deals]
+      summary: Register an uploaded data room document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DealDocumentInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DealDocument" }
+        "404":
+          description: Deal not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/documents/{docId}/download:
+    get:
+      operationId: downloadDealDocument
+      tags: [deals]
+      summary: Download a data room document (NDA-gated)
+      description: |
+        Streams the document file. NDA-required documents need an
+        accessRequestId referencing a signed-NDA access request for the deal.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: docId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: File stream
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "403":
+          description: NDA not signed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /storage/uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      description: |
+        Returns a presigned GCS URL for direct upload. The client sends JSON
+        metadata here, then uploads the file directly to the returned URL.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "500":
+          description: Failed to generate upload URL.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /storage/public-objects/{filePath}:
+    get:
+      tags: [Storage]
+      operationId: getPublicObject
+      summary: Serve a public asset from PUBLIC_OBJECT_SEARCH_PATHS
+      parameters:
+        - name: filePath
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Object content streamed with correct Content-Type.
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "404":
+          description: File not found.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /storage/objects/{objectPath}:
+    get:
+      tags: [Storage]
+      operationId: getStorageObject
+      summary: Serve an object entity from PRIVATE_OBJECT_DIR
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Object content streamed with correct Content-Type.
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "404":
+          description: Object not found.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /deals/{id}/access-requests:
     post:
       operationId: requestDealAccess
@@ -761,7 +897,7 @@ components:
         imageUrl: { type: string }
     DealDocument:
       type: object
-      required: [id, dealId, name, category, sizeKb, ndaRequired, uploadedAt]
+      required: [id, dealId, name, category, sizeKb, ndaRequired, hasFile, uploadedAt]
       properties:
         id: { type: integer }
         dealId: { type: integer }
@@ -769,7 +905,33 @@ components:
         category: { type: string }
         sizeKb: { type: integer }
         ndaRequired: { type: boolean }
+        hasFile: { type: boolean, description: "True when a file has been uploaded; objectPath is never exposed to clients." }
         uploadedAt: { type: string }
+    DealDocumentInput:
+      type: object
+      required: [name, category, sizeKb, objectPath]
+      properties:
+        name: { type: string, minLength: 1 }
+        category: { type: string, minLength: 1 }
+        sizeKb: { type: integer, minimum: 0 }
+        ndaRequired: { type: boolean }
+        objectPath: { type: string, minLength: 1 }
+        contentType: { type: string }
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: { type: string, minLength: 1 }
+        size: { type: integer, minimum: 1 }
+        contentType: { type: string, minLength: 1 }
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL: { type: string, format: uri }
+        objectPath: { type: string }
+        metadata:
+          $ref: "#/components/schemas/UploadUrlRequest"
     AccessRequest:
       type: object
       required: [id, dealId, dealTitle, requesterName, requesterCompany, status, createdAt]

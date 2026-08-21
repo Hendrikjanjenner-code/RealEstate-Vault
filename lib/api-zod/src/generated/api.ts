@@ -87,11 +87,6 @@ export const LogoutBrowserSessionResponse = zod.void()
  */
 
 
-
-
-
-
-
 export const ExchangeMobileAuthorizationCodeBody = zod.object({
   "code": zod.string().min(1),
   "code_verifier": zod.string().min(1),
@@ -175,7 +170,6 @@ export const ListDealsResponse = zod.array(ListDealsResponseItem)
 /**
  * @summary Create a deal
  */
-
 
 
 export const CreateDealBody = zod.object({
@@ -334,20 +328,23 @@ export const ListDealDocumentsResponseItem = zod.object({
   "category": zod.string(),
   "sizeKb": zod.int(),
   "ndaRequired": zod.boolean(),
+  "hasFile": zod.boolean(),
   "uploadedAt": zod.string()
 })
 export const ListDealDocumentsResponse = zod.array(ListDealDocumentsResponseItem)
 
-
+/**
+ * @summary Register an uploaded data room document
+ */
+export const CreateDealDocumentParams = zod.object({
+  "id": zod.coerce.number().int()
+})
 /**
  * @summary Request confidential access to a deal
  */
 export const RequestDealAccessParams = zod.object({
   "id": zod.coerce.number().int()
 })
-
-
-
 
 
 export const RequestDealAccessBody = zod.object({
@@ -366,7 +363,8 @@ export const RequestDealAccessResponse = zod.object({
   "status": zod.string().describe('pending | approved | nda_sent | nda_signed | rejected'),
   "signerName": zod.string().nullish(),
   "signedAt": zod.string().nullish(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "requestKey": zod.string().describe('Unguessable key the requester uses to self-sign the NDA and check their own status.')
 })
 
 
@@ -396,7 +394,8 @@ export const UpdateAccessRequestParams = zod.object({
 })
 
 export const UpdateAccessRequestBody = zod.object({
-  "status": zod.string()
+  "status": zod.string(),
+  "requestKey": zod.string().optional().describe('Investor-only: secret key to self-advance to nda_signed.')
 })
 
 export const UpdateAccessRequestResponse = zod.object({
@@ -409,18 +408,22 @@ export const UpdateAccessRequestResponse = zod.object({
   "status": zod.string().describe('pending | approved | nda_sent | nda_signed | rejected'),
   "signerName": zod.string().nullish(),
   "signedAt": zod.string().nullish(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "downloadToken": zod.string().nullish().describe('Only returned by the request that transitions the status to nda_signed.')
 })
 
-
+/**
+ * @summary Let a requester check their own request status using their secret key
+ */
+export const CheckAccessRequestStatusParams = zod.object({
+  "id": zod.coerce.number().int()
+})
 /**
  * @summary Investor signs the NDA for their own access request
  */
 export const SignAccessRequestNdaParams = zod.object({
   "id": zod.coerce.number().int()
 })
-
-
 
 
 export const SignAccessRequestNdaBody = zod.object({
@@ -496,11 +499,7 @@ export const GetMyBrokerProfileResponse = zod.object({
  */
 
 
-
-
-
 export const upsertMyBrokerProfileBodyYearsExperienceMin = 0;
-
 
 
 export const UpsertMyBrokerProfileBody = zod.object({
@@ -586,8 +585,6 @@ export const ListMandatesResponse = zod.array(ListMandatesResponseItem)
 /**
  * @summary Create an acquisition mandate
  */
-
-
 
 
 export const CreateMandateBody = zod.object({
@@ -723,8 +720,6 @@ export const SendMessageParams = zod.object({
 })
 
 
-
-
 export const SendMessageBody = zod.object({
   "body": zod.string().min(1)
 })
@@ -797,4 +792,103 @@ export const ListActivityResponseItem = zod.object({
 })
 export const ListActivityResponse = zod.array(ListActivityResponseItem)
 
+/**
+ * Streams the document file. NDA-required documents need an
+ * accessRequestId referencing a signed-NDA access request for the deal.
+ * @summary Download a data room document (NDA-gated)
+ */
+export const DownloadDealDocumentParams = zod.object({
+  "id": zod.coerce.number().int(),
+  "docId": zod.coerce.number().int()
+})
 
+/**
+ * @summary Serve a public asset from PUBLIC_OBJECT_SEARCH_PATHS
+ */
+export const GetPublicObjectParams = zod.object({
+  "filePath": zod.coerce.string()
+})
+
+/**
+ * @summary Sign in as the broker using the shared passcode
+ */
+export const BrokerLoginBody = zod.object({
+  "passcode": zod.string()
+})
+
+/**
+ * @summary Serve an object entity from PRIVATE_OBJECT_DIR
+ */
+export const GetStorageObjectParams = zod.object({
+  "objectPath": zod.coerce.string()
+})
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1),
+  "size": zod.int().min(1),
+  "contentType": zod.string().min(1)
+})
+
+export const CreateDealDocumentResponse = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "sizeKb": zod.int(),
+  "ndaRequired": zod.boolean(),
+  "hasFile": zod.boolean(),
+  "uploadedAt": zod.string()
+})
+
+export const BrokerLoginResponse = zod.object({
+  "broker": zod.boolean()
+})
+
+export const GetStorageObjectResponse = zod.unknown()
+
+export const DownloadDealDocumentResponse = zod.unknown()
+
+export const createDealDocumentBodySizeKbMin = 0;
+
+export const GetPublicObjectResponse = zod.unknown()
+
+export const CreateDealDocumentBody = zod.object({
+  "name": zod.string().min(1),
+  "category": zod.string().min(1),
+  "sizeKb": zod.int().min(createDealDocumentBodySizeKbMin),
+  "ndaRequired": zod.boolean().optional(),
+  "objectPath": zod.string().min(1),
+  "contentType": zod.string().optional()
+})
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.url(),
+  "objectPath": zod.string(),
+  "metadata": zod.object({
+  "name": zod.string().min(1),
+  "size": zod.int().min(1),
+  "contentType": zod.string().min(1)
+}).optional()
+})
+
+/**
+ * @summary Clear the broker session
+ */
+export const LogoutResponse = zod.object({
+  "broker": zod.boolean()
+})
+
+export const CheckAccessRequestStatusBody = zod.object({
+  "requestKey": zod.string()
+})
+
+export const CheckAccessRequestStatusResponse = zod.object({
+  "status": zod.string()
+})
+
+/**
+ * @summary Current session info
+ */
+export const GetSessionResponse = zod.object({
+  "broker": zod.boolean()
+})

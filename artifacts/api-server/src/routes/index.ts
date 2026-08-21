@@ -7,6 +7,8 @@ import networkRouter from "./network";
 import messagesRouter from "./messages";
 import dashboardRouter from "./dashboard";
 import notificationsRouter from "./notifications";
+import storageRouter from "./storage";
+import { isBroker } from "../lib/brokerAuth";
 
 const router: IRouter = Router();
 
@@ -14,9 +16,18 @@ const router: IRouter = Router();
 router.use(healthRouter);
 router.use(authRouter);
 
-// Everything below requires an authenticated user.
+// Storage routes use their own broker auth, not the session-based requireAuth.
+router.use(storageRouter);
+
+// Deals and access-requests have per-route auth (public listing, anonymous
+// access-request creation, broker-only upload, etc.) — must come before
+// the blanket requireAuth wall.
+router.use(dealsRouter);
+router.use(accessRequestsRouter);
+
+// Everything below requires an authenticated user or a broker passcode.
 function requireAuth(req: Request, res: Response, next: NextFunction): void {
-  if (!req.isAuthenticated()) {
+  if (!req.isAuthenticated() && !isBroker(req)) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
@@ -24,8 +35,6 @@ function requireAuth(req: Request, res: Response, next: NextFunction): void {
 }
 router.use(requireAuth);
 
-router.use(dealsRouter);
-router.use(accessRequestsRouter);
 router.use(networkRouter);
 router.use(messagesRouter);
 router.use(dashboardRouter);

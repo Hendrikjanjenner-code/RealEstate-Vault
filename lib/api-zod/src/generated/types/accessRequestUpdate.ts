@@ -8,4 +8,6 @@
 
 export interface AccessRequestUpdate {
   status: string;
+  /** Secret issued to the requester at creation; required to transition to nda_signed. */
+  requestKey?: string;
 }

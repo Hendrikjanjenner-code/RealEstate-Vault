@@ -1,21 +1,61 @@
-import { useListAccessRequests, useUpdateAccessRequest, getListAccessRequestsQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, Clock, FileSignature, CheckCircle2, XCircle, FileText } from "lucide-react";
+import { Shield, Clock, FileSignature, CheckCircle2, XCircle, FileText, KeyRound } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@workspace/replit-auth-web";
 import { Link } from "wouter";
+import { useListAccessRequests, useUpdateAccessRequest, useGetSession, useBrokerLogin, getListAccessRequestsQueryKey, getGetSessionQueryKey } from "@workspace/api-client-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
 export default function AccessRequests() {
-  const { data: requests, isLoading } = useListAccessRequests();
+  const { data: session, isLoading: sessionLoading } = useGetSession();
+  const { user } = useAuth();
+  // Broker via Replit Auth role OR legacy broker-passcode session.
+  const isBroker = user?.role === "broker" || !!session?.broker;
+  const brokerLogin = useBrokerLogin();
+  const [passcode, setPasscode] = useState("");
+  const { data: requests, isLoading } = useListAccessRequests({ query: { queryKey: getListAccessRequestsQueryKey(), enabled: isBroker } });
   const updateRequest = useUpdateAccessRequest();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { user } = useAuth();
-  const isBroker = user?.role === "broker";
+
+  const handleLogin = () => {
+    brokerLogin.mutate(
+      { data: { passcode } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getGetSessionQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getListAccessRequestsQueryKey() });
+          toast({ title: "Signed in", description: "Broker access unlocked." });
+        },
+        onError: () => {
+          toast({ title: "Sign-in failed", description: "Invalid broker passcode.", variant: "destructive" });
+        },
+      },
+    );
+  };
+
+  if (!sessionLoading && !isBroker) {
+    return (
+      <div className="p-8 max-w-md mx-auto space-y-6 mt-16">
+        <div className="text-center space-y-2">
+          <KeyRound className="w-10 h-10 text-primary mx-auto" />
+          <h1 className="text-2xl font-heading font-bold">Broker Sign-In</h1>
+          <p className="text-muted-foreground text-sm">Managing access requests and uploading data room documents requires the broker passcode.</p>
+        </div>
+        <div className="space-y-3">
+          <Label htmlFor="broker-passcode">Broker passcode</Label>
+          <Input id="broker-passcode" type="password" value={passcode} onChange={(e) => setPasscode(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleLogin()} placeholder="Enter passcode" className="bg-background/50 border-white/10" />
+          <Button onClick={handleLogin} disabled={brokerLogin.isPending || !passcode} className="w-full">Sign In</Button>
+        </div>
+      </div>
+    );
+  }
 
   const handleUpdateStatus = (id: number, status: string) => {
     updateRequest.mutate({ id, data: { status } as any }, {

@@ -76,32 +76,23 @@ function RolePicker() {
 }
 
 function AppShellRouter() {
-  const { isLoading, isAuthenticated, user, login } = useAuth();
+  const { isLoading, isAuthenticated, user } = useAuth();
 
+  // Show role picker only for authenticated users who haven't chosen a role yet.
+  if (!isLoading && isAuthenticated && !user?.role) {
+    return <RolePicker />;
+  }
+
+  // Allow unauthenticated demo browsing. The API enforces auth on write operations.
+  // A brief loading state keeps the layout stable while the auth state resolves.
   if (isLoading) {
     return (
-      <AuthScreen>
-        <p className="text-muted-foreground animate-pulse">Loading…</p>
-      </AuthScreen>
+      <AppLayout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground animate-pulse">Loading…</p>
+        </div>
+      </AppLayout>
     );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <AuthScreen>
-        <h1 className="text-2xl font-heading font-bold">Members Only</h1>
-        <p className="text-muted-foreground max-w-md text-center">
-          RealEstate Vault is a private marketplace. Sign in to view deals and request access to confidential data rooms.
-        </p>
-        <Button size="lg" onClick={login} className="bg-primary text-primary-foreground hover:bg-primary/90 px-10 font-bold">
-          Sign In
-        </Button>
-      </AuthScreen>
-    );
-  }
-
-  if (!user?.role) {
-    return <RolePicker />;
   }
 
   return (
