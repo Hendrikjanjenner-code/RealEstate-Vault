@@ -1,1 +1,2 @@
 - [Orval zod codegen needs zod/v4 import](orval-zod-v4.md) — generated api-zod code uses zod v4 APIs; codegen rewrites the import, and API responses must serialize Dates to ISO strings before parse.
+- [Playwright e2e setup](playwright-e2e-setup.md) — use Nix playwright-driver's REPLIT_PLAYWRIGHT_CHROMIUM_EXECUTABLE with a version-matched @playwright/test; run via scripts package against localhost:80.
