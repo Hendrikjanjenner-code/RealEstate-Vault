@@ -1,0 +1,1 @@
+- [Orval zod codegen needs zod/v4 import](orval-zod-v4.md) — generated api-zod code uses zod v4 APIs; codegen rewrites the import, and API responses must serialize Dates to ISO strings before parse.

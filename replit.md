@@ -1,6 +1,6 @@
-# [Project name]
+# RealEstate Vault
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A private B2B marketplace for commercial real estate — "Private Deals. Trusted Access." A public landing page (`/`) links to a seeded demo environment (`/demo/*`) with confidential deal discovery, an NDA-gated data room flow, access-request lifecycle management, investor mandates, broker rankings, secure messaging, and a verified transactions ledger. Branding: deep vault green `#0B2D26`, gold `#C8A95A`, ivory `#F3F0E6`; Sora headings, Inter body.
 
 ## Run & Operate
 

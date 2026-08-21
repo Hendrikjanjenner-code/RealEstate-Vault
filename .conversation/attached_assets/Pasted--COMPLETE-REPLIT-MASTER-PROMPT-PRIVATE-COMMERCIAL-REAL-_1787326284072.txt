@@ -1,0 +1,3535 @@
+# COMPLETE REPLIT MASTER PROMPT — PRIVATE COMMERCIAL REAL ESTATE DEAL PLATFORM
+
+Build a complete, production-ready, premium B2B SaaS marketplace for off-market commercial real estate.
+
+The platform is intended for professional real estate brokers, investors, acquisition brokers, sellers, owners, developers, family offices, private equity firms, institutional investors, hotel operators and other professional buyers.
+
+The core purpose is to facilitate confidential commercial real estate transactions from discovery through closing.
+
+The platform must combine:
+
+* Professional networking
+* Commercial real estate listings
+* Private deal discovery
+* Investor mandates
+* Broker discovery
+* Broker ranking
+* Deal matching
+* Digital NDAs
+* Virtual data rooms
+* Secure document sharing
+* Broker introduction protection
+* Commission agreements
+* Deal pipelines
+* Messaging
+* Notifications
+* Verified transaction history
+* Reputation scores
+* AI-generated listing content
+* AI-generated property videos
+* Subscription management
+* Admin tools
+* Analytics
+
+The platform must feel premium, institutional, secure, modern and trustworthy.
+
+Do not build it like a consumer real estate website.
+
+The target users transact assets worth millions or tens of millions of euros.
+
+The experience should resemble the quality of:
+
+* Institutional investment platforms
+* Private equity software
+* Investment banking portals
+* Premium deal rooms
+* High-end commercial real estate platforms
+
+The product must be responsive and work well on desktop, tablet and mobile.
+
+---
+
+# PRODUCT NAME
+
+Use a temporary working name:
+
+**DealEstate**
+
+Make the name easy to change later through a global configuration.
+
+Possible tagline:
+
+**The Private Marketplace for Commercial Real Estate**
+
+Secondary tagline:
+
+**Discover. Connect. Protect. Close.**
+
+---
+
+# CORE CONCEPT
+
+The platform should revolve around the following transaction lifecycle:
+
+**Deal Discovery → Interest → Broker Approval → NDA → Confidential Access → Data Room → Broker Protection → Commission Agreement → Due Diligence → Offer → Negotiation → Closing → Verified Transaction → Reputation**
+
+This lifecycle should be reflected throughout the application.
+
+---
+
+# PRIMARY USERS
+
+Create the following user roles:
+
+1. Broker
+2. Investor / Buyer
+3. Acquisition Broker
+4. Seller / Property Owner
+5. Company Admin
+6. Platform Admin
+
+One user can potentially have multiple relevant roles.
+
+---
+
+# COMPANY STRUCTURE
+
+Users belong to companies.
+
+A company can have multiple employees.
+
+Company information:
+
+* Company name
+* Company logo
+* Company type
+* Registration number
+* Chamber of Commerce number
+* VAT number
+* Address
+* City
+* Country
+* Website
+* Phone
+* General email
+* Description
+* Asset specialisations
+* Geographic markets
+* Founded year
+* Number of employees
+* Verification status
+
+Company types:
+
+* Commercial Real Estate Broker
+* Investment Broker
+* Acquisition Broker
+* Family Office
+* Private Equity
+* Institutional Investor
+* Investment Fund
+* REIT
+* Developer
+* Hotel Operator
+* Real Estate Company
+* Property Owner
+* Asset Manager
+* Investment Manager
+* Other Professional Party
+
+---
+
+# AUTHENTICATION
+
+Create secure authentication.
+
+Support:
+
+* Email registration
+* Email verification
+* Password login
+* Password reset
+* Remember me
+* Secure sessions
+* Optional Google login
+* Optional Microsoft login
+* Two-factor authentication architecture
+
+Create strong password requirements.
+
+Protect all confidential routes.
+
+---
+
+# ONBOARDING
+
+Create a professional multi-step onboarding wizard.
+
+## Step 1 — Personal Information
+
+Ask:
+
+* First name
+* Last name
+* Job title
+* Phone number
+* Business email
+* Profile image
+
+## Step 2 — Company
+
+Ask:
+
+* Company name
+* Company type
+* Registration number
+* VAT number
+* Country
+* City
+* Office address
+* Website
+* Company logo
+
+## Step 3 — Professional Profile
+
+Ask:
+
+* User role
+* Years of experience
+* Asset specialisations
+* Geographic focus
+* Languages
+* Typical transaction size
+
+## Step 4 — Investment / Deal Preferences
+
+For investors ask:
+
+* Preferred asset classes
+* Countries
+* Cities
+* Minimum transaction size
+* Maximum transaction size
+* Strategy
+* Yield expectations
+
+For brokers ask:
+
+* Asset classes
+* Countries
+* Typical deal size
+* Specialisations
+
+## Step 5 — Verification
+
+Allow uploading:
+
+* Chamber of Commerce document
+* Company registration document
+* Professional identification
+* Proof of employment if necessary
+
+Create verification statuses:
+
+* Not Started
+* Pending
+* Verified
+* Rejected
+* Additional Information Required
+
+---
+
+# VERIFICATION BADGES
+
+Display badges such as:
+
+**Verified Professional**
+
+**Verified Broker**
+
+**Verified Investor**
+
+**Institutional Investor**
+
+**Verified Transaction**
+
+Only administrators can issue or revoke verification.
+
+---
+
+# MAIN NAVIGATION
+
+Desktop sidebar/navigation:
+
+Dashboard
+Discover
+Deals
+Mandates
+Brokers
+Companies
+Messages
+Notifications
+My Pipeline
+Documents
+Transactions
+Analytics
+Settings
+
+For brokers add:
+
+My Listings
+
+For investors add:
+
+Saved Deals
+
+For admins add:
+
+Admin
+
+---
+
+# DASHBOARD
+
+Create different dashboard experiences depending on user role.
+
+## Broker Dashboard
+
+Show:
+
+* Active listings
+* Draft listings
+* New access requests
+* NDAs pending
+* NDAs signed
+* Active data room users
+* New messages
+* Investor matches
+* Active mandates
+* Commission agreements
+* Pipeline value
+* Closed deals
+* Verified transaction volume
+* Broker Score
+* Recent activity
+
+Add charts:
+
+* Deal views over time
+* Access requests
+* Investor engagement
+* Transaction pipeline
+* Deal conversion
+
+## Investor Dashboard
+
+Show:
+
+* Recommended deals
+* New matching deals
+* Saved properties
+* Access requests
+* Active NDAs
+* Data room access
+* Active acquisition mandates
+* Recommended brokers
+* Offers
+* Deal pipeline
+* Recent activity
+
+---
+
+# PROPERTY / DEAL CREATION
+
+Create a detailed deal creation wizard.
+
+## Step 1 — Deal Type
+
+Choose:
+
+* Sale
+* Investment Opportunity
+* Acquisition Opportunity
+* Development Opportunity
+* Sale & Leaseback
+* Joint Venture
+* Portfolio
+* Confidential Off-Market Deal
+
+## Step 2 — Asset Class
+
+Options:
+
+* Hotel
+* Resort
+* Serviced Apartments
+* Office
+* Retail
+* Logistics
+* Industrial
+* Residential Investment
+* Multifamily
+* Student Housing
+* Healthcare
+* Leisure
+* Development Land
+* Mixed Use
+* Parking
+* Data Center
+* Other
+
+## Step 3 — Location
+
+Fields:
+
+* Country
+* Region
+* City
+* Postal code
+* Exact address
+* Latitude
+* Longitude
+
+Add privacy setting:
+
+* Show exact location
+* Show city only
+* Show region only
+* Hide exact location until NDA
+
+## Step 4 — Commercial Details
+
+Fields:
+
+* Asking price
+* Price range
+* Currency
+* Gross yield
+* Net yield
+* Estimated value
+* Financing available
+* Existing debt
+* Deal structure
+
+## Step 5 — Property Details
+
+Fields depend on asset type.
+
+General:
+
+* Gross floor area
+* Net floor area
+* Plot size
+* Construction year
+* Renovation year
+* Occupancy
+* Ownership structure
+* Lease status
+* Tenant status
+
+For hotels:
+
+* Number of keys
+* Hotel classification
+* Operator
+* Brand
+* Franchise
+* Management agreement
+* Lease agreement
+* Occupancy
+* ADR
+* RevPAR
+* GOP
+* EBITDA
+* Food & Beverage revenue
+* Meeting space
+* Parking
+* Wellness
+* Pool
+* Conference facilities
+
+## Step 6 — Investment Highlights
+
+Allow bullet points such as:
+
+* Prime location
+* Strong operating history
+* Value-add opportunity
+* Long-term tenant
+* Recent renovation
+* Strong tourism market
+
+## Step 7 — Description
+
+Fields:
+
+* Anonymous teaser
+* Full description
+* Confidential description
+
+Add button:
+
+**Generate with AI**
+
+## Step 8 — Media
+
+Upload:
+
+* Property photos
+* Floorplans
+* Videos
+* Drone images
+* Renderings
+
+Allow drag-and-drop sorting.
+
+## Step 9 — Documents
+
+Upload documents into categories.
+
+## Step 10 — Confidentiality
+
+Choose which fields require NDA.
+
+Create granular confidentiality settings.
+
+## Step 11 — Broker Protection
+
+Ask:
+
+* Is this deal protected?
+* Introduction protection period
+* Commission structure
+* Co-brokerage allowed?
+* Buyer-side fee?
+* Seller-side fee?
+
+## Step 12 — Review and Publish
+
+Show preview.
+
+Options:
+
+* Save Draft
+* Publish Privately
+* Publish to Broker Network
+* Publish to Selected Investors
+* Publish to Verified Users
+
+---
+
+# DEAL STATUS
+
+Deal statuses:
+
+Draft
+Active
+Confidential
+Under Offer
+Exclusivity
+Due Diligence
+Sold
+Withdrawn
+Archived
+
+---
+
+# DEAL DISCOVERY
+
+Build a premium discovery page.
+
+Users can browse deals with:
+
+* Grid view
+* List view
+* Swipe mode
+* Map mode
+
+---
+
+# SWIPE MODE
+
+Create a mobile-friendly deal discovery experience inspired by swipe interfaces.
+
+Do not make it childish.
+
+Display:
+
+* Main image
+* Asset type
+* General location
+* Price / range
+* Key property metric
+* Yield
+* Broker
+* Verification indicator
+
+Actions:
+
+Skip
+Save
+Interested
+Request Access
+
+Desktop users should also be able to use keyboard arrows.
+
+---
+
+# DEAL FILTERS
+
+Create advanced filters:
+
+Location
+
+* Country
+* Region
+* City
+
+Asset
+
+* Asset class
+* Deal type
+
+Financial
+
+* Minimum price
+* Maximum price
+* Minimum yield
+* Maximum yield
+
+Property
+
+* Floor area
+* Plot size
+* Hotel keys
+* Occupancy
+* Construction year
+
+Investment strategy
+
+* Core
+* Core Plus
+* Value Add
+* Opportunistic
+* Development
+
+Confidentiality
+
+* Public
+* Off-market
+* NDA required
+
+Broker criteria
+
+* Verified brokers only
+* Minimum Broker Score
+* Minimum verified transaction volume
+
+---
+
+# DEAL CARD
+
+Every deal card should display:
+
+* Property image
+* Confidential badge if applicable
+* Asset class
+* General location
+* Asking price / range
+* Yield
+* Main metric
+* Broker company
+* Verified badge
+
+Actions:
+
+Save
+Share
+Request Access
+
+---
+
+# PRE-NDA DEAL PAGE
+
+Before NDA, show only approved teaser information.
+
+Example:
+
+**Confidential Hotel Investment Opportunity**
+
+Amsterdam Region
+
+€20M–€25M
+
+124 Keys
+
+4-Star Hotel
+
+7.1% Indicative Yield
+
+Highlights:
+
+* Strong tourism market
+* Recent renovation
+* High occupancy
+* International demand
+
+Hide:
+
+* Exact property name
+* Address
+* Seller
+* Operator if sensitive
+* Detailed financials
+* Contracts
+* Full documents
+
+CTA:
+
+**Request Confidential Access**
+
+---
+
+# ACCESS REQUEST
+
+When a user requests access, create an access request object.
+
+Statuses:
+
+Pending
+Approved
+Declined
+More Information Requested
+NDA Pending
+NDA Signed
+Access Granted
+Access Revoked
+
+The selling broker should see:
+
+* Requesting user
+* Company
+* User type
+* Verification
+* Investor strategy
+* Ticket size
+* Completed deals
+* Verified transactions
+* Ratings
+* Active mandates
+
+Actions:
+
+Approve
+Decline
+Request Information
+
+---
+
+# NDA SYSTEM
+
+Build a complete NDA workflow.
+
+Allow brokers to:
+
+* Use platform NDA template
+* Upload custom NDA
+* Create company NDA template
+* Edit NDA fields
+* Select NDA duration
+* Add project-specific provisions
+
+Automatically insert:
+
+* Company names
+* User names
+* Deal name
+* Deal ID
+* Date
+* Confidentiality period
+
+Electronic signing flow:
+
+Review NDA
+Accept terms
+Enter name
+Digital signature
+Timestamp
+IP logging where legally appropriate
+Generate final PDF
+Store executed NDA
+
+NDA statuses:
+
+Draft
+Sent
+Viewed
+Signed by Buyer
+Signed by Seller
+Completed
+Expired
+Rejected
+
+After both parties sign:
+
+Automatically unlock confidential deal access.
+
+---
+
+# NDA MANAGEMENT PAGE
+
+Allow users to see:
+
+* Active NDAs
+* Pending NDAs
+* Signed NDAs
+* Expired NDAs
+
+Filters:
+
+Deal
+Company
+Date
+Status
+
+---
+
+# CONFIDENTIAL DEAL PAGE
+
+After NDA, reveal authorised information.
+
+Display:
+
+* Exact property name
+* Exact location
+* Full description
+* Detailed investment highlights
+* Asking price
+* Financials
+* Tenant / operator details
+* Contract structure
+* Full image gallery
+* Property video
+* Investment memorandum
+* Data room
+* Broker contact
+* Deal Q&A
+* Deal pipeline actions
+
+---
+
+# VIRTUAL DATA ROOM
+
+Build a secure professional data room.
+
+Default folders:
+
+01 Investment Memorandum
+02 Financial Information
+03 Legal
+04 Property Documents
+05 Technical
+06 Lease Documentation
+07 Hotel Operations
+08 Planning & Development
+09 Photos & Media
+10 Due Diligence
+11 Transaction Documents
+
+Allow:
+
+* Create folders
+* Upload files
+* Move files
+* Rename
+* Delete
+* Version management
+* Replace documents
+* Download permissions
+* Preview permissions
+
+---
+
+# DATA ROOM SECURITY
+
+Every document should support:
+
+View Allowed
+Download Allowed
+Print Allowed
+
+Access by:
+
+Individual user
+Company
+Access group
+
+Allow broker to revoke access instantly.
+
+---
+
+# DATA ROOM ANALYTICS
+
+Track:
+
+* User
+* Company
+* File viewed
+* Time viewed
+* Last activity
+* Number of views
+* Downloads
+
+Broker dashboard should show:
+
+**Most Engaged Investors**
+
+Rank based on:
+
+* Deal page views
+* Data room activity
+* Number of documents viewed
+* Repeat visits
+* Messages
+* Offer activity
+
+---
+
+# INTRODUCTION PROTECTION
+
+Build a broker protection system.
+
+Every introduction must create a secure immutable log entry.
+
+Store:
+
+* Introducing broker
+* Introduced buyer
+* Buyer company
+* Selling broker
+* Seller company
+* Deal
+* Date
+* Timestamp
+* NDA status
+* Commission status
+* Introduction protection expiration
+
+Create a visible:
+
+**Introduction Certificate**
+
+Example:
+
+Introduction ID
+INT-2026-000318
+
+Introduced by
+ABC Real Estate
+
+Introduced party
+XYZ Capital
+
+Project
+DL-2026-00142
+
+Date
+21 August 2026
+
+Protection period
+24 months
+
+Status
+Active
+
+---
+
+# NON-CIRCUMVENTION
+
+Allow a non-circumvention clause to be connected to:
+
+* NDA
+* Introduction agreement
+* Commission agreement
+
+Store acknowledgement electronically.
+
+---
+
+# COMMISSION MANAGEMENT
+
+Build a full commission agreement module.
+
+Create commission types:
+
+* Percentage of transaction
+* Fixed success fee
+* Buyer commission
+* Seller commission
+* Introduction fee
+* Advisory fee
+* Co-brokerage
+* Referral fee
+* Custom
+
+Allow commission split.
+
+Example:
+
+Sale price: €25,000,000
+
+Brokerage commission: 1%
+
+Total commission: €250,000
+
+Broker A: 60%
+€150,000
+
+Broker B: 40%
+€100,000
+
+---
+
+# COMMISSION AGREEMENT WORKFLOW
+
+Statuses:
+
+Draft
+Sent
+Awaiting Counterparty
+Negotiation
+Accepted
+Signed
+Completed
+Disputed
+Cancelled
+
+Allow:
+
+* Comments
+* Version history
+* Change requests
+* Digital approval
+* Digital signature
+
+---
+
+# COMMISSION DASHBOARD
+
+Show:
+
+Expected Commission
+
+Pending Agreements
+
+Signed Agreements
+
+Projected Revenue
+
+Closed Commission
+
+Commission by Deal
+
+Commission by Broker
+
+---
+
+# ACQUISITION MANDATES
+
+Investors can create acquisition mandates.
+
+Create mandate form.
+
+Fields:
+
+Title
+
+Investor
+
+Asset type
+
+Target countries
+
+Target cities
+
+Minimum investment
+
+Maximum investment
+
+Yield requirement
+
+Strategy
+
+Minimum property size
+
+Maximum property size
+
+Hotel key range
+
+Lease preference
+
+Operator preference
+
+Risk profile
+
+Investment horizon
+
+Description
+
+Confidentiality
+
+---
+
+# MANDATE VISIBILITY
+
+Options:
+
+Private
+
+Selected Brokers
+
+All Verified Brokers
+
+Public to Professional Network
+
+---
+
+# MANDATE MATCHING
+
+Automatically match deals to mandates.
+
+Create Match Score:
+
+0–100%.
+
+Use:
+
+Asset type
+
+Location
+
+Transaction value
+
+Yield
+
+Property size
+
+Hotel keys
+
+Investment strategy
+
+Risk profile
+
+Previous investor activity
+
+Display:
+
+**94% Match**
+
+Explain why:
+
+* Correct asset class
+* Correct investment range
+* Preferred location
+* Meets yield target
+
+---
+
+# BROKER MARKETPLACE
+
+Create a dedicated section:
+
+**Find a Broker**
+
+Users can search professional brokers.
+
+Filters:
+
+Country
+City
+Asset class
+Specialisation
+Transaction value
+Verified Volume
+Deal count
+Rating
+Broker Score
+Language
+
+---
+
+# BROKER PROFILE
+
+Create beautiful professional broker profiles.
+
+Show:
+
+Name
+
+Photo
+
+Company
+
+Title
+
+Verified badge
+
+Location
+
+Specialisations
+
+Biography
+
+Years of experience
+
+Languages
+
+Active deals
+
+Verified Volume
+
+Total claimed volume
+
+Verified transactions
+
+Average deal size
+
+Broker Score
+
+Reviews
+
+Recent verified transactions
+
+---
+
+# VERIFIED TRANSACTION HISTORY
+
+Show anonymised transactions where necessary.
+
+Example:
+
+**Verified Hotel Transaction**
+
+Netherlands
+
+€25M–€30M
+
+Hospitality
+
+Closed Q2 2026
+
+Role:
+
+Buyer-side broker
+
+---
+
+# BROKER SCORE
+
+Create proprietary scoring system.
+
+Score from:
+
+0–100.
+
+Suggested calculation architecture:
+
+25% Verified transaction performance
+
+15% Asset-class relevance
+
+10% Geographic relevance
+
+10% Client reviews
+
+10% Transaction count
+
+10% Response rate
+
+5% Response speed
+
+5% Successful introductions
+
+5% NDA compliance
+
+5% Platform professionalism
+
+Do not hardcode this permanently.
+
+Make scoring weights editable from admin.
+
+---
+
+# BROKER RANKINGS
+
+Create ranking pages:
+
+Top Brokers Netherlands
+
+Top Hotel Brokers
+
+Top Office Brokers
+
+Top Logistics Brokers
+
+Top Investment Brokers
+
+Top Acquisition Brokers
+
+Rising Brokers
+
+Most Active
+
+Highest Verified Volume
+
+---
+
+# RANKING FAIRNESS
+
+Do not rank purely by transaction value.
+
+Display contextual rankings.
+
+Example:
+
+**#3 Hotel Broker — Netherlands**
+
+instead of only:
+
+**#3 Broker**
+
+---
+
+# BROKER MATCHING
+
+When an investor creates a mandate, recommend brokers.
+
+Create Broker Match Score.
+
+Factors:
+
+* Relevant asset deals
+* Geography
+* Transaction range
+* Verified volume
+* Reviews
+* Response rate
+* Current activity
+
+Show:
+
+**96% Broker Match**
+
+---
+
+# APPOINT A BROKER
+
+Allow investors to click:
+
+**Request Introduction**
+
+or:
+
+**Appoint as Acquisition Broker**
+
+Create appointment workflow.
+
+Investor enters:
+
+* Mandate
+* Expected services
+* Fee structure
+* Exclusivity
+* Duration
+
+Broker accepts or negotiates.
+
+---
+
+# REVIEWS
+
+Only verified transaction participants can leave verified reviews.
+
+Rating categories:
+
+Professionalism
+Communication
+Market Knowledge
+Execution
+Reliability
+Confidentiality
+
+Overall rating:
+
+1–5 stars
+
+Reviews can include written feedback.
+
+Admin can moderate.
+
+---
+
+# TRANSACTION PIPELINE
+
+Create deal pipeline.
+
+Stages:
+
+New Lead
+Access Requested
+NDA Pending
+NDA Signed
+Data Room Access
+Interested
+Meeting
+LOI
+Offer
+Negotiation
+Due Diligence
+Financing
+Exclusivity
+SPA / Purchase Agreement
+Closing
+Closed Won
+Closed Lost
+
+Allow drag-and-drop.
+
+---
+
+# PIPELINE CONTACTS
+
+Each deal opportunity should include:
+
+Buyer
+
+Buyer company
+
+Broker
+
+Seller
+
+Introducer
+
+Expected price
+
+Probability
+
+Expected closing date
+
+Notes
+
+Tasks
+
+Documents
+
+Messages
+
+---
+
+# OFFERS
+
+Build digital offer management.
+
+Buyer can submit:
+
+Price
+
+Financing
+
+Conditions
+
+Due diligence period
+
+Closing date
+
+Deposit
+
+Special conditions
+
+Offer validity
+
+Supporting documents
+
+---
+
+# OFFER STATUS
+
+Draft
+Submitted
+Viewed
+Countered
+Accepted
+Rejected
+Withdrawn
+Expired
+
+---
+
+# LOI MODULE
+
+Allow Letter of Intent upload or generation.
+
+Store version history.
+
+Allow digital approval.
+
+---
+
+# TRANSACTION CLOSING
+
+When a transaction closes:
+
+Ask both sides to confirm.
+
+Store:
+
+Final transaction value
+
+Closing date
+
+Asset class
+
+Country
+
+Buyer
+
+Seller
+
+Buyer broker
+
+Seller broker
+
+Introducing broker
+
+Commission status
+
+---
+
+# VERIFIED TRANSACTION
+
+After confirmation:
+
+Create verified transaction record.
+
+Allow confidentiality options:
+
+Full Disclosure
+
+Partial Disclosure
+
+Anonymous
+
+Anonymous example:
+
+Hotel Transaction
+
+Netherlands
+
+€20M–€25M
+
+Closed August 2026
+
+---
+
+# REPUTATION UPDATE
+
+After verified closing:
+
+Update:
+
+Verified Transaction Volume
+
+Completed Transactions
+
+Asset class history
+
+Broker Score
+
+Company statistics
+
+---
+
+# MESSAGING
+
+Build integrated messaging.
+
+Allow:
+
+Direct messages
+
+Deal-specific chat
+
+Mandate-specific chat
+
+Broker conversations
+
+Group conversations
+
+---
+
+# DEAL CHAT
+
+Messages should be tied to the deal.
+
+Allow:
+
+Text
+
+Attachments
+
+Document requests
+
+Meeting proposals
+
+Quick actions
+
+---
+
+# NOTIFICATIONS
+
+Create notification center.
+
+Events:
+
+New deal match
+
+New mandate match
+
+New message
+
+Access request
+
+Access approved
+
+Access declined
+
+NDA sent
+
+NDA signed
+
+Data room access
+
+New data room document
+
+Commission agreement
+
+Commission agreement signed
+
+Offer submitted
+
+Offer countered
+
+Deal stage changed
+
+Review request
+
+Verification approved
+
+Broker invitation
+
+---
+
+# EMAIL NOTIFICATIONS
+
+Prepare system for transactional emails.
+
+Examples:
+
+New access request
+
+NDA requires signature
+
+Access granted
+
+New message
+
+New matching property
+
+Mandate match
+
+Offer received
+
+Commission agreement pending
+
+---
+
+# WATCHLIST
+
+Allow users to save:
+
+Deals
+
+Brokers
+
+Companies
+
+Mandates
+
+---
+
+# AI ASSISTANT
+
+Build an AI assistant inside the platform.
+
+Allow AI to help with:
+
+Deal descriptions
+
+Teasers
+
+Investment highlights
+
+Emails
+
+Deal summaries
+
+Investor summaries
+
+Mandate creation
+
+Broker matching explanations
+
+Document summaries
+
+---
+
+# AI DEAL CREATION
+
+Button:
+
+**Generate Listing with AI**
+
+User can upload:
+
+Property brochure
+
+Investment memorandum
+
+Photos
+
+Spreadsheet
+
+Existing listing text
+
+AI should suggest:
+
+Title
+
+Asset class
+
+Location
+
+Price
+
+Yield
+
+Description
+
+Highlights
+
+Property statistics
+
+Confidentiality settings
+
+User must approve before publishing.
+
+---
+
+# AI TEASER GENERATOR
+
+Generate anonymised pre-NDA teaser.
+
+Ensure confidential information is automatically excluded.
+
+Allow user review.
+
+---
+
+# AI INVESTMENT MEMORANDUM
+
+Create structure for future AI-generated investment memorandums.
+
+Sections:
+
+Executive Summary
+
+Investment Highlights
+
+Property Overview
+
+Location
+
+Market
+
+Financial Overview
+
+Operational Performance
+
+Lease Structure
+
+Investment Case
+
+Risks
+
+Transaction Process
+
+---
+
+# AI PROPERTY VIDEO
+
+Build a property video generation workflow.
+
+Name:
+
+**AI Property Studio**
+
+Broker uploads:
+
+10–50 photos
+
+Optional logo
+
+Deal details
+
+Optional video clips
+
+---
+
+# VIDEO TYPES
+
+Offer:
+
+## Confidential Teaser
+
+20–40 seconds
+
+No exact address
+
+No confidential names
+
+## Investment Presentation
+
+45–90 seconds
+
+Full property information
+
+Available after NDA
+
+## Social Video
+
+15–30 seconds
+
+9:16 vertical
+
+For LinkedIn / WhatsApp / Instagram
+
+## Landscape Video
+
+16:9
+
+For websites and presentations
+
+---
+
+# VIDEO WORKFLOW
+
+1. Analyse images.
+2. Detect image category.
+3. Select best images.
+4. Arrange professionally.
+5. Create subtle zoom and pan.
+6. Add transitions.
+7. Add title cards.
+8. Add property information.
+9. Add optional music.
+10. Add optional voice-over.
+11. Render.
+12. Preview.
+13. Regenerate.
+14. Save to media library.
+
+---
+
+# VIDEO SAFETY
+
+Do not generate misleading property features.
+
+Do not:
+
+* Add swimming pools that do not exist
+* Change views
+* Change building dimensions
+* Create nonexistent rooms
+* Misrepresent renovation condition
+
+AI should enhance presentation, not alter property reality.
+
+---
+
+# AI IMAGE SORTING
+
+Automatically classify images:
+
+Exterior
+Lobby
+Rooms
+Restaurant
+Meeting Rooms
+Amenities
+Views
+Location
+Floorplans
+Technical
+
+---
+
+# MEDIA LIBRARY
+
+Each deal should have media center:
+
+Photos
+
+Videos
+
+Floorplans
+
+Renderings
+
+Logos
+
+Marketing materials
+
+---
+
+# ACTIVITY FEED
+
+Create activity feed.
+
+Examples:
+
+Investor viewed memorandum
+
+Investor entered data room
+
+NDA signed
+
+Offer submitted
+
+Broker opened mandate
+
+Investor saved deal
+
+Document downloaded
+
+---
+
+# CALENDAR
+
+Create architecture for:
+
+Meetings
+
+Deal reminders
+
+NDA expiry
+
+Offer deadlines
+
+Closing dates
+
+Follow-ups
+
+---
+
+# TASKS
+
+Allow deal tasks.
+
+Fields:
+
+Task name
+
+Deal
+
+Assigned user
+
+Due date
+
+Priority
+
+Status
+
+---
+
+# ANALYTICS
+
+Broker analytics:
+
+Listing views
+
+Unique investors
+
+Access requests
+
+NDA conversion
+
+Data room engagement
+
+Offers received
+
+Deal conversion
+
+Average time to close
+
+Investor engagement
+
+Investor analytics:
+
+Deals viewed
+
+Deals saved
+
+Access granted
+
+Offers submitted
+
+Mandate matches
+
+---
+
+# MARKETPLACE ANALYTICS
+
+Admin dashboard:
+
+Users
+
+Verified companies
+
+Active brokers
+
+Active investors
+
+Active deals
+
+Deal value
+
+Closed transaction volume
+
+Verified transaction volume
+
+NDAs signed
+
+Data room sessions
+
+Commission agreements
+
+Subscriptions
+
+Monthly active users
+
+---
+
+# SUBSCRIPTIONS
+
+Build subscription infrastructure.
+
+Plans:
+
+## Investor Free
+
+* Profile
+* Deal discovery
+* Limited saved deals
+* NDA signing
+* Basic broker search
+
+## Investor Pro
+
+* Unlimited deal access
+* Mandates
+* Advanced matching
+* Analytics
+
+## Broker Professional
+
+* Listings
+* Data rooms
+* NDA management
+* Commission agreements
+* Broker profile
+
+## Broker Premium
+
+* Unlimited deals
+* AI content
+* AI videos
+* Advanced analytics
+* Ranking insights
+* Priority placement
+
+## Enterprise
+
+* Multiple team members
+* Custom permissions
+* API
+* CRM integration
+* SSO
+* Custom branding
+
+---
+
+# BILLING
+
+Implement Stripe-ready architecture.
+
+Support:
+
+Monthly subscription
+
+Annual subscription
+
+Upgrade
+
+Downgrade
+
+Cancel
+
+Trial
+
+Invoices
+
+Payment methods
+
+---
+
+# TEAM MANAGEMENT
+
+Companies can add team members.
+
+Roles:
+
+Company Owner
+
+Administrator
+
+Broker
+
+Analyst
+
+Viewer
+
+Deal Manager
+
+Allow permission control.
+
+---
+
+# COMPANY PROFILE
+
+Show:
+
+Logo
+
+Description
+
+Offices
+
+Team
+
+Specialisations
+
+Verified transactions
+
+Active listings
+
+Total verified volume
+
+Ratings
+
+---
+
+# SEARCH
+
+Create global search.
+
+Search:
+
+Deals
+
+Brokers
+
+Investors
+
+Companies
+
+Mandates
+
+Locations
+
+---
+
+# GLOBAL COMMAND BAR
+
+Create keyboard-accessible command palette.
+
+Actions:
+
+Create Deal
+
+Search Deal
+
+Find Broker
+
+Create Mandate
+
+Send Message
+
+Open Pipeline
+
+---
+
+# ADMIN PANEL
+
+Build comprehensive admin panel.
+
+Sections:
+
+Users
+
+Companies
+
+Verification
+
+Deals
+
+Mandates
+
+Brokers
+
+Transactions
+
+NDAs
+
+Commission Agreements
+
+Documents
+
+Reviews
+
+Subscriptions
+
+Reports
+
+Analytics
+
+Platform Settings
+
+---
+
+# ADMIN USER MANAGEMENT
+
+Admin can:
+
+View users
+
+Suspend
+
+Verify
+
+Reject verification
+
+Edit roles
+
+View activity
+
+Reset verification
+
+Delete according to retention policy
+
+---
+
+# ADMIN DEAL MANAGEMENT
+
+Admin can:
+
+Review deals
+
+Flag
+
+Suspend
+
+Archive
+
+Investigate reports
+
+---
+
+# ADMIN BROKER SCORE
+
+Admin should be able to configure Broker Score weights.
+
+Display audit log for score adjustments.
+
+---
+
+# REPORTING
+
+Users can report:
+
+Deal
+
+User
+
+Broker
+
+Company
+
+Message
+
+Review
+
+Reason categories:
+
+Spam
+
+Fraud
+
+Misrepresentation
+
+Confidentiality issue
+
+Commission dispute
+
+Unprofessional behaviour
+
+Other
+
+---
+
+# DISPUTES
+
+Build basic dispute system.
+
+Types:
+
+Commission
+
+Introduction
+
+Transaction attribution
+
+Review
+
+Confidentiality
+
+Document
+
+Admin can review evidence.
+
+---
+
+# AUDIT LOG
+
+Create comprehensive audit logs for sensitive actions.
+
+Track:
+
+Login
+
+Deal created
+
+Deal edited
+
+Access granted
+
+Access revoked
+
+NDA signed
+
+Document uploaded
+
+Document downloaded
+
+Commission agreement changed
+
+Offer submitted
+
+Transaction confirmed
+
+---
+
+# SECURITY REQUIREMENTS
+
+Use industry-standard secure architecture.
+
+Implement:
+
+Secure password hashing
+
+Secure authentication sessions
+
+CSRF protection where applicable
+
+Input validation
+
+File validation
+
+Role-based access control
+
+Row-level permission architecture
+
+Rate limiting
+
+Secure signed file URLs
+
+Private storage
+
+Audit logs
+
+Encryption in transit
+
+No confidential information in frontend public bundles
+
+---
+
+# GDPR
+
+Design with GDPR in mind.
+
+Support:
+
+Cookie preferences
+
+Privacy policy
+
+Terms
+
+Data export
+
+Account deletion request
+
+Retention policies
+
+Consent tracking
+
+---
+
+# DOCUMENT SECURITY
+
+Documents must never be publicly indexed.
+
+Use expiring signed URLs.
+
+Protect confidential files behind authenticated access.
+
+---
+
+# RESPONSIVE DESIGN
+
+Desktop:
+
+Full professional SaaS interface.
+
+Tablet:
+
+Optimised dashboard.
+
+Mobile:
+
+Discovery
+
+Messages
+
+Notifications
+
+Deal overview
+
+Swipe mode
+
+---
+
+# DESIGN SYSTEM
+
+Use premium minimalist design.
+
+Visual keywords:
+
+Institutional
+
+Elegant
+
+Private
+
+Trustworthy
+
+Exclusive
+
+Professional
+
+Sophisticated
+
+Avoid:
+
+Cheap gradients
+
+Gamification overload
+
+Bright consumer aesthetics
+
+Childish icons
+
+---
+
+# TYPOGRAPHY
+
+Use a clean premium sans-serif.
+
+Use strong hierarchy.
+
+Large editorial headings.
+
+Readable data tables.
+
+---
+
+# COLOUR SYSTEM
+
+Use neutral premium colours.
+
+Default:
+
+Dark navy / charcoal
+
+White
+
+Light grey
+
+Muted premium accent
+
+Green only for positive financial / verified indicators.
+
+Red only for warnings.
+
+Do not overuse colour.
+
+---
+
+# UI COMPONENTS
+
+Create reusable components:
+
+Buttons
+
+Inputs
+
+Dropdowns
+
+Date pickers
+
+Tables
+
+Cards
+
+Badges
+
+Verification badge
+
+Deal cards
+
+Broker cards
+
+Investor cards
+
+Data tables
+
+Modal
+
+Drawer
+
+Tabs
+
+Activity feed
+
+File viewer
+
+Document browser
+
+Notification menu
+
+Charts
+
+Pipeline board
+
+---
+
+# HOMEPAGE
+
+Hero:
+
+**The Private Marketplace for Commercial Real Estate**
+
+Subheadline:
+
+**Discover off-market opportunities, connect with verified professionals, protect introductions and manage transactions from first contact to closing.**
+
+Buttons:
+
+Browse Opportunities
+
+Join as Broker
+
+---
+
+# HOMEPAGE SECTION 2
+
+Heading:
+
+**Private deals. Verified professionals.**
+
+Explain that commercial real estate requires trust and confidentiality.
+
+---
+
+# HOMEPAGE SECTION 3
+
+Three pillars:
+
+## Discover
+
+Find curated off-market commercial real estate.
+
+## Connect
+
+Connect with brokers, investors and acquisition professionals.
+
+## Protect
+
+Manage NDAs, introductions and commission agreements.
+
+---
+
+# HOMEPAGE DEAL PREVIEW
+
+Show fictional/demo deals.
+
+---
+
+# HOMEPAGE BROKER SECTION
+
+Heading:
+
+**Find the right broker for your next transaction**
+
+Show broker ranking cards.
+
+---
+
+# HOMEPAGE HOW IT WORKS
+
+1. Join the professional network
+2. Discover a deal
+3. Request access
+4. Sign NDA
+5. Open data room
+6. Negotiate
+7. Close
+8. Build verified reputation
+
+---
+
+# DATABASE ARCHITECTURE
+
+Create scalable relational database.
+
+Suggested tables:
+
+users
+
+companies
+
+company_members
+
+user_profiles
+
+broker_profiles
+
+investor_profiles
+
+verification_requests
+
+deals
+
+deal_locations
+
+deal_financials
+
+deal_details
+
+deal_media
+
+deal_documents
+
+deal_access_requests
+
+deal_access
+
+nda_templates
+
+ndas
+
+nda_signatures
+
+data_room_folders
+
+data_room_files
+
+data_room_activity
+
+introductions
+
+introduction_protection
+
+commission_agreements
+
+commission_participants
+
+commission_versions
+
+mandates
+
+mandate_preferences
+
+deal_matches
+
+broker_matches
+
+saved_deals
+
+saved_brokers
+
+messages
+
+conversations
+
+conversation_members
+
+notifications
+
+pipeline_opportunities
+
+pipeline_stages
+
+offers
+
+offer_versions
+
+lois
+
+transactions
+
+transaction_participants
+
+transaction_verifications
+
+reviews
+
+broker_scores
+
+broker_score_history
+
+subscriptions
+
+billing_accounts
+
+tasks
+
+activity_logs
+
+audit_logs
+
+reports
+
+disputes
+
+admin_actions
+
+---
+
+# DATA RELATIONSHIPS
+
+Companies contain users.
+
+Users can own deals.
+
+Deals belong to companies.
+
+Deals can have multiple brokers.
+
+Deals can have multiple interested investors.
+
+Each deal can have:
+
+Access requests
+
+NDAs
+
+Data room
+
+Introductions
+
+Commission agreements
+
+Offers
+
+Messages
+
+Transactions
+
+---
+
+# DEMO DATA
+
+Seed the application with realistic fictional demo data.
+
+Create:
+
+20 brokers
+
+15 investors
+
+10 companies
+
+20 commercial real estate deals
+
+5 acquisition mandates
+
+Broker rankings
+
+Sample transactions
+
+Sample NDAs
+
+Sample data room documents
+
+---
+
+# SAMPLE DEALS
+
+Include fictional examples such as:
+
+Amsterdam 4-Star Hotel
+
+€28M
+
+142 Keys
+
+Netherlands
+
+---
+
+Rotterdam Logistics Facility
+
+€18.5M
+
+22,000 sqm
+
+6.4% Yield
+
+---
+
+Brussels Office Investment
+
+€42M
+
+18,000 sqm
+
+---
+
+Barcelona Resort Opportunity
+
+€55M
+
+210 Keys
+
+---
+
+# SAMPLE BROKER PROFILE
+
+Example:
+
+**Alexander de Vries**
+
+Director — Hospitality Investments
+
+Amsterdam
+
+Broker Score: 94
+
+Verified Volume: €438M
+
+31 Verified Transactions
+
+18 Hotel Transactions
+
+Average Deal Size: €14.1M
+
+Rating: 4.9
+
+---
+
+# ERROR STATES
+
+Create polished error and empty states.
+
+Examples:
+
+No Deals Found
+
+No Matching Mandates
+
+No Access Yet
+
+Awaiting NDA Signature
+
+No Messages
+
+---
+
+# LOADING STATES
+
+Use:
+
+Skeleton loaders
+
+Progress indicators
+
+Upload progress
+
+AI generation progress
+
+---
+
+# IMPORTANT UX PRINCIPLE
+
+Users should always understand:
+
+What information is public.
+
+What information is confidential.
+
+Why information is locked.
+
+What must happen to unlock it.
+
+---
+
+# IMPORTANT DEAL ACCESS FLOW
+
+Before NDA:
+
+Limited teaser.
+
+After access request:
+
+Broker decision.
+
+After approval:
+
+NDA.
+
+After NDA:
+
+Full deal.
+
+Do not allow users to bypass this workflow.
+
+---
+
+# IMPORTANT BROKER PROTECTION PRINCIPLE
+
+Make introduction tracking one of the most important functions of the platform.
+
+Every relevant action should have:
+
+Timestamp
+
+Parties
+
+Deal
+
+Status
+
+Audit history
+
+---
+
+# BUILD PRIORITY
+
+Even though this is a complete product, build in logical modules.
+
+## Foundation
+
+Authentication
+
+Companies
+
+User profiles
+
+Role system
+
+Database
+
+## Marketplace
+
+Deals
+
+Discovery
+
+Filters
+
+Listings
+
+## Confidentiality
+
+Access request
+
+NDA
+
+Private deal pages
+
+## Data Room
+
+Documents
+
+Permissions
+
+Analytics
+
+## Broker Protection
+
+Introductions
+
+Commission agreements
+
+## Network
+
+Broker profiles
+
+Investor profiles
+
+Mandates
+
+Matching
+
+## Transactions
+
+Pipeline
+
+Offers
+
+Closing
+
+Verified transactions
+
+## Reputation
+
+Reviews
+
+Broker Score
+
+Rankings
+
+## AI
+
+Listing AI
+
+Teaser AI
+
+Property videos
+
+## Commercial
+
+Subscriptions
+
+Billing
+
+## Administration
+
+Admin panel
+
+Analytics
+
+Security
+
+---
+
+# IMPLEMENTATION REQUIREMENTS
+
+Build actual working functionality.
+
+Do not create only static screens.
+
+Forms should write to the database.
+
+Filters should work.
+
+Authentication should work.
+
+Permissions should work.
+
+Deal creation should persist.
+
+Access requests should work.
+
+NDAs should have functional states.
+
+Data room access should respect permissions.
+
+Messages should persist.
+
+Commission agreements should have statuses.
+
+Mandates should generate matches.
+
+Broker rankings should use database data.
+
+---
+
+# MOCK EXTERNAL SERVICES WHEN NECESSARY
+
+For functionality requiring third-party providers, build an abstraction layer.
+
+For example:
+
+Electronic signature provider
+
+AI provider
+
+Video generation provider
+
+Payment provider
+
+Email provider
+
+File storage provider
+
+Allow providers to be swapped later.
+
+---
+
+# AI PROVIDER ARCHITECTURE
+
+Create service abstraction such as:
+
+AIService
+
+Methods:
+
+generateListing()
+
+generateTeaser()
+
+summarizeDocument()
+
+generateMandate()
+
+generateVideoScript()
+
+---
+
+# VIDEO PROVIDER ARCHITECTURE
+
+Create:
+
+VideoGenerationService
+
+Methods:
+
+analyseImages()
+
+createStoryboard()
+
+generatePreview()
+
+renderVideo()
+
+getRenderStatus()
+
+Do not tightly couple application to one provider.
+
+---
+
+# E-SIGNATURE ARCHITECTURE
+
+Create:
+
+SignatureService
+
+Methods:
+
+createSignatureRequest()
+
+sendSignatureRequest()
+
+getStatus()
+
+downloadSignedDocument()
+
+Use internal mock provider for development.
+
+---
+
+# STORAGE ARCHITECTURE
+
+Create secure storage service.
+
+Categories:
+
+Public assets
+
+Private deal media
+
+Data room files
+
+Signed agreements
+
+User verification documents
+
+---
+
+# EMAIL SERVICE
+
+Create templates for:
+
+Welcome
+
+Verify Account
+
+Access Request
+
+Access Approved
+
+NDA Signature Required
+
+NDA Completed
+
+New Message
+
+Offer Received
+
+Commission Agreement
+
+Mandate Match
+
+New Deal Match
+
+---
+
+# ADMIN CONFIGURATION
+
+Admin should be able to configure:
+
+Asset classes
+
+Countries
+
+Deal types
+
+Subscription plans
+
+Broker Score weights
+
+Verification rules
+
+NDA templates
+
+Commission templates
+
+Notification settings
+
+---
+
+# PLATFORM SETTINGS
+
+Create editable settings for:
+
+Platform name
+
+Logo
+
+Contact email
+
+Legal entity
+
+Default currency
+
+Supported currencies
+
+Languages
+
+---
+
+# CURRENCIES
+
+Support:
+
+EUR
+
+USD
+
+GBP
+
+CHF
+
+Allow deal-specific currency.
+
+---
+
+# LANGUAGES
+
+Prepare architecture for multilingual platform.
+
+Initial interface language:
+
+English
+
+Prepare translation structure for:
+
+Dutch
+
+German
+
+French
+
+Spanish
+
+---
+
+# LEGAL PAGES
+
+Create placeholders for:
+
+Terms of Service
+
+Privacy Policy
+
+Cookie Policy
+
+Broker Terms
+
+NDA Terms
+
+Commission Agreement Terms
+
+---
+
+# PERFORMANCE
+
+Optimise:
+
+Database queries
+
+Image loading
+
+Document lists
+
+Search
+
+Pagination
+
+Deal feed
+
+Use lazy loading.
+
+---
+
+# ACCESSIBILITY
+
+Implement:
+
+Keyboard navigation
+
+Clear form labels
+
+Accessible buttons
+
+Good contrast
+
+Screen reader-friendly structure
+
+---
+
+# TESTING
+
+Create tests for critical workflows.
+
+Test:
+
+Registration
+
+Login
+
+Deal creation
+
+Deal publication
+
+Access request
+
+NDA unlock
+
+Data room permission
+
+Mandate matching
+
+Commission agreement
+
+Offer submission
+
+Transaction verification
+
+---
+
+# FINAL PRODUCT EXPERIENCE
+
+The end result should feel like an operating system for private commercial real estate deals.
+
+A broker should be able to:
+
+Create profile
+
+Create deal
+
+Generate teaser
+
+Upload media
+
+Generate property video
+
+Invite investors
+
+Receive interest
+
+Approve investors
+
+Issue NDA
+
+Open data room
+
+Protect introduction
+
+Agree commission
+
+Manage offers
+
+Close transaction
+
+Build verified reputation
+
+An investor should be able to:
+
+Create profile
+
+Define acquisition criteria
+
+Browse deals
+
+Discover confidential opportunities
+
+Request access
+
+Sign NDA
+
+Review data room
+
+Ask questions
+
+Submit offer
+
+Find acquisition broker
+
+Create mandate
+
+Close transaction
+
+Review broker
+
+The platform should continuously become more useful as more transactions are completed.
+
+Every completed transaction creates:
+
+More verified market data
+
+More reputation
+
+Better broker rankings
+
+Better deal matching
+
+Better investor matching
+
+More trust
+
+---
+
+# CORE BUSINESS FLYWHEEL
+
+More brokers
+
+→ more deals
+
+→ more investors
+
+→ more introductions
+
+→ more transactions
+
+→ more verified transaction data
+
+→ stronger broker reputations
+
+→ better rankings
+
+→ more mandates
+
+→ more brokers
+
+→ more deals
+
+---
+
+# IMPORTANT FINAL INSTRUCTION
+
+Do not treat this project as a simple real estate listing website.
+
+The core value proposition is the infrastructure around confidential transactions.
+
+The most important product pillars are:
+
+**1. Private Deal Discovery**
+
+**2. Verified Professional Network**
+
+**3. NDA-Controlled Confidential Access**
+
+**4. Secure Virtual Data Rooms**
+
+**5. Broker Introduction Protection**
+
+**6. Digital Commission Agreements**
+
+**7. Investor Mandates**
+
+**8. Broker Discovery & Ranking**
+
+**9. Verified Transaction Reputation**
+
+**10. AI-Powered Deal Marketing**
+
+The product should make commercial real estate brokers more willing to share off-market opportunities because their introductions and commissions are protected.
+
+It should make investors more willing to participate because the brokers, deals and transaction histories are verified.
+
+The platform should become the trusted digital infrastructure between both sides.
+
+Build this as a complete SaaS application with real workflows, proper permissions, a scalable database architecture and premium UX.

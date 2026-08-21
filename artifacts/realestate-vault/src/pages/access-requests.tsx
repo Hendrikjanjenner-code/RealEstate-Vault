@@ -1,0 +1,120 @@
+import { useListAccessRequests, useUpdateAccessRequest, getListAccessRequestsQueryKey } from "@workspace/api-client-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Shield, Clock, FileSignature, CheckCircle2, XCircle } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+
+export default function AccessRequests() {
+  const { data: requests, isLoading } = useListAccessRequests();
+  const updateRequest = useUpdateAccessRequest();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const handleUpdateStatus = (id: number, status: string) => {
+    updateRequest.mutate({ id, data: { status } as any }, {
+      onSuccess: () => {
+        toast({ title: "Status Updated", description: `Request status changed to ${status.replace('_', ' ')}` });
+        queryClient.setQueryData(getListAccessRequestsQueryKey(), (old: any) => {
+          if (!old) return old;
+          return old.map((r: any) => r.id === id ? { ...r, status } : r);
+        });
+      }
+    });
+  };
+
+  return (
+    <div className="p-8 max-w-7xl mx-auto space-y-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-heading font-bold">Access Requests</h1>
+        <p className="text-muted-foreground mt-1">Manage data room access and NDAs for your deals.</p>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-xl" />)}
+        </div>
+      ) : requests?.length === 0 ? (
+         <div className="py-20 text-center text-muted-foreground">
+            <Shield className="w-12 h-12 mx-auto mb-4 opacity-20" />
+            <p>No pending access requests.</p>
+         </div>
+      ) : (
+        <div className="space-y-4">
+          {requests?.map((req) => (
+            <Card key={req.id} className="bg-card/50 backdrop-blur border-white/5 overflow-hidden">
+              <CardContent className="p-0 flex flex-col md:flex-row items-stretch md:items-center">
+                <div className="p-6 flex-1 border-b md:border-b-0 md:border-r border-white/5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Badge variant="outline" className={`
+                      ${req.status === 'pending' ? 'bg-primary/10 text-primary border-primary/20' : ''}
+                      ${req.status === 'approved' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : ''}
+                      ${req.status === 'nda_sent' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : ''}
+                      ${req.status === 'nda_signed' ? 'bg-green-500/10 text-green-400 border-green-500/20' : ''}
+                      ${req.status === 'rejected' ? 'bg-destructive/10 text-destructive border-destructive/20' : ''}
+                    `}>
+                      {req.status === 'nda_sent' ? 'NDA Sent' : req.status === 'nda_signed' ? 'NDA Signed' : req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground font-medium">
+                      {new Date(req.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <h3 className="font-heading font-semibold text-lg mb-1">{req.dealTitle}</h3>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground/80">{req.requesterName}</span> • {req.requesterCompany}
+                  </div>
+                  {req.message && (
+                    <div className="mt-4 text-sm text-muted-foreground bg-background/50 p-3 rounded border border-white/5 italic">
+                      "{req.message}"
+                    </div>
+                  )}
+                </div>
+                
+                <div className="p-6 w-full md:w-64 shrink-0 bg-background/20 flex flex-col gap-2 justify-center">
+                  {req.status === 'pending' && (
+                    <>
+                      <Button onClick={() => handleUpdateStatus(req.id, 'approved')} className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20">
+                        <CheckCircle2 className="w-4 h-4 mr-2" /> Approve Request
+                      </Button>
+                      <Button onClick={() => handleUpdateStatus(req.id, 'rejected')} variant="ghost" className="w-full text-destructive hover:text-destructive hover:bg-destructive/10">
+                        <XCircle className="w-4 h-4 mr-2" /> Reject
+                      </Button>
+                    </>
+                  )}
+                  {req.status === 'approved' && (
+                    <Button onClick={() => handleUpdateStatus(req.id, 'nda_sent')} className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20">
+                      <FileSignature className="w-4 h-4 mr-2" /> Send Digital NDA
+                    </Button>
+                  )}
+                  {req.status === 'nda_sent' && (
+                    <div className="text-center">
+                      <Clock className="w-6 h-6 text-primary mx-auto mb-2 opacity-50" />
+                      <p className="text-xs text-muted-foreground">Waiting for signature...</p>
+                      <Button onClick={() => handleUpdateStatus(req.id, 'nda_signed')} variant="outline" size="sm" className="mt-4 w-full border-white/10 text-xs h-8">
+                        Mark as Signed (Demo)
+                      </Button>
+                    </div>
+                  )}
+                  {req.status === 'nda_signed' && (
+                    <div className="text-center flex flex-col items-center justify-center text-green-400">
+                      <CheckCircle2 className="w-8 h-8 mb-2" />
+                      <p className="text-sm font-medium">Access Granted</p>
+                    </div>
+                  )}
+                  {req.status === 'rejected' && (
+                    <div className="text-center flex flex-col items-center justify-center text-destructive/50">
+                      <XCircle className="w-8 h-8 mb-2" />
+                      <p className="text-sm font-medium">Rejected</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

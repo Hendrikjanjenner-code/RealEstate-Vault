@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "RealEstate Vault"
+description = "RealEstate Vault — the private marketplace for commercial real estate. A premium B2B SaaS platform with a public landing page and a demo environment showcasing confidential deal discovery, NDAs, virtual data rooms, investor mandates, broker rankings, deal pipelines, and messaging for professional brokers and investors."
+version = "1.0.0"
+id = "artifacts/realestate-vault"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23499
+
+[services.development]
+run = "pnpm --filter @workspace/realestate-vault run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/realestate-vault", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/realestate-vault/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23499"
+BASE_PATH = "/"

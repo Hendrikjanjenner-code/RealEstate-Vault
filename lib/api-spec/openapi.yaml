@@ -3,20 +3,25 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: RealEstate Vault API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: deals
+  - name: brokers
+  - name: mandates
+  - name: access
+  - name: messages
+  - name: dashboard
+  - name: transactions
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +29,551 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /deals:
+    get:
+      operationId: listDeals
+      tags: [deals]
+      summary: List deals with optional filters
+      parameters:
+        - name: assetClass
+          in: query
+          schema: { type: string }
+        - name: country
+          in: query
+          schema: { type: string }
+        - name: dealType
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: savedOnly
+          in: query
+          schema: { type: boolean }
+      responses:
+        "200":
+          description: Deals
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Deal" }
+    post:
+      operationId: createDeal
+      tags: [deals]
+      summary: Create a deal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DealInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Deal" }
+  /deals/{id}:
+    get:
+      operationId: getDeal
+      tags: [deals]
+      summary: Get deal detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Deal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Deal" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/save:
+    patch:
+      operationId: toggleSaveDeal
+      tags: [deals]
+      summary: Toggle saved state for a deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Updated deal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Deal" }
+  /deals/{id}/documents:
+    get:
+      operationId: listDealDocuments
+      tags: [deals]
+      summary: Data room documents for a deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/DealDocument" }
+  /deals/{id}/access-requests:
+    post:
+      operationId: requestDealAccess
+      tags: [access]
+      summary: Request confidential access to a deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccessRequestInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccessRequest" }
+  /access-requests:
+    get:
+      operationId: listAccessRequests
+      tags: [access]
+      summary: List access requests
+      responses:
+        "200":
+          description: Access requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AccessRequest" }
+  /access-requests/{id}:
+    patch:
+      operationId: updateAccessRequest
+      tags: [access]
+      summary: Advance an access request through its lifecycle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccessRequestUpdate" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccessRequest" }
+  /brokers:
+    get:
+      operationId: listBrokers
+      tags: [brokers]
+      summary: Ranked list of brokers
+      responses:
+        "200":
+          description: Brokers
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Broker" }
+  /brokers/{id}:
+    get:
+      operationId: getBroker
+      tags: [brokers]
+      summary: Broker profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Broker
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Broker" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /mandates:
+    get:
+      operationId: listMandates
+      tags: [mandates]
+      summary: List investor mandates
+      responses:
+        "200":
+          description: Mandates
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Mandate" }
+    post:
+      operationId: createMandate
+      tags: [mandates]
+      summary: Create an acquisition mandate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MandateInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Mandate" }
+  /transactions:
+    get:
+      operationId: listTransactions
+      tags: [transactions]
+      summary: Verified closed transactions
+      responses:
+        "200":
+          description: Transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Transaction" }
+  /threads:
+    get:
+      operationId: listThreads
+      tags: [messages]
+      summary: Message threads
+      responses:
+        "200":
+          description: Threads
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/MessageThread" }
+  /threads/{id}/messages:
+    get:
+      operationId: listThreadMessages
+      tags: [messages]
+      summary: Messages in a thread
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Message" }
+    post:
+      operationId: sendMessage
+      tags: [messages]
+      summary: Send a message in a thread
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MessageInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Aggregated dashboard KPIs and chart series
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardStats" }
+  /dashboard/activity:
+    get:
+      operationId: listActivity
+      tags: [dashboard]
+      summary: Recent platform activity feed
+      responses:
+        "200":
+          description: Activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ActivityItem" }
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
+        status: { type: string }
+      required: [status]
+    ApiMessage:
+      type: object
+      properties:
+        error: { type: string }
+      required: [error]
+    Deal:
+      type: object
       required:
-        - status
-
+        [id, title, dealType, assetClass, country, city, currency, status, confidential, saved, views, accessRequests, createdAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        dealType: { type: string }
+        assetClass: { type: string }
+        country: { type: string }
+        city: { type: string }
+        region: { type: ["string", "null"] }
+        locationPrivacy: { type: ["string", "null"] }
+        askingPrice: { type: ["number", "null"] }
+        priceMax: { type: ["number", "null"] }
+        currency: { type: string }
+        grossYield: { type: ["number", "null"] }
+        netYield: { type: ["number", "null"] }
+        areaSqm: { type: ["number", "null"] }
+        keys: { type: ["integer", "null"] }
+        constructionYear: { type: ["integer", "null"] }
+        occupancyPct: { type: ["number", "null"] }
+        status: { type: string }
+        confidential: { type: boolean }
+        saved: { type: boolean }
+        teaser: { type: ["string", "null"] }
+        description: { type: ["string", "null"] }
+        imageUrl: { type: ["string", "null"] }
+        brokerId: { type: ["integer", "null"] }
+        brokerName: { type: ["string", "null"] }
+        brokerCompany: { type: ["string", "null"] }
+        views: { type: integer }
+        accessRequests: { type: integer }
+        createdAt: { type: string }
+    DealInput:
+      type: object
+      required: [title, dealType, assetClass, country, city, currency]
+      properties:
+        title: { type: string, minLength: 1 }
+        dealType: { type: string }
+        assetClass: { type: string }
+        country: { type: string }
+        city: { type: string }
+        region: { type: string }
+        locationPrivacy: { type: string }
+        askingPrice: { type: number }
+        priceMax: { type: number }
+        currency: { type: string }
+        grossYield: { type: number }
+        netYield: { type: number }
+        areaSqm: { type: number }
+        keys: { type: integer }
+        constructionYear: { type: integer }
+        occupancyPct: { type: number }
+        confidential: { type: boolean }
+        teaser: { type: string }
+        description: { type: string }
+        imageUrl: { type: string }
+    DealDocument:
+      type: object
+      required: [id, dealId, name, category, sizeKb, ndaRequired, uploadedAt]
+      properties:
+        id: { type: integer }
+        dealId: { type: integer }
+        name: { type: string }
+        category: { type: string }
+        sizeKb: { type: integer }
+        ndaRequired: { type: boolean }
+        uploadedAt: { type: string }
+    AccessRequest:
+      type: object
+      required: [id, dealId, dealTitle, requesterName, requesterCompany, status, createdAt]
+      properties:
+        id: { type: integer }
+        dealId: { type: integer }
+        dealTitle: { type: string }
+        requesterName: { type: string }
+        requesterCompany: { type: string }
+        message: { type: ["string", "null"] }
+        status: { type: string, description: "pending | approved | nda_sent | nda_signed | rejected" }
+        createdAt: { type: string }
+    AccessRequestInput:
+      type: object
+      required: [requesterName, requesterCompany]
+      properties:
+        requesterName: { type: string, minLength: 1 }
+        requesterCompany: { type: string, minLength: 1 }
+        message: { type: string }
+    AccessRequestUpdate:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string }
+    Broker:
+      type: object
+      required: [id, name, company, title, city, country, verified, score, closedDeals, transactionVolume, yearsExperience, specialisations]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        company: { type: string }
+        title: { type: string }
+        city: { type: string }
+        country: { type: string }
+        verified: { type: boolean }
+        score: { type: number }
+        closedDeals: { type: integer }
+        transactionVolume: { type: number }
+        yearsExperience: { type: integer }
+        specialisations:
+          type: array
+          items: { type: string }
+        bio: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
+    Mandate:
+      type: object
+      required: [id, title, investorName, investorType, assetClasses, countries, minSize, maxSize, strategy, status, matches, createdAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        investorName: { type: string }
+        investorType: { type: string }
+        assetClasses:
+          type: array
+          items: { type: string }
+        countries:
+          type: array
+          items: { type: string }
+        minSize: { type: number }
+        maxSize: { type: number }
+        strategy: { type: string }
+        yieldTarget: { type: ["number", "null"] }
+        status: { type: string }
+        matches: { type: integer }
+        createdAt: { type: string }
+    MandateInput:
+      type: object
+      required: [title, investorName, investorType, assetClasses, countries, minSize, maxSize, strategy]
+      properties:
+        title: { type: string, minLength: 1 }
+        investorName: { type: string, minLength: 1 }
+        investorType: { type: string }
+        assetClasses:
+          type: array
+          items: { type: string }
+        countries:
+          type: array
+          items: { type: string }
+        minSize: { type: number }
+        maxSize: { type: number }
+        strategy: { type: string }
+        yieldTarget: { type: number }
+    Transaction:
+      type: object
+      required: [id, dealTitle, assetClass, country, city, price, currency, verified, closedAt, brokerName, buyerType]
+      properties:
+        id: { type: integer }
+        dealTitle: { type: string }
+        assetClass: { type: string }
+        country: { type: string }
+        city: { type: string }
+        price: { type: number }
+        currency: { type: string }
+        verified: { type: boolean }
+        closedAt: { type: string }
+        brokerName: { type: string }
+        buyerType: { type: string }
+    MessageThread:
+      type: object
+      required: [id, subject, counterpartName, counterpartCompany, lastMessage, lastMessageAt, unread]
+      properties:
+        id: { type: integer }
+        subject: { type: string }
+        dealId: { type: ["integer", "null"] }
+        counterpartName: { type: string }
+        counterpartCompany: { type: string }
+        lastMessage: { type: string }
+        lastMessageAt: { type: string }
+        unread: { type: integer }
+    Message:
+      type: object
+      required: [id, threadId, senderName, body, fromMe, sentAt]
+      properties:
+        id: { type: integer }
+        threadId: { type: integer }
+        senderName: { type: string }
+        body: { type: string }
+        fromMe: { type: boolean }
+        sentAt: { type: string }
+    MessageInput:
+      type: object
+      required: [body]
+      properties:
+        body: { type: string, minLength: 1 }
+    DashboardStats:
+      type: object
+      required: [activeDeals, accessRequests, ndasSigned, pipelineValue, closedVolume, activeMandates, unreadMessages, dealActivity, assetClassBreakdown]
+      properties:
+        activeDeals: { type: integer }
+        accessRequests: { type: integer }
+        ndasSigned: { type: integer }
+        pipelineValue: { type: number }
+        closedVolume: { type: number }
+        activeMandates: { type: integer }
+        unreadMessages: { type: integer }
+        dealActivity:
+          type: array
+          items: { $ref: "#/components/schemas/ActivityPoint" }
+        assetClassBreakdown:
+          type: array
+          items: { $ref: "#/components/schemas/AssetClassCount" }
+    ActivityPoint:
+      type: object
+      required: [date, views, requests]
+      properties:
+        date: { type: string }
+        views: { type: integer }
+        requests: { type: integer }
+    AssetClassCount:
+      type: object
+      required: [assetClass, count, value]
+      properties:
+        assetClass: { type: string }
+        count: { type: integer }
+        value: { type: number }
+    ActivityItem:
+      type: object
+      required: [id, type, description, createdAt]
+      properties:
+        id: { type: integer }
+        type: { type: string }
+        description: { type: string }
+        createdAt: { type: string }
