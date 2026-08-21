@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useDealAccessState } from '@/hooks/useDealAccessState';
 import {
   Image,
   Platform,
@@ -24,7 +25,7 @@ import colors from '@/constants/colors';
 import { Badge, Card, ErrorState, GoldButton, LoadingState, ScreenHeader } from '@/components/VaultUI';
 import { formatMillions, resolveImageUrl } from '@/lib/format';
 
-type AccessState = 'locked' | 'requested' | 'granted';
+import type { AccessState } from '@/hooks/useDealAccessState';
 
 export default function DealDetailScreen() {
   const c = useColors();
@@ -37,7 +38,7 @@ export default function DealDetailScreen() {
     query: { enabled: !!id, queryKey: getListDealDocumentsQueryKey(id) },
   });
   const requestAccess = useRequestDealAccess();
-  const [accessState, setAccessState] = useState<AccessState>('locked');
+  const { accessState, setAccessState, hydrated } = useDealAccessState(id);
   const [form, setForm] = useState({ requesterName: '', requesterCompany: '', message: '' });
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -50,7 +51,7 @@ export default function DealDetailScreen() {
     );
   }
 
-  if (isLoading || !deal) {
+  if (isLoading || !deal || !hydrated) {
     return (
       <View style={{ flex: 1, backgroundColor: c.background }}>
         <ScreenHeader title="Deal" showBack />
