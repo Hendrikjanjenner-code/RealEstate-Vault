@@ -169,6 +169,10 @@ export interface AccessRequest {
   message?: string | null;
   /** pending | approved | nda_sent | nda_signed | rejected */
   status: string;
+  /** @nullable */
+  signerName?: string | null;
+  /** @nullable */
+  signedAt?: string | null;
   createdAt: string;
 }
 
@@ -182,6 +186,12 @@ export interface AccessRequestInput {
 
 export interface AccessRequestUpdate {
   status: string;
+}
+
+export interface SignNdaInput {
+  /** @minLength 1 */
+  signerName: string;
+  agreed: boolean;
 }
 
 export interface Broker {

@@ -7,6 +7,7 @@ import { Shield, Clock, FileSignature, CheckCircle2, XCircle } from "lucide-reac
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@workspace/replit-auth-web";
+import { Link } from "wouter";
 
 export default function AccessRequests() {
   const { data: requests, isLoading } = useListAccessRequests();
@@ -107,20 +108,30 @@ export default function AccessRequests() {
                     )
                   )}
                   {req.status === 'nda_sent' && (
-                    <div className="text-center">
-                      <Clock className="w-6 h-6 text-primary mx-auto mb-2 opacity-50" />
-                      <p className="text-xs text-muted-foreground">Waiting for signature...</p>
-                      {isBroker && (
-                        <Button onClick={() => handleUpdateStatus(req.id, 'nda_signed')} variant="outline" size="sm" className="mt-4 w-full border-white/10 text-xs h-8">
-                          Mark as Signed
-                        </Button>
-                      )}
-                    </div>
+                    isBroker ? (
+                      <div className="text-center">
+                        <Clock className="w-6 h-6 text-primary mx-auto mb-2 opacity-50" />
+                        <p className="text-xs text-muted-foreground">Waiting for the investor to sign the NDA...</p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <FileSignature className="w-6 h-6 text-primary mx-auto mb-2" />
+                        <p className="text-xs text-muted-foreground mb-3">Your NDA is ready to sign.</p>
+                        <Link href={`/demo/deals/${req.dealId}`}>
+                          <Button size="sm" className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20 text-xs h-8" data-testid={`button-review-sign-${req.id}`}>
+                            Review & Sign NDA
+                          </Button>
+                        </Link>
+                      </div>
+                    )
                   )}
                   {req.status === 'nda_signed' && (
                     <div className="text-center flex flex-col items-center justify-center text-green-400">
                       <CheckCircle2 className="w-8 h-8 mb-2" />
                       <p className="text-sm font-medium">Access Granted</p>
+                      {req.signerName && req.signedAt && (
+                        <p className="text-[11px] text-muted-foreground mt-1">Signed by {req.signerName} on {new Date(req.signedAt).toLocaleDateString()}</p>
+                      )}
                     </div>
                   )}
                   {req.status === 'rejected' && (

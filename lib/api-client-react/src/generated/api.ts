@@ -47,6 +47,7 @@ import type {
   MobileTokenExchangeRequest,
   MobileTokenExchangeSuccess,
   SetRoleBody,
+  SignNdaInput,
   Transaction
 } from './api.schemas';
 
@@ -1295,6 +1296,78 @@ export const useUpdateAccessRequest = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpdateAccessRequestMutationOptions(options));
+    }
+
+export const getSignAccessRequestNdaUrl = (id: number,) => {
+
+
+
+
+  return `/api/access-requests/${id}/sign`
+}
+
+/**
+ * @summary Investor signs the NDA for their own access request
+ */
+export const signAccessRequestNda = async (id: number,
+    signNdaInput: SignNdaInput, options?: Parameters<typeof customFetch>[1]): Promise<AccessRequest> => {
+
+  return customFetch<AccessRequest>(getSignAccessRequestNdaUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(signNdaInput)
+  }
+);}
+
+
+
+
+
+export const getSignAccessRequestNdaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signAccessRequestNda>>, TError,{id: number;data: BodyType<SignNdaInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof signAccessRequestNda>>, TError,{id: number;data: BodyType<SignNdaInput>}, TContext> => {
+
+const mutationKey = ['signAccessRequestNda'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof signAccessRequestNda>>, {id: number;data: BodyType<SignNdaInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  signAccessRequestNda(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SignAccessRequestNdaMutationResult = NonNullable<Awaited<ReturnType<typeof signAccessRequestNda>>>
+    export type SignAccessRequestNdaMutationBody = BodyType<SignNdaInput>
+    export type SignAccessRequestNdaMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Investor signs the NDA for their own access request
+ */
+export const useSignAccessRequestNda = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signAccessRequestNda>>, TError,{id: number;data: BodyType<SignNdaInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof signAccessRequestNda>>,
+        TError,
+        {id: number;data: BodyType<SignNdaInput>},
+        TContext
+      > => {
+      return useMutation(getSignAccessRequestNdaMutationOptions(options));
     }
 
 export const getListBrokersUrl = () => {

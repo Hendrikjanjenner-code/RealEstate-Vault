@@ -16,5 +16,9 @@ export interface AccessRequest {
   message?: string | null;
   /** pending | approved | nda_sent | nda_signed | rejected */
   status: string;
+  /** @nullable */
+  signerName?: string | null;
+  /** @nullable */
+  signedAt?: string | null;
   createdAt: string;
 }

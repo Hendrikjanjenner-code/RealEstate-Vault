@@ -78,6 +78,9 @@ export const accessRequestsTable = pgTable("access_requests", {
   requesterCompany: text("requester_company").notNull(),
   message: text("message"),
   status: text("status").notNull().default("pending"),
+  // Recorded when the investor signs the NDA themselves.
+  signerName: text("signer_name"),
+  signedAt: timestamp("signed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

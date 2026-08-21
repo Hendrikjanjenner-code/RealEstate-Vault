@@ -12,17 +12,17 @@ import {
   UpdateAccessRequestParams,
   UpdateAccessRequestBody,
   UpdateAccessRequestResponse,
+  SignAccessRequestNdaParams,
+  SignAccessRequestNdaBody,
+  SignAccessRequestNdaResponse,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
-const VALID_STATUSES = [
-  "pending",
-  "approved",
-  "nda_sent",
-  "nda_signed",
-  "rejected",
-];
+// Brokers may move a request through the lifecycle up to sending the NDA.
+// The final "nda_signed" step is reserved for the requesting investor via
+// POST /access-requests/:id/sign.
+const BROKER_STATUSES = ["pending", "approved", "nda_sent", "rejected"];
 
 router.get("/access-requests", async (req, res): Promise<void> => {
   if (!req.isAuthenticated()) {
@@ -87,7 +87,7 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
     return;
   }
   const body = UpdateAccessRequestBody.safeParse(req.body);
-  if (!body.success || !VALID_STATUSES.includes(body.data.status)) {
+  if (!body.success || !BROKER_STATUSES.includes(body.data.status)) {
     res.status(400).json({ error: "Invalid status" });
     return;
   }
@@ -126,14 +126,64 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
     .where(eq(accessRequestsTable.id, params.data.id))
     .returning();
 
-  if (body.data.status === "nda_signed") {
-    await db.insert(activityTable).values({
-      type: "nda_signed",
-      description: `${request.requesterName} signed the NDA for ${request.dealTitle}`,
-    });
+  res.json(UpdateAccessRequestResponse.parse(toJson(request)));
+});
+
+// Investor signs the NDA on their own request: nda_sent -> nda_signed.
+router.post("/access-requests/:id/sign", async (req, res): Promise<void> => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const params = SignAccessRequestNdaParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const body = SignAccessRequestNdaBody.safeParse(req.body);
+  if (!body.success || !body.data.signerName.trim() || !body.data.agreed) {
+    res
+      .status(400)
+      .json({ error: "Signer name and agreement are required" });
+    return;
   }
 
-  res.json(UpdateAccessRequestResponse.parse(toJson(request)));
+  const [existing] = await db
+    .select()
+    .from(accessRequestsTable)
+    .where(eq(accessRequestsTable.id, params.data.id));
+  if (!existing) {
+    res.status(404).json({ error: "Access request not found" });
+    return;
+  }
+  if (existing.requesterUserId !== req.user.id) {
+    res
+      .status(403)
+      .json({ error: "Only the requesting investor can sign this NDA" });
+    return;
+  }
+  if (existing.status !== "nda_sent") {
+    res.status(409).json({ error: "This request is not awaiting signature" });
+    return;
+  }
+
+  const signedAt = new Date();
+  const [request] = await db
+    .update(accessRequestsTable)
+    .set({
+      status: "nda_signed",
+      signerName: body.data.signerName.trim(),
+      signedAt,
+    })
+    .where(eq(accessRequestsTable.id, params.data.id))
+    .returning();
+
+  await db.insert(activityTable).values({
+    type: "nda_signed",
+    description: `${request.signerName} signed the NDA for ${request.dealTitle}`,
+  });
+
+  res.json(SignAccessRequestNdaResponse.parse(toJson(request)));
 });
 
 export default router;

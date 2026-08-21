@@ -37,4 +37,5 @@ export * from './mobileTokenExchangeRequest';
 export * from './mobileTokenExchangeSuccess';
 export * from './setRoleBody';
 export * from './setRoleBodyRole';
+export * from './signNdaInput';
 export * from './transaction';

@@ -360,6 +360,8 @@ export const RequestDealAccessResponse = zod.object({
   "requesterCompany": zod.string(),
   "message": zod.string().nullish(),
   "status": zod.string().describe('pending | approved | nda_sent | nda_signed | rejected'),
+  "signerName": zod.string().nullish(),
+  "signedAt": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -375,6 +377,8 @@ export const ListAccessRequestsResponseItem = zod.object({
   "requesterCompany": zod.string(),
   "message": zod.string().nullish(),
   "status": zod.string().describe('pending | approved | nda_sent | nda_signed | rejected'),
+  "signerName": zod.string().nullish(),
+  "signedAt": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const ListAccessRequestsResponse = zod.array(ListAccessRequestsResponseItem)
@@ -399,6 +403,37 @@ export const UpdateAccessRequestResponse = zod.object({
   "requesterCompany": zod.string(),
   "message": zod.string().nullish(),
   "status": zod.string().describe('pending | approved | nda_sent | nda_signed | rejected'),
+  "signerName": zod.string().nullish(),
+  "signedAt": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Investor signs the NDA for their own access request
+ */
+export const SignAccessRequestNdaParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+
+
+
+export const SignAccessRequestNdaBody = zod.object({
+  "signerName": zod.string().min(1),
+  "agreed": zod.boolean()
+})
+
+export const SignAccessRequestNdaResponse = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "dealTitle": zod.string(),
+  "requesterName": zod.string(),
+  "requesterCompany": zod.string(),
+  "message": zod.string().nullish(),
+  "status": zod.string().describe('pending | approved | nda_sent | nda_signed | rejected'),
+  "signerName": zod.string().nullish(),
+  "signedAt": zod.string().nullish(),
   "createdAt": zod.string()
 })
 

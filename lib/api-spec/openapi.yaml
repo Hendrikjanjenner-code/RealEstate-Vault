@@ -331,6 +331,27 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/AccessRequest" }
+  /access-requests/{id}/sign:
+    post:
+      operationId: signAccessRequestNda
+      tags: [access]
+      summary: Investor signs the NDA for their own access request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SignNdaInput" }
+      responses:
+        "200":
+          description: Signed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccessRequest" }
   /brokers:
     get:
       operationId: listBrokers
@@ -663,6 +684,8 @@ components:
         requesterCompany: { type: string }
         message: { type: ["string", "null"] }
         status: { type: string, description: "pending | approved | nda_sent | nda_signed | rejected" }
+        signerName: { type: ["string", "null"] }
+        signedAt: { type: ["string", "null"] }
         createdAt: { type: string }
     AccessRequestInput:
       type: object
@@ -676,6 +699,12 @@ components:
       required: [status]
       properties:
         status: { type: string }
+    SignNdaInput:
+      type: object
+      required: [signerName, agreed]
+      properties:
+        signerName: { type: string, minLength: 1 }
+        agreed: { type: boolean }
     Broker:
       type: object
       required: [id, name, company, title, city, country, verified, score, closedDeals, transactionVolume, yearsExperience, specialisations]

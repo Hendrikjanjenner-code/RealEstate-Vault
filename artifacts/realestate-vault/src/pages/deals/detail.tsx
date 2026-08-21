@@ -1,26 +1,28 @@
 import { formatMillions } from "@/lib/utils";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useRoute } from "wouter";
-import { useGetDeal, useListDealDocuments, useRequestDealAccess, getGetDealQueryKey, getListDealDocumentsQueryKey } from "@workspace/api-client-react";
+import { useGetDeal, useListDealDocuments, useRequestDealAccess, useListAccessRequests, useSignAccessRequestNda, getGetDealQueryKey, getListDealDocumentsQueryKey } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Building2, Lock, FileText, Download, CheckCircle2, AlertCircle, Clock, Info, Key, Shield } from "lucide-react";
+import { MapPin, Building2, Lock, FileText, Download, CheckCircle2, AlertCircle, Clock, Info, Key, Shield, FileSignature } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { getListAccessRequestsQueryKey } from "@workspace/api-client-react";
 
-type AccessState = "locked" | "requested" | "granted" | "rejected";
+type AccessState = "locked" | "requested" | "nda_sent" | "granted" | "rejected";
 
 function toAccessState(accessStatus: string | null | undefined): AccessState {
   switch (accessStatus) {
     case "granted":
       return "granted";
+    case "nda_sent":
+      return "nda_sent";
     case "pending":
     case "approved":
-    case "nda_sent":
       return "requested";
     case "rejected":
       return "rejected";
@@ -35,9 +37,40 @@ export default function DealDetail() {
   const { data: deal, isLoading: dealLoading } = useGetDeal(id, { query: { enabled: !!id, queryKey: getGetDealQueryKey(id) } });
   const { data: docs, isLoading: docsLoading } = useListDealDocuments(id, { query: { enabled: !!id, queryKey: getListDealDocumentsQueryKey(id) } });
   const requestAccess = useRequestDealAccess();
+  const signNda = useSignAccessRequestNda();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [form, setForm] = useState({ requesterName: "", requesterCompany: "", message: "" });
+  const [showNda, setShowNda] = useState(false);
+  const [signerName, setSignerName] = useState("");
+  const [agreed, setAgreed] = useState(false);
+
+  // Find this investor's own request for the deal so they can sign it.
+  const { data: myRequests } = useListAccessRequests();
+  const myRequest = myRequests?.find((r) => r.dealId === id && r.status === "nda_sent");
+
+  const handleSignNda = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!myRequest) return;
+    if (!signerName.trim() || !agreed) {
+      toast({ title: "Incomplete", description: "Type your full legal name and accept the terms.", variant: "destructive" });
+      return;
+    }
+    signNda.mutate(
+      { id: myRequest.id, data: { signerName: signerName.trim(), agreed: true } },
+      {
+        onSuccess: () => {
+          toast({ title: "NDA Signed", description: "You now have full access to this data room." });
+          queryClient.invalidateQueries({ queryKey: getGetDealQueryKey(id) });
+          queryClient.invalidateQueries({ queryKey: getListDealDocumentsQueryKey(id) });
+          queryClient.invalidateQueries({ queryKey: getListAccessRequestsQueryKey() });
+        },
+        onError: () => {
+          toast({ title: "Signing failed", description: "Please try again.", variant: "destructive" });
+        },
+      },
+    );
+  };
 
   const handleRequestAccess = (e: React.FormEvent) => {
     e.preventDefault();
@@ -227,6 +260,42 @@ export default function DealDetail() {
                 <Button type="submit" disabled={requestAccess.isPending} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 font-bold text-base shadow-[0_0_20px_rgba(200,169,90,0.3)]">
                   <Key className="w-5 h-5 mr-2" /> Request Access
                 </Button>
+              </form>
+            )}
+            {effectiveAccess === "nda_sent" && !showNda && (
+              <div className="p-4 rounded-xl bg-background border border-primary/30 text-center space-y-3">
+                <FileSignature className="w-6 h-6 text-primary mx-auto" />
+                <p className="font-medium text-primary">NDA Ready for Signature</p>
+                <p className="text-xs text-muted-foreground">The broker has sent you the NDA. Review and sign it to unlock the full data room.</p>
+                <Button onClick={() => setShowNda(true)} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-[0_0_20px_rgba(200,169,90,0.3)]" data-testid="button-review-sign-nda">
+                  <FileSignature className="w-4 h-4 mr-2" /> Review & Sign NDA
+                </Button>
+              </div>
+            )}
+            {effectiveAccess === "nda_sent" && showNda && (
+              <form onSubmit={handleSignNda} className="space-y-4" data-testid="form-sign-nda">
+                <div className="p-4 rounded-xl bg-background/70 border border-white/10 max-h-48 overflow-y-auto text-xs text-muted-foreground leading-relaxed space-y-2">
+                  <p className="font-semibold text-foreground uppercase tracking-wider">Non-Disclosure Agreement</p>
+                  <p>This Non-Disclosure Agreement governs your access to confidential information concerning the investment opportunity marketed through RealEstate Vault.</p>
+                  <p>1. You agree to keep all deal materials — including pricing, tenancy schedules, financial models, and the identity or location of the asset — strictly confidential.</p>
+                  <p>2. Confidential information may be used solely to evaluate a potential acquisition and may not be shared with third parties without the listing broker's prior written consent.</p>
+                  <p>3. This obligation remains in force for 24 months from the date of signature or until the information becomes public through no fault of your own.</p>
+                  <p>4. By signing electronically below, you confirm you are authorised to bind yourself and your firm to these terms.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="nda-signer" className="text-xs uppercase tracking-wider text-muted-foreground">Full Legal Name</Label>
+                  <Input id="nda-signer" required value={signerName} onChange={(e) => setSignerName(e.target.value)} placeholder="Type your full name to sign" className="bg-background/50 border-white/10" data-testid="input-nda-signer-name" />
+                </div>
+                <div className="flex items-start gap-2">
+                  <Checkbox id="nda-agree" checked={agreed} onCheckedChange={(v) => setAgreed(v === true)} className="mt-0.5" data-testid="checkbox-nda-agree" />
+                  <Label htmlFor="nda-agree" className="text-xs text-muted-foreground leading-snug cursor-pointer">I have read and agree to the terms of this Non-Disclosure Agreement, and my typed name constitutes my electronic signature.</Label>
+                </div>
+                <div className="flex gap-2">
+                  <Button type="button" variant="ghost" onClick={() => setShowNda(false)} className="flex-1 border border-white/10">Back</Button>
+                  <Button type="submit" disabled={signNda.isPending || !signerName.trim() || !agreed} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-bold" data-testid="button-sign-nda">
+                    {signNda.isPending ? "Signing..." : "Sign NDA"}
+                  </Button>
+                </div>
               </form>
             )}
             {effectiveAccess === "requested" && (
