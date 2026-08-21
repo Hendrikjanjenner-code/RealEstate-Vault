@@ -12,7 +12,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getListAccessRequestsQueryKey } from "@workspace/api-client-react";
 
-type AccessState = "locked" | "requested" | "granted";
+type AccessState = "locked" | "requested" | "granted" | "rejected";
+
+function toAccessState(accessStatus: string | null | undefined): AccessState {
+  switch (accessStatus) {
+    case "granted":
+      return "granted";
+    case "pending":
+    case "approved":
+    case "nda_sent":
+      return "requested";
+    case "rejected":
+      return "rejected";
+    default:
+      return "locked";
+  }
+}
 
 export default function DealDetail() {
   const [, params] = useRoute("/demo/deals/:id");
@@ -22,7 +37,6 @@ export default function DealDetail() {
   const requestAccess = useRequestDealAccess();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [accessState, setAccessState] = useState<AccessState>("locked");
   const [form, setForm] = useState({ requesterName: "", requesterCompany: "", message: "" });
 
   const handleRequestAccess = (e: React.FormEvent) => {
@@ -36,7 +50,7 @@ export default function DealDetail() {
       {
         onSuccess: () => {
           toast({ title: "Access Requested", description: "The broker will review your request shortly." });
-          setAccessState("requested");
+          queryClient.invalidateQueries({ queryKey: getGetDealQueryKey(id) });
           queryClient.invalidateQueries({ queryKey: getListAccessRequestsQueryKey() });
         },
         onError: () => {
@@ -61,7 +75,9 @@ export default function DealDetail() {
 
   if (!deal) return <div className="p-8 text-center">Deal not found</div>;
 
-  const effectiveAccess: AccessState = deal.confidential ? accessState : "granted";
+  // Access is decided server-side; confidential fields are withheld by the
+  // API until this user's request reaches nda_signed.
+  const effectiveAccess: AccessState = toAccessState(deal.accessStatus);
   const isRestricted = effectiveAccess !== "granted";
 
   return (
@@ -218,9 +234,13 @@ export default function DealDetail() {
                 <Clock className="w-6 h-6 text-primary mx-auto animate-pulse" />
                 <p className="font-medium text-primary">Request Pending</p>
                 <p className="text-xs text-muted-foreground">The broker is reviewing your profile. You will be notified when the NDA is ready to sign.</p>
-                <Button variant="outline" size="sm" onClick={() => setAccessState("granted")} className="w-full border-primary/30 text-primary hover:bg-primary/10">
-                  Simulate NDA Signature (demo)
-                </Button>
+              </div>
+            )}
+            {effectiveAccess === "rejected" && (
+              <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20 text-center space-y-2">
+                <AlertCircle className="w-6 h-6 text-destructive mx-auto" />
+                <p className="font-medium text-destructive">Request Declined</p>
+                <p className="text-xs text-muted-foreground">The broker declined your access request for this deal.</p>
               </div>
             )}
             {deal.confidential && effectiveAccess === "granted" && (

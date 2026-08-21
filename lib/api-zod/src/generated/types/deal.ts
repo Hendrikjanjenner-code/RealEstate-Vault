@@ -52,4 +52,9 @@ export interface Deal {
   views: number;
   accessRequests: number;
   createdAt: string;
+  /**
+     * Current viewer's access to confidential details: granted | pending | approved | nda_sent | rejected | none
+     * @nullable
+     */
+  accessStatus?: string | null;
 }

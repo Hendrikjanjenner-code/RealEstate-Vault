@@ -16,9 +16,23 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Shield, LayoutDashboard, Briefcase, Users, FileText, Send, ScrollText, Handshake, LogOut } from "lucide-react";
 import { VaultLogo } from "@/components/logo";
+import { useAuth } from "@workspace/replit-auth-web";
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const { user, logout } = useAuth();
+
+  const displayName =
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+    user?.email ||
+    "Member";
+  const initials =
+    displayName
+      .split(" ")
+      .map((p: string) => p.charAt(0))
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "M";
 
   const navItems = [
     { label: "Dashboard", href: "/demo", icon: LayoutDashboard },
@@ -68,22 +82,24 @@ export function AppLayout({ children }: { children: ReactNode }) {
           <SidebarFooter className="p-4 border-t border-sidebar-border">
             <div className="flex items-center gap-3">
               <Avatar className="h-9 w-9 border border-sidebar-accent">
-                <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground">AX</AvatarFallback>
+                <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground">{initials}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-medium text-sidebar-foreground truncate">Alexander</span>
-                <span className="text-xs text-sidebar-foreground/60 truncate">alexander@example.com</span>
+                <span className="text-sm font-medium text-sidebar-foreground truncate">{displayName}</span>
+                <span className="text-xs text-sidebar-foreground/60 truncate">{user?.email || (user?.role === "broker" ? "Broker" : "Investor")}</span>
               </div>
             </div>
-            <Button variant="ghost" className="w-full mt-4 justify-start text-muted-foreground hover:text-foreground">
+            <Button onClick={logout} variant="ghost" className="w-full mt-4 justify-start text-muted-foreground hover:text-foreground">
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
             </Button>
-            <div className="mt-4 flex items-center justify-center">
-               <div className="px-2 py-1 rounded border border-primary/20 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
-                 Demo Environment
-               </div>
-            </div>
+            {user?.role && (
+              <div className="mt-4 flex items-center justify-center">
+                <div className="px-2 py-1 rounded border border-primary/20 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
+                  {user.role === "broker" ? "Broker Account" : "Investor Account"}
+                </div>
+              </div>
+            )}
           </SidebarFooter>
         </Sidebar>
 

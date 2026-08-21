@@ -9,6 +9,115 @@ import * as zod from 'zod/v4';
 
 
 /**
+ * @summary Get the currently authenticated user
+ */
+export const GetCurrentAuthUserHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+export const GetCurrentAuthUserResponse = zod.object({
+  "user": zod.union([zod.object({
+  "id": zod.string(),
+  "email": zod.email().nullable(),
+  "firstName": zod.string().nullable(),
+  "lastName": zod.string().nullable(),
+  "profileImageUrl": zod.string().nullable(),
+  "role": zod.string().nullable().describe('broker | investor. Null until the user chooses a role.')
+}),zod.null()])
+})
+
+
+/**
+ * @summary Set the current user's marketplace role (broker or investor)
+ */
+export const SetMyRoleBody = zod.object({
+  "role": zod.enum(['broker', 'investor'])
+})
+
+export const SetMyRoleResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.email().nullable(),
+  "firstName": zod.string().nullable(),
+  "lastName": zod.string().nullable(),
+  "profileImageUrl": zod.string().nullable(),
+  "role": zod.string().nullable().describe('broker | investor. Null until the user chooses a role.')
+})
+
+
+/**
+ * @summary Start the browser OIDC login flow
+ */
+export const BeginBrowserLoginQueryParams = zod.object({
+  "returnTo": zod.coerce.string().optional().describe('Relative path to redirect to after login (must start with `\/`). Defaults to `\/`.')
+})
+
+export const BeginBrowserLoginResponse = zod.void()
+
+
+/**
+ * @summary Complete the browser OIDC login flow
+ */
+export const HandleBrowserLoginCallbackQueryParams = zod.object({
+  "code": zod.coerce.string().optional(),
+  "state": zod.coerce.string().optional(),
+  "iss": zod.url().optional()
+})
+
+export const HandleBrowserLoginCallbackResponse = zod.void()
+
+
+/**
+ * @summary Clear the session and begin OIDC logout
+ */
+export const logoutBrowserSessionQueryReturnToDefault = `/`;
+
+export const LogoutBrowserSessionQueryParams = zod.object({
+  "returnTo": zod.coerce.string().default(logoutBrowserSessionQueryReturnToDefault)
+})
+
+export const LogoutBrowserSessionHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+export const LogoutBrowserSessionResponse = zod.void()
+
+
+/**
+ * @summary Exchange a mobile OIDC code for a session token
+ */
+
+
+
+
+
+
+
+export const ExchangeMobileAuthorizationCodeBody = zod.object({
+  "code": zod.string().min(1),
+  "code_verifier": zod.string().min(1),
+  "redirect_uri": zod.url().min(1),
+  "state": zod.string().min(1),
+  "nonce": zod.string().min(1).optional()
+})
+
+export const ExchangeMobileAuthorizationCodeResponse = zod.object({
+  "token": zod.string()
+})
+
+
+/**
+ * @summary Delete a mobile session token
+ */
+export const LogoutMobileSessionHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+export const LogoutMobileSessionResponse = zod.object({
+  "success": zod.literal(true)
+})
+
+
+/**
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -56,7 +165,8 @@ export const ListDealsResponseItem = zod.object({
   "brokerCompany": zod.string().nullish(),
   "views": zod.int(),
   "accessRequests": zod.int(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "accessStatus": zod.string().nullish().describe('Current viewer\'s access to confidential details: granted | pending | approved | nda_sent | rejected | none')
 })
 export const ListDealsResponse = zod.array(ListDealsResponseItem)
 
@@ -119,7 +229,8 @@ export const CreateDealResponse = zod.object({
   "brokerCompany": zod.string().nullish(),
   "views": zod.int(),
   "accessRequests": zod.int(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "accessStatus": zod.string().nullish().describe('Current viewer\'s access to confidential details: granted | pending | approved | nda_sent | rejected | none')
 })
 
 
@@ -159,7 +270,8 @@ export const GetDealResponse = zod.object({
   "brokerCompany": zod.string().nullish(),
   "views": zod.int(),
   "accessRequests": zod.int(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "accessStatus": zod.string().nullish().describe('Current viewer\'s access to confidential details: granted | pending | approved | nda_sent | rejected | none')
 })
 
 
@@ -199,7 +311,8 @@ export const ToggleSaveDealResponse = zod.object({
   "brokerCompany": zod.string().nullish(),
   "views": zod.int(),
   "accessRequests": zod.int(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "accessStatus": zod.string().nullish().describe('Current viewer\'s access to confidential details: granted | pending | approved | nda_sent | rejected | none')
 })
 
 

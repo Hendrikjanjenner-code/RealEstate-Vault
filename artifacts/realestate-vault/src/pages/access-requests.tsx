@@ -6,12 +6,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, Clock, FileSignature, CheckCircle2, XCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@workspace/replit-auth-web";
 
 export default function AccessRequests() {
   const { data: requests, isLoading } = useListAccessRequests();
   const updateRequest = useUpdateAccessRequest();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const isBroker = user?.role === "broker";
 
   const handleUpdateStatus = (id: number, status: string) => {
     updateRequest.mutate({ id, data: { status } as any }, {
@@ -29,7 +32,9 @@ export default function AccessRequests() {
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <div className="mb-8">
         <h1 className="text-3xl font-heading font-bold">Access Requests</h1>
-        <p className="text-muted-foreground mt-1">Manage data room access and NDAs for your deals.</p>
+        <p className="text-muted-foreground mt-1">
+          {isBroker ? "Manage data room access and NDAs for your deals." : "Track the status of your data room access requests."}
+        </p>
       </div>
 
       {isLoading ? (
@@ -73,7 +78,7 @@ export default function AccessRequests() {
                 </div>
                 
                 <div className="p-6 w-full md:w-64 shrink-0 bg-background/20 flex flex-col gap-2 justify-center">
-                  {req.status === 'pending' && (
+                  {req.status === 'pending' && isBroker && (
                     <>
                       <Button onClick={() => handleUpdateStatus(req.id, 'approved')} className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20">
                         <CheckCircle2 className="w-4 h-4 mr-2" /> Approve Request
@@ -83,18 +88,33 @@ export default function AccessRequests() {
                       </Button>
                     </>
                   )}
+                  {req.status === 'pending' && !isBroker && (
+                    <div className="text-center">
+                      <Clock className="w-6 h-6 text-primary mx-auto mb-2 opacity-50" />
+                      <p className="text-xs text-muted-foreground">Awaiting broker review...</p>
+                    </div>
+                  )}
                   {req.status === 'approved' && (
-                    <Button onClick={() => handleUpdateStatus(req.id, 'nda_sent')} className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20">
-                      <FileSignature className="w-4 h-4 mr-2" /> Send Digital NDA
-                    </Button>
+                    isBroker ? (
+                      <Button onClick={() => handleUpdateStatus(req.id, 'nda_sent')} className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20">
+                        <FileSignature className="w-4 h-4 mr-2" /> Send Digital NDA
+                      </Button>
+                    ) : (
+                      <div className="text-center">
+                        <CheckCircle2 className="w-6 h-6 text-primary mx-auto mb-2 opacity-50" />
+                        <p className="text-xs text-muted-foreground">Approved — NDA on its way.</p>
+                      </div>
+                    )
                   )}
                   {req.status === 'nda_sent' && (
                     <div className="text-center">
                       <Clock className="w-6 h-6 text-primary mx-auto mb-2 opacity-50" />
                       <p className="text-xs text-muted-foreground">Waiting for signature...</p>
-                      <Button onClick={() => handleUpdateStatus(req.id, 'nda_signed')} variant="outline" size="sm" className="mt-4 w-full border-white/10 text-xs h-8">
-                        Mark as Signed (Demo)
-                      </Button>
+                      {isBroker && (
+                        <Button onClick={() => handleUpdateStatus(req.id, 'nda_signed')} variant="outline" size="sm" className="mt-4 w-full border-white/10 text-xs h-8">
+                          Mark as Signed
+                        </Button>
+                      )}
                     </div>
                   )}
                   {req.status === 'nda_signed' && (

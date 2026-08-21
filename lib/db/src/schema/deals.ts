@@ -6,6 +6,7 @@ import {
   boolean,
   doublePrecision,
   timestamp,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -35,6 +36,8 @@ export const dealsTable = pgTable("deals", {
   description: text("description"),
   imageUrl: text("image_url"),
   brokerId: integer("broker_id"),
+  // Auth user id of the listing broker (owner). Null for legacy/seeded deals.
+  brokerUserId: varchar("broker_user_id"),
   brokerName: text("broker_name"),
   brokerCompany: text("broker_company"),
   views: integer("views").notNull().default(0),
@@ -69,6 +72,8 @@ export const accessRequestsTable = pgTable("access_requests", {
   id: serial("id").primaryKey(),
   dealId: integer("deal_id").notNull(),
   dealTitle: text("deal_title").notNull(),
+  // Auth user id of the requesting investor. Null for legacy/seeded requests.
+  requesterUserId: varchar("requester_user_id"),
   requesterName: text("requester_name").notNull(),
   requesterCompany: text("requester_company").notNull(),
   message: text("message"),
