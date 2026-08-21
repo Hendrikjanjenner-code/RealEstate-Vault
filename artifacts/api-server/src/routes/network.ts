@@ -116,6 +116,15 @@ router.get("/mandates/:id/matches", async (req, res): Promise<void> => {
 });
 
 router.post("/mandates", async (req, res): Promise<void> => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  if (req.user.role !== "investor") {
+    res.status(403).json({ error: "Only investors can create mandates" });
+    return;
+  }
+
   const parsed = CreateMandateBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
