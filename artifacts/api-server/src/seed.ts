@@ -38,6 +38,7 @@ async function seed() {
     .insert(brokersTable)
     .values([
       {
+        isDemo: true,
         name: "Willem van der Berg",
         company: "Van der Berg Capital Partners",
         title: "Managing Partner",
@@ -52,6 +53,7 @@ async function seed() {
         bio: "Former head of hotel investment at a global brokerage. Specialised in off-market hospitality and prime office transactions across the Benelux.",
       },
       {
+        isDemo: true,
         name: "Claire Dubois",
         company: "Meridian Private Estates",
         title: "Head of Capital Markets",
@@ -66,6 +68,7 @@ async function seed() {
         bio: "Two decades advising family offices on prime high street retail and mixed-use assets in Paris and the Cote d'Azur.",
       },
       {
+        isDemo: true,
         name: "Stefan Richter",
         company: "Richter & Vogel Real Estate",
         title: "Senior Director",
@@ -80,6 +83,7 @@ async function seed() {
         bio: "Institutional office and logistics specialist with deep relationships across German pension funds and insurers.",
       },
       {
+        isDemo: true,
         name: "Sofia Almeida",
         company: "Atlantico Advisory",
         title: "Founding Partner",
@@ -94,6 +98,7 @@ async function seed() {
         bio: "Boutique advisory focused on Iberian hospitality and residential portfolios for international private capital.",
       },
       {
+        isDemo: true,
         name: "Marcus Lindqvist",
         company: "Nordkap Partners",
         title: "Partner",
@@ -108,6 +113,7 @@ async function seed() {
         bio: "Nordic logistics and last-mile specialist advising institutional buyers entering the Scandinavian market.",
       },
       {
+        isDemo: true,
         name: "Isabella Conti",
         company: "Conti Immobiliare Privata",
         title: "Managing Director",

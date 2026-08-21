@@ -45,6 +45,11 @@ export default function Brokers() {
                         <h3 className="font-heading font-bold text-lg leading-tight flex items-center gap-2">
                           {broker.name}
                           {broker.verified && <ShieldCheck className="w-4 h-4 text-primary" />}
+                          {broker.isDemo && (
+                            <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-white/20 text-muted-foreground font-semibold">
+                              Demo
+                            </Badge>
+                          )}
                         </h3>
                         <p className="text-sm font-medium text-muted-foreground">{broker.title}</p>
                         <p className="text-xs text-muted-foreground/80 flex items-center gap-1 mt-1">

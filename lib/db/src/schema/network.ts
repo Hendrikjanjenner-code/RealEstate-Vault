@@ -6,10 +6,15 @@ import {
   boolean,
   doublePrecision,
   timestamp,
+  varchar,
 } from "drizzle-orm/pg-core";
 
 export const brokersTable = pgTable("brokers", {
   id: serial("id").primaryKey(),
+  // Auth user id this profile belongs to. Null for seeded demo personas.
+  userId: varchar("user_id").unique(),
+  // Seeded demo personas are flagged so the UI can label them clearly.
+  isDemo: boolean("is_demo").notNull().default(false),
   name: text("name").notNull(),
   company: text("company").notNull(),
   title: text("title").notNull(),

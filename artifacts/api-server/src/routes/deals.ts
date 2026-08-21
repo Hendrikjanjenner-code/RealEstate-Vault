@@ -3,6 +3,7 @@ import { Router, type IRouter } from "express";
 import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import {
   db,
+  brokersTable,
   dealsTable,
   dealDocumentsTable,
   accessRequestsTable,
@@ -106,13 +107,44 @@ export async function getSavedDealIds(
   return new Set(rows.map((r) => r.dealId));
 }
 
+type DealWithProfile = Deal & { brokerProfileId: number | null };
+
+/**
+ * Overlay each deal's denormalized broker fields with the owning broker's
+ * real directory profile (linked by auth user id), when one exists. Seeded
+ * personas stay as-is for legacy deals without a linked profile.
+ */
+export async function overlayBrokerProfiles(deals: Deal[]): Promise<DealWithProfile[]> {
+  const userIds = [
+    ...new Set(deals.map((d) => d.brokerUserId).filter((id): id is string => id != null)),
+  ];
+  if (userIds.length === 0) {
+    return deals.map((d) => ({ ...d, brokerProfileId: null }));
+  }
+  const profiles = await db
+    .select()
+    .from(brokersTable)
+    .where(inArray(brokersTable.userId, userIds));
+  const byUserId = new Map(profiles.map((p) => [p.userId as string, p]));
+  return deals.map((deal) => {
+    const profile = deal.brokerUserId ? byUserId.get(deal.brokerUserId) : undefined;
+    if (!profile) return { ...deal, brokerProfileId: null };
+    return {
+      ...deal,
+      brokerName: profile.name,
+      brokerCompany: profile.company,
+      brokerProfileId: profile.id,
+    };
+  });
+}
+
 /**
  * Strip confidential fields from a deal the viewer has no NDA-signed access
  * to: title, exact location, description, and financials are withheld
  * server-side.
  */
 export function presentDeal(
-  deal: Deal,
+  deal: Deal & { brokerProfileId?: number | null },
   accessStatus: AccessStatus,
   saved: boolean,
 ) {
@@ -177,14 +209,15 @@ router.get("/deals", async (req, res): Promise<void> => {
     .where(conditions.length ? and(...conditions) : undefined)
     .orderBy(desc(dealsTable.createdAt));
 
-  const [statuses, savedIds] = await Promise.all([
+  const [statuses, savedIds, withProfiles] = await Promise.all([
     getAccessStatuses(deals, req.user.id),
     getSavedDealIds(
       deals.map((d) => d.id),
       req.user.id,
     ),
+    overlayBrokerProfiles(deals),
   ]);
-  const presented = deals.map((deal) =>
+  const presented = withProfiles.map((deal) =>
     presentDeal(deal, statuses.get(deal.id) ?? "none", savedIds.has(deal.id)),
   );
 
@@ -206,7 +239,13 @@ router.post("/deals", async (req, res): Promise<void> => {
     return;
   }
 
+  // Prefer the broker's directory profile; fall back to their auth account.
+  const [profile] = await db
+    .select()
+    .from(brokersTable)
+    .where(eq(brokersTable.userId, req.user.id));
   const brokerName =
+    profile?.name ||
     [req.user.firstName, req.user.lastName].filter(Boolean).join(" ") ||
     req.user.email ||
     "Broker";
@@ -217,6 +256,7 @@ router.post("/deals", async (req, res): Promise<void> => {
       ...parsed.data,
       brokerUserId: req.user.id,
       brokerName,
+      brokerCompany: profile?.company ?? null,
     })
     .returning();
   await db.insert(activityTable).values({
@@ -224,7 +264,10 @@ router.post("/deals", async (req, res): Promise<void> => {
     description: `New listing: ${deal.title} (${deal.city}, ${deal.country})`,
   });
 
-  res.status(201).json(CreateDealResponse.parse(toJson({ ...deal, saved: false })));
+  const [withProfile] = await overlayBrokerProfiles([deal]);
+  res
+    .status(201)
+    .json(CreateDealResponse.parse(toJson({ ...withProfile, saved: false })));
 });
 
 router.get("/deals/:id", async (req, res): Promise<void> => {
@@ -249,14 +292,19 @@ router.get("/deals/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const [statuses, savedIds] = await Promise.all([
+  const [statuses, savedIds, [withProfile]] = await Promise.all([
     getAccessStatuses([deal], req.user.id),
     getSavedDealIds([deal.id], req.user.id),
+    overlayBrokerProfiles([deal]),
   ]);
   res.json(
     GetDealResponse.parse(
       toJson(
-        presentDeal(deal, statuses.get(deal.id) ?? "none", savedIds.has(deal.id)),
+        presentDeal(
+          withProfile,
+          statuses.get(deal.id) ?? "none",
+          savedIds.has(deal.id),
+        ),
       ),
     ),
   );
@@ -313,10 +361,13 @@ router.patch("/deals/:id/save", async (req, res): Promise<void> => {
     saved = true;
   }
 
-  const statuses = await getAccessStatuses([deal], req.user.id);
+  const [statuses, [withProfile]] = await Promise.all([
+    getAccessStatuses([deal], req.user.id),
+    overlayBrokerProfiles([deal]),
+  ]);
   res.json(
     ToggleSaveDealResponse.parse(
-      toJson(presentDeal(deal, statuses.get(deal.id) ?? "none", saved)),
+      toJson(presentDeal(withProfile, statuses.get(deal.id) ?? "none", saved)),
     ),
   );
 });

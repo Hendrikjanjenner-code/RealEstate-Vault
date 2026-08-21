@@ -366,6 +366,52 @@ paths:
               schema:
                 type: array
                 items: { $ref: "#/components/schemas/Broker" }
+  /brokers/me:
+    get:
+      operationId: getMyBrokerProfile
+      tags: [brokers]
+      summary: The current broker's directory profile (null if not created yet)
+      responses:
+        "200":
+          description: Profile envelope
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BrokerProfileEnvelope" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Not a broker
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+    put:
+      operationId: upsertMyBrokerProfile
+      tags: [brokers]
+      summary: Create or update the current broker's directory profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BrokerProfileInput" }
+      responses:
+        "200":
+          description: Saved profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Broker" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Not a broker
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /brokers/{id}:
     get:
       operationId: getBroker
@@ -680,6 +726,9 @@ components:
         brokerId: { type: ["integer", "null"] }
         brokerName: { type: ["string", "null"] }
         brokerCompany: { type: ["string", "null"] }
+        brokerProfileId:
+          type: ["integer", "null"]
+          description: "Directory profile id of the owning broker's real account, if they created one."
         views: { type: integer }
         accessRequests: { type: integer }
         createdAt: { type: string }
@@ -755,9 +804,11 @@ components:
         agreed: { type: boolean }
     Broker:
       type: object
-      required: [id, name, company, title, city, country, verified, score, closedDeals, transactionVolume, yearsExperience, specialisations]
+      required: [id, name, company, title, city, country, verified, score, closedDeals, transactionVolume, yearsExperience, specialisations, isDemo]
       properties:
         id: { type: integer }
+        userId: { type: ["string", "null"], description: "Auth user id this profile belongs to. Null for demo personas." }
+        isDemo: { type: boolean, description: "True for seeded demo personas not tied to a real account." }
         name: { type: string }
         company: { type: string }
         title: { type: string }
@@ -773,6 +824,29 @@ components:
           items: { type: string }
         bio: { type: ["string", "null"] }
         avatarUrl: { type: ["string", "null"] }
+    BrokerProfileEnvelope:
+      type: object
+      required: [profile]
+      properties:
+        profile:
+          oneOf:
+            - $ref: "#/components/schemas/Broker"
+            - type: "null"
+    BrokerProfileInput:
+      type: object
+      required: [name, company, title, city, country]
+      properties:
+        name: { type: string, minLength: 1 }
+        company: { type: string, minLength: 1 }
+        title: { type: string, minLength: 1 }
+        city: { type: string, minLength: 1 }
+        country: { type: string, minLength: 1 }
+        yearsExperience: { type: integer, minimum: 0 }
+        specialisations:
+          type: array
+          items: { type: string }
+        bio: { type: string }
+        avatarUrl: { type: string }
     Mandate:
       type: object
       required: [id, title, investorName, investorType, assetClasses, countries, minSize, maxSize, strategy, status, matches, createdAt]

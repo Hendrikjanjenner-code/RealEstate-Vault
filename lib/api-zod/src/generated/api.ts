@@ -163,6 +163,7 @@ export const ListDealsResponseItem = zod.object({
   "brokerId": zod.int().nullish(),
   "brokerName": zod.string().nullish(),
   "brokerCompany": zod.string().nullish(),
+  "brokerProfileId": zod.int().nullish().describe('Directory profile id of the owning broker\'s real account, if they created one.'),
   "views": zod.int(),
   "accessRequests": zod.int(),
   "createdAt": zod.string(),
@@ -227,6 +228,7 @@ export const CreateDealResponse = zod.object({
   "brokerId": zod.int().nullish(),
   "brokerName": zod.string().nullish(),
   "brokerCompany": zod.string().nullish(),
+  "brokerProfileId": zod.int().nullish().describe('Directory profile id of the owning broker\'s real account, if they created one.'),
   "views": zod.int(),
   "accessRequests": zod.int(),
   "createdAt": zod.string(),
@@ -268,6 +270,7 @@ export const GetDealResponse = zod.object({
   "brokerId": zod.int().nullish(),
   "brokerName": zod.string().nullish(),
   "brokerCompany": zod.string().nullish(),
+  "brokerProfileId": zod.int().nullish().describe('Directory profile id of the owning broker\'s real account, if they created one.'),
   "views": zod.int(),
   "accessRequests": zod.int(),
   "createdAt": zod.string(),
@@ -309,6 +312,7 @@ export const ToggleSaveDealResponse = zod.object({
   "brokerId": zod.int().nullish(),
   "brokerName": zod.string().nullish(),
   "brokerCompany": zod.string().nullish(),
+  "brokerProfileId": zod.int().nullish().describe('Directory profile id of the owning broker\'s real account, if they created one.'),
   "views": zod.int(),
   "accessRequests": zod.int(),
   "createdAt": zod.string(),
@@ -443,6 +447,8 @@ export const SignAccessRequestNdaResponse = zod.object({
  */
 export const ListBrokersResponseItem = zod.object({
   "id": zod.int(),
+  "userId": zod.string().nullish().describe('Auth user id this profile belongs to. Null for demo personas.'),
+  "isDemo": zod.boolean().describe('True for seeded demo personas not tied to a real account.'),
   "name": zod.string(),
   "company": zod.string(),
   "title": zod.string(),
@@ -461,6 +467,75 @@ export const ListBrokersResponse = zod.array(ListBrokersResponseItem)
 
 
 /**
+ * @summary The current broker's directory profile (null if not created yet)
+ */
+export const GetMyBrokerProfileResponse = zod.object({
+  "profile": zod.union([zod.object({
+  "id": zod.int(),
+  "userId": zod.string().nullish().describe('Auth user id this profile belongs to. Null for demo personas.'),
+  "isDemo": zod.boolean().describe('True for seeded demo personas not tied to a real account.'),
+  "name": zod.string(),
+  "company": zod.string(),
+  "title": zod.string(),
+  "city": zod.string(),
+  "country": zod.string(),
+  "verified": zod.boolean(),
+  "score": zod.number(),
+  "closedDeals": zod.int(),
+  "transactionVolume": zod.number(),
+  "yearsExperience": zod.int(),
+  "specialisations": zod.array(zod.string()),
+  "bio": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish()
+}),zod.null()])
+})
+
+
+/**
+ * @summary Create or update the current broker's directory profile
+ */
+
+
+
+
+
+export const upsertMyBrokerProfileBodyYearsExperienceMin = 0;
+
+
+
+export const UpsertMyBrokerProfileBody = zod.object({
+  "name": zod.string().min(1),
+  "company": zod.string().min(1),
+  "title": zod.string().min(1),
+  "city": zod.string().min(1),
+  "country": zod.string().min(1),
+  "yearsExperience": zod.int().min(upsertMyBrokerProfileBodyYearsExperienceMin).optional(),
+  "specialisations": zod.array(zod.string()).optional(),
+  "bio": zod.string().optional(),
+  "avatarUrl": zod.string().optional()
+})
+
+export const UpsertMyBrokerProfileResponse = zod.object({
+  "id": zod.int(),
+  "userId": zod.string().nullish().describe('Auth user id this profile belongs to. Null for demo personas.'),
+  "isDemo": zod.boolean().describe('True for seeded demo personas not tied to a real account.'),
+  "name": zod.string(),
+  "company": zod.string(),
+  "title": zod.string(),
+  "city": zod.string(),
+  "country": zod.string(),
+  "verified": zod.boolean(),
+  "score": zod.number(),
+  "closedDeals": zod.int(),
+  "transactionVolume": zod.number(),
+  "yearsExperience": zod.int(),
+  "specialisations": zod.array(zod.string()),
+  "bio": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish()
+})
+
+
+/**
  * @summary Broker profile
  */
 export const GetBrokerParams = zod.object({
@@ -469,6 +544,8 @@ export const GetBrokerParams = zod.object({
 
 export const GetBrokerResponse = zod.object({
   "id": zod.int(),
+  "userId": zod.string().nullish().describe('Auth user id this profile belongs to. Null for demo personas.'),
+  "isDemo": zod.boolean().describe('True for seeded demo personas not tied to a real account.'),
   "name": zod.string(),
   "company": zod.string(),
   "title": zod.string(),
@@ -576,6 +653,7 @@ export const ListMandateMatchesResponseItem = zod.object({
   "brokerId": zod.int().nullish(),
   "brokerName": zod.string().nullish(),
   "brokerCompany": zod.string().nullish(),
+  "brokerProfileId": zod.int().nullish().describe('Directory profile id of the owning broker\'s real account, if they created one.'),
   "views": zod.int(),
   "accessRequests": zod.int(),
   "createdAt": zod.string(),

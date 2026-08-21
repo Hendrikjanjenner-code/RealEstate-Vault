@@ -29,6 +29,8 @@ import type {
   AuthUserEnvelope,
   BeginBrowserLoginParams,
   Broker,
+  BrokerProfileEnvelope,
+  BrokerProfileInput,
   DashboardStats,
   Deal,
   DealDocument,
@@ -1448,6 +1450,154 @@ export function useListBrokers<TData = Awaited<ReturnType<typeof listBrokers>>, 
 
 
 
+
+export const getGetMyBrokerProfileUrl = () => {
+
+
+
+
+  return `/api/brokers/me`
+}
+
+/**
+ * @summary The current broker's directory profile (null if not created yet)
+ */
+export const getMyBrokerProfile = async ( options?: Parameters<typeof customFetch>[1]): Promise<BrokerProfileEnvelope> => {
+
+  return customFetch<BrokerProfileEnvelope>(getGetMyBrokerProfileUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMyBrokerProfileQueryKey = () => {
+    return [
+    `/api/brokers/me`
+    ] as const;
+    }
+
+
+export const getGetMyBrokerProfileQueryOptions = <TData = Awaited<ReturnType<typeof getMyBrokerProfile>>, TError = ErrorType<ApiMessage>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyBrokerProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMyBrokerProfileQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyBrokerProfile>>> = ({ signal }) => getMyBrokerProfile({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyBrokerProfile>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMyBrokerProfileQueryResult = NonNullable<Awaited<ReturnType<typeof getMyBrokerProfile>>>
+export type GetMyBrokerProfileQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary The current broker's directory profile (null if not created yet)
+ */
+
+export function useGetMyBrokerProfile<TData = Awaited<ReturnType<typeof getMyBrokerProfile>>, TError = ErrorType<ApiMessage>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyBrokerProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMyBrokerProfileQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpsertMyBrokerProfileUrl = () => {
+
+
+
+
+  return `/api/brokers/me`
+}
+
+/**
+ * @summary Create or update the current broker's directory profile
+ */
+export const upsertMyBrokerProfile = async (brokerProfileInput: BrokerProfileInput, options?: Parameters<typeof customFetch>[1]): Promise<Broker> => {
+
+  return customFetch<Broker>(getUpsertMyBrokerProfileUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(brokerProfileInput)
+  }
+);}
+
+
+
+
+
+export const getUpsertMyBrokerProfileMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertMyBrokerProfile>>, TError,{data: BodyType<BrokerProfileInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof upsertMyBrokerProfile>>, TError,{data: BodyType<BrokerProfileInput>}, TContext> => {
+
+const mutationKey = ['upsertMyBrokerProfile'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof upsertMyBrokerProfile>>, {data: BodyType<BrokerProfileInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  upsertMyBrokerProfile(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpsertMyBrokerProfileMutationResult = NonNullable<Awaited<ReturnType<typeof upsertMyBrokerProfile>>>
+    export type UpsertMyBrokerProfileMutationBody = BodyType<BrokerProfileInput>
+    export type UpsertMyBrokerProfileMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Create or update the current broker's directory profile
+ */
+export const useUpsertMyBrokerProfile = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertMyBrokerProfile>>, TError,{data: BodyType<BrokerProfileInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof upsertMyBrokerProfile>>,
+        TError,
+        {data: BodyType<BrokerProfileInput>},
+        TContext
+      > => {
+      return useMutation(getUpsertMyBrokerProfileMutationOptions(options));
+    }
 
 export const getGetBrokerUrl = (id: number,) => {
 

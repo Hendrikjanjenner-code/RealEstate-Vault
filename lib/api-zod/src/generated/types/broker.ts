@@ -8,6 +8,13 @@
 
 export interface Broker {
   id: number;
+  /**
+     * Auth user id this profile belongs to. Null for demo personas.
+     * @nullable
+     */
+  userId?: string | null;
+  /** True for seeded demo personas not tied to a real account. */
+  isDemo: boolean;
   name: string;
   company: string;
   title: string;

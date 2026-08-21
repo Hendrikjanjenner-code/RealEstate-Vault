@@ -1,6 +1,6 @@
 import { formatMillions } from "@/lib/utils";
 import { useState } from "react";
-import { useRoute } from "wouter";
+import { Link, useRoute } from "wouter";
 import { useGetDeal, useListDealDocuments, useRequestDealAccess, useListAccessRequests, useSignAccessRequestNda, getGetDealQueryKey, getListDealDocumentsQueryKey } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -340,7 +340,9 @@ export default function DealDetail() {
                 <p className="text-sm text-muted-foreground">{deal.brokerCompany}</p>
               </div>
             </div>
-            <Button variant="outline" className="w-full border-white/10">View Broker Profile</Button>
+            <Button asChild variant="outline" className="w-full border-white/10">
+              <Link href="/demo/brokers">View Broker Directory</Link>
+            </Button>
           </div>
         </div>
       </div>

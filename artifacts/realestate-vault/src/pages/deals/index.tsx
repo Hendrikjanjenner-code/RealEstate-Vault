@@ -148,6 +148,12 @@ export default function DealsList() {
                     ? deal.country 
                     : `${deal.city}, ${deal.country}`}
                 </div>
+                {deal.brokerName && (
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Listed by <span className="text-foreground font-medium">{deal.brokerName}</span>
+                    {deal.brokerCompany ? ` · ${deal.brokerCompany}` : ""}
+                  </p>
+                )}
                 <div className="grid grid-cols-2 gap-4 mb-6 mt-auto border-t border-white/5 pt-4">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider font-medium">Asking Price</p>

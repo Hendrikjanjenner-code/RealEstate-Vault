@@ -115,6 +115,11 @@ export interface Deal {
   brokerName?: string | null;
   /** @nullable */
   brokerCompany?: string | null;
+  /**
+     * Directory profile id of the owning broker's real account, if they created one.
+     * @nullable
+     */
+  brokerProfileId?: number | null;
   views: number;
   accessRequests: number;
   createdAt: string;
@@ -196,6 +201,13 @@ export interface SignNdaInput {
 
 export interface Broker {
   id: number;
+  /**
+     * Auth user id this profile belongs to. Null for demo personas.
+     * @nullable
+     */
+  userId?: string | null;
+  /** True for seeded demo personas not tied to a real account. */
+  isDemo: boolean;
   name: string;
   company: string;
   title: string;
@@ -211,6 +223,28 @@ export interface Broker {
   bio?: string | null;
   /** @nullable */
   avatarUrl?: string | null;
+}
+
+export interface BrokerProfileEnvelope {
+  profile: Broker | null;
+}
+
+export interface BrokerProfileInput {
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  company: string;
+  /** @minLength 1 */
+  title: string;
+  /** @minLength 1 */
+  city: string;
+  /** @minLength 1 */
+  country: string;
+  /** @minimum 0 */
+  yearsExperience?: number;
+  specialisations?: string[];
+  bio?: string;
+  avatarUrl?: string;
 }
 
 export interface Mandate {

@@ -3,6 +3,7 @@ import { dealMatchesMandate } from "../lib/mandateMatching";
 import {
   getAccessStatuses,
   getSavedDealIds,
+  overlayBrokerProfiles,
   presentDeal,
 } from "./deals";
 import { Router, type IRouter } from "express";
@@ -19,6 +20,9 @@ import {
   ListBrokersResponse,
   GetBrokerParams,
   GetBrokerResponse,
+  GetMyBrokerProfileResponse,
+  UpsertMyBrokerProfileBody,
+  UpsertMyBrokerProfileResponse,
   ListMandatesResponse,
   ListMandateMatchesParams,
   ListMandateMatchesResponse,
@@ -35,11 +39,24 @@ router.get("/brokers", async (_req, res): Promise<void> => {
     .from(brokersTable)
     .orderBy(desc(brokersTable.score));
 
-  res.json(ListBrokersResponse.parse(toJson(brokers)));
-});
+  const [profile] = await db
+    .insert(brokersTable)
+    .values(values)
+    .onConflictDoUpdate({
+      target: brokersTable.userId,
+      set: values,
+    })
+    .returning();
 
-router.get("/brokers/:id", async (req, res): Promise<void> => {
-  const params = GetBrokerParams.safeParse(req.params);
+  const [profile] = await db
+    .insert(brokersTable)
+    .values(values)
+    .onConflictDoUpdate({
+      target: brokersTable.userId,
+      set: values,
+    })
+    .returning();
+  const params = ListMandateMatchesParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
@@ -86,9 +103,9 @@ router.get("/mandates/:id/matches", async (req, res): Promise<void> => {
   }
 
   const [mandate] = await db
-    .select()
-    .from(mandatesTable)
-    .where(eq(mandatesTable.id, params.data.id));
+    .insert(mandatesTable)
+    .values({ ...parsed.data, status: "active", matches: 0 })
+    .returning();
 
   if (!mandate) {
     res.status(404).json({ error: "Mandate not found" });
@@ -101,14 +118,15 @@ router.get("/mandates/:id/matches", async (req, res): Promise<void> => {
     .orderBy(desc(dealsTable.createdAt));
   const matching = allDeals.filter((deal) => dealMatchesMandate(deal, mandate));
 
-  const [statuses, savedIds] = await Promise.all([
+  const [statuses, savedIds, withProfiles] = await Promise.all([
     getAccessStatuses(matching, req.user.id),
     getSavedDealIds(
       matching.map((d) => d.id),
       req.user.id,
     ),
+    overlayBrokerProfiles(matching),
   ]);
-  const presented = matching.map((deal) =>
+  const presented = withProfiles.map((deal) =>
     presentDeal(deal, statuses.get(deal.id) ?? "none", savedIds.has(deal.id)),
   );
 
@@ -126,6 +144,20 @@ router.post("/mandates", async (req, res): Promise<void> => {
   }
 
   const parsed = CreateMandateBody.safeParse(req.body);
+
+  const values = {
+    userId: req.user.id,
+    isDemo: false,
+    name: parsed.data.name,
+    company: parsed.data.company,
+    title: parsed.data.title,
+    city: parsed.data.city,
+    country: parsed.data.country,
+    yearsExperience: parsed.data.yearsExperience ?? 0,
+    specialisations: parsed.data.specialisations ?? [],
+    bio: parsed.data.bio ?? null,
+    avatarUrl: parsed.data.avatarUrl ?? null,
+  };
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;

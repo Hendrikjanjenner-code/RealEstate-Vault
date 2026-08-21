@@ -24,6 +24,7 @@ import Brokers from '@/pages/brokers';
 import Messages from '@/pages/messages';
 import Transactions from '@/pages/transactions';
 import NotFound from '@/pages/not-found';
+import BrokerProfile from '@/pages/broker-profile';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -116,6 +117,7 @@ function AppShellRouter() {
         <Route path="/demo/brokers" component={Brokers} />
         <Route path="/demo/messages" component={Messages} />
         <Route path="/demo/transactions" component={Transactions} />
+        <Route path="/demo/profile" component={BrokerProfile} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Shield, LayoutDashboard, Briefcase, Users, FileText, Send, ScrollText, Handshake, LogOut } from "lucide-react";
+import { Shield, LayoutDashboard, Briefcase, Users, FileText, Send, ScrollText, Handshake, LogOut, UserRound } from "lucide-react";
 import { VaultLogo } from "@/components/logo";
 import { NotificationsBell } from "@/components/notifications-bell";
 import { useAuth } from "@workspace/replit-auth-web";
@@ -37,6 +37,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   const navItems = [
     { label: "Dashboard", href: "/demo", icon: LayoutDashboard },
+    ...(user?.role === "broker"
+      ? [{ label: "My Profile", href: "/demo/profile", icon: UserRound }]
+      : []),
     { label: "Deals", href: "/demo/deals", icon: Briefcase },
     { label: "Mandates", href: "/demo/mandates", icon: FileText },
     { label: "Brokers", href: "/demo/brokers", icon: Users },
