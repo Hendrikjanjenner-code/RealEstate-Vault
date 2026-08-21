@@ -19,6 +19,10 @@ function NativeTabLayout() {
         <Icon sf={{ default: 'building.2', selected: 'building.2.fill' }} />
         <Label>Deals</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="mandates">
+        <Icon sf={{ default: 'scope', selected: 'scope' }} />
+        <Label>Mandates</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="messages">
         <Icon sf={{ default: 'bubble.left', selected: 'bubble.left.fill' }} />
         <Label>Messages</Label>
@@ -86,6 +90,18 @@ function ClassicTabLayout() {
               <SymbolView name="building.2" tintColor={color} size={24} />
             ) : (
               <Feather name="briefcase" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="mandates"
+        options={{
+          title: 'Mandates',
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="scope" tintColor={color} size={24} />
+            ) : (
+              <Feather name="target" size={22} color={color} />
             ),
         }}
       />

@@ -31,9 +31,11 @@ export default function DealsScreen() {
   const c = useColors();
   const [search, setSearch] = useState('');
   const [assetClass, setAssetClass] = useState('All');
+  const [savedOnly, setSavedOnly] = useState(false);
   const params = {
     search: search || undefined,
     assetClass: assetClass === 'All' ? undefined : assetClass,
+    savedOnly: savedOnly || undefined,
   };
   const { data: deals, isLoading, isError, refetch, isRefetching } = useListDeals(params);
   const toggleSave = useToggleSaveDeal();
@@ -47,6 +49,9 @@ export default function DealsScreen() {
         onSuccess: () => {
           queryClient.setQueryData(getListDealsQueryKey(params), (old: any) => {
             if (!old) return old;
+            if (savedOnly && currentSaved) {
+              return old.filter((d: any) => d.id !== id);
+            }
             return old.map((d: any) => (d.id === id ? { ...d, saved: !currentSaved } : d));
           });
         },
@@ -87,6 +92,37 @@ export default function DealsScreen() {
           )}
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+          <Pressable
+            testID="filter-saved"
+            onPress={() => setSavedOnly((s) => !s)}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.7 : 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+              borderRadius: 999,
+              backgroundColor: savedOnly ? c.primary : c.secondary,
+              borderWidth: StyleSheet.hairlineWidth,
+              borderColor: savedOnly ? c.primary : c.border,
+            })}
+          >
+            <Feather
+              name="bookmark"
+              size={13}
+              color={savedOnly ? c.primaryForeground : c.mutedForeground}
+            />
+            <Text
+              style={{
+                color: savedOnly ? c.primaryForeground : c.mutedForeground,
+                fontSize: 13,
+                fontFamily: 'Inter_600SemiBold',
+              }}
+            >
+              Saved
+            </Text>
+          </Pressable>
           {ASSET_CLASSES.map((ac) => {
             const active = assetClass === ac;
             return (
@@ -137,7 +173,15 @@ export default function DealsScreen() {
             <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} tintColor={c.primary} />
           }
           ListEmptyComponent={
-            <EmptyState icon="briefcase" title="No deals found" message="Try adjusting your search or filters." />
+            savedOnly ? (
+              <EmptyState
+                icon="bookmark"
+                title="No saved deals"
+                message="Tap the bookmark on any deal to save it for later."
+              />
+            ) : (
+              <EmptyState icon="briefcase" title="No deals found" message="Try adjusting your search or filters." />
+            )
           }
           renderItem={({ item: deal }) => {
             const hidden = deal.confidential && deal.status !== 'nda_signed';
