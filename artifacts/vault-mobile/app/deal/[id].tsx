@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useDealAccessState } from '@/hooks/useDealAccessState';
 import {
   Image,
   Platform,
@@ -10,12 +9,16 @@ import {
   View,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   getGetDealQueryKey,
+  getListAccessRequestsQueryKey,
   getListDealDocumentsQueryKey,
   useGetDeal,
+  useListAccessRequests,
   useListDealDocuments,
   useRequestDealAccess,
+  useSignAccessRequestNda,
 } from '@workspace/api-client-react';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
@@ -24,23 +27,78 @@ import { useColors } from '@/hooks/useColors';
 import colors from '@/constants/colors';
 import { Badge, Card, ErrorState, GoldButton, LoadingState, ScreenHeader } from '@/components/VaultUI';
 import { formatMillions, resolveImageUrl } from '@/lib/format';
+import { useAuth } from '@/lib/auth';
 
-import type { AccessState } from '@/hooks/useDealAccessState';
+type AccessState = 'locked' | 'requested' | 'nda_sent' | 'granted' | 'rejected';
+
+function toAccessState(accessStatus: string | null | undefined): AccessState {
+  switch (accessStatus) {
+    case 'granted':
+      return 'granted';
+    case 'nda_sent':
+      return 'nda_sent';
+    case 'pending':
+    case 'approved':
+      return 'requested';
+    case 'rejected':
+      return 'rejected';
+    default:
+      return 'locked';
+  }
+}
+
+const NDA_PARAGRAPHS = [
+  'This Non-Disclosure Agreement governs your access to confidential information concerning the investment opportunity marketed through RealEstate Vault.',
+  "1. You agree to keep all deal materials — including pricing, tenancy schedules, financial models, and the identity or location of the asset — strictly confidential.",
+  "2. Confidential information may be used solely to evaluate a potential acquisition and may not be shared with third parties without the listing broker's prior written consent.",
+  '3. This obligation remains in force for 24 months from the date of signature or until the information becomes public through no fault of your own.',
+  '4. By signing electronically below, you confirm you are authorised to bind yourself and your firm to these terms.',
+];
 
 export default function DealDetailScreen() {
   const c = useColors();
   const { id: idParam } = useLocalSearchParams<{ id: string }>();
   const id = Number(idParam ?? 0);
+  const { isAuthenticated, isLoading: authLoading, login } = useAuth();
   const { data: deal, isLoading, isError, refetch } = useGetDeal(id, {
-    query: { enabled: !!id, queryKey: getGetDealQueryKey(id) },
+    query: { enabled: !!id && isAuthenticated, queryKey: getGetDealQueryKey(id) },
   });
   const { data: docs, isError: docsError } = useListDealDocuments(id, {
-    query: { enabled: !!id, queryKey: getListDealDocumentsQueryKey(id) },
+    query: { enabled: !!id && isAuthenticated, queryKey: getListDealDocumentsQueryKey(id) },
   });
   const requestAccess = useRequestDealAccess();
-  const { accessState, setAccessState, hydrated } = useDealAccessState(id);
+  const signNda = useSignAccessRequestNda();
+  const queryClient = useQueryClient();
   const [form, setForm] = useState({ requesterName: '', requesterCompany: '', message: '' });
   const [formError, setFormError] = useState<string | null>(null);
+  const [showNda, setShowNda] = useState(false);
+  const [signerName, setSignerName] = useState('');
+  const [agreed, setAgreed] = useState(false);
+  const [signError, setSignError] = useState<string | null>(null);
+
+  // Find this investor's own request for the deal so they can sign it.
+  const { data: myRequests } = useListAccessRequests({
+    query: { enabled: !!id && isAuthenticated, queryKey: getListAccessRequestsQueryKey() },
+  });
+  const myRequest = myRequests?.find((r) => r.dealId === id && r.status === 'nda_sent');
+
+  if (!authLoading && !isAuthenticated) {
+    return (
+      <View style={{ flex: 1, backgroundColor: c.background }}>
+        <ScreenHeader title="Deal" showBack />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 14 }}>
+          <Feather name="lock" size={28} color={c.primary} />
+          <Text style={{ color: c.foreground, fontSize: 17, fontFamily: 'Inter_700Bold' }}>Members Only</Text>
+          <Text style={{ color: c.mutedForeground, fontSize: 13, fontFamily: 'Inter_400Regular', textAlign: 'center', lineHeight: 19 }}>
+            Sign in to view this deal, request access, and sign NDAs.
+          </Text>
+          <View style={{ alignSelf: 'stretch' }}>
+            <GoldButton testID="button-sign-in" label="Sign In" icon="log-in" onPress={login} />
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   if (isError) {
     return (
@@ -51,7 +109,7 @@ export default function DealDetailScreen() {
     );
   }
 
-  if (isLoading || !deal || !hydrated) {
+  if (authLoading || isLoading || !deal) {
     return (
       <View style={{ flex: 1, backgroundColor: c.background }}>
         <ScreenHeader title="Deal" showBack />
@@ -60,7 +118,7 @@ export default function DealDetailScreen() {
     );
   }
 
-  const effectiveAccess: AccessState = deal.confidential ? accessState : 'granted';
+  const effectiveAccess: AccessState = deal.confidential ? toAccessState(deal.accessStatus) : 'granted';
   const restricted = effectiveAccess !== 'granted';
 
   const submitRequest = () => {
@@ -81,9 +139,35 @@ export default function DealDetailScreen() {
       {
         onSuccess: () => {
           if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          setAccessState('requested');
+          queryClient.invalidateQueries({ queryKey: getGetDealQueryKey(id) });
+          queryClient.invalidateQueries({ queryKey: getListAccessRequestsQueryKey() });
         },
         onError: () => setFormError('Request failed. Please try again.'),
+      },
+    );
+  };
+
+  const submitSignNda = () => {
+    if (!myRequest) {
+      setSignError('Could not find your NDA request. Pull to refresh and try again.');
+      return;
+    }
+    if (!signerName.trim() || !agreed) {
+      setSignError('Type your full legal name and accept the terms.');
+      return;
+    }
+    setSignError(null);
+    signNda.mutate(
+      { id: myRequest.id, data: { signerName: signerName.trim(), agreed: true } },
+      {
+        onSuccess: () => {
+          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          setShowNda(false);
+          queryClient.invalidateQueries({ queryKey: getGetDealQueryKey(id) });
+          queryClient.invalidateQueries({ queryKey: getListDealDocumentsQueryKey(id) });
+          queryClient.invalidateQueries({ queryKey: getListAccessRequestsQueryKey() });
+        },
+        onError: () => setSignError('Signing failed. Please try again.'),
       },
     );
   };
@@ -175,7 +259,7 @@ export default function DealDetailScreen() {
               <Text style={{ color: c.foreground, fontSize: 15, fontFamily: 'Inter_700Bold' }}>Access Status</Text>
             </View>
             <View style={{ gap: 10 }}>
-              <Step label="Request Access" done={effectiveAccess !== 'locked'} />
+              <Step label="Request Access" done={effectiveAccess !== 'locked' && effectiveAccess !== 'rejected'} />
               <Step label="NDA Signature" done={effectiveAccess === 'granted'} />
               <Step label="Full Data Room" done={effectiveAccess === 'granted'} last />
             </View>
@@ -219,18 +303,103 @@ export default function DealDetailScreen() {
                 <Text style={{ color: c.mutedForeground, fontSize: 13, fontFamily: 'Inter_400Regular', textAlign: 'center', lineHeight: 19 }}>
                   The broker is reviewing your profile. You will be notified when the NDA is ready to sign.
                 </Text>
-                <View style={{ alignSelf: 'stretch' }}>
-                  <GoldButton
-                    testID="simulate-nda"
-                    label="Simulate NDA Signature (demo)"
-                    icon="edit-3"
-                    variant="outline"
-                    onPress={() => {
-                      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                      setAccessState('granted');
-                    }}
+              </View>
+            )}
+            {effectiveAccess === 'nda_sent' && !showNda && (
+              <View style={{ gap: 10, marginTop: 4 }}>
+                <Text style={{ color: c.primary, fontSize: 14, fontFamily: 'Inter_600SemiBold' }}>NDA Ready for Signature</Text>
+                <Text style={{ color: c.mutedForeground, fontSize: 13, fontFamily: 'Inter_400Regular', lineHeight: 19 }}>
+                  The broker has sent you the NDA. Review and sign it to unlock the full data room.
+                </Text>
+                <GoldButton
+                  testID="button-review-sign-nda"
+                  label="Review & Sign NDA"
+                  icon="edit-3"
+                  onPress={() => setShowNda(true)}
+                />
+              </View>
+            )}
+            {effectiveAccess === 'nda_sent' && showNda && (
+              <View style={{ gap: 12, marginTop: 4 }} testID="form-sign-nda">
+                <View
+                  style={{
+                    backgroundColor: c.secondary,
+                    borderWidth: StyleSheet.hairlineWidth,
+                    borderColor: c.border,
+                    borderRadius: colors.radius,
+                    padding: 14,
+                    gap: 8,
+                  }}
+                >
+                  <Text style={{ color: c.foreground, fontSize: 11, fontFamily: 'Inter_700Bold', textTransform: 'uppercase', letterSpacing: 1 }}>
+                    Non-Disclosure Agreement
+                  </Text>
+                  {NDA_PARAGRAPHS.map((p, i) => (
+                    <Text key={i} style={{ color: c.mutedForeground, fontSize: 12, fontFamily: 'Inter_400Regular', lineHeight: 18 }}>
+                      {p}
+                    </Text>
+                  ))}
+                </View>
+                <View style={{ gap: 6 }}>
+                  <Text style={{ color: c.mutedForeground, fontSize: 10, fontFamily: 'Inter_600SemiBold', textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                    Full Legal Name
+                  </Text>
+                  <Field
+                    testID="input-nda-signer-name"
+                    placeholder="Type your full name to sign"
+                    value={signerName}
+                    onChangeText={setSignerName}
                   />
                 </View>
+                <Pressable
+                  testID="checkbox-nda-agree"
+                  onPress={() => setAgreed((a) => !a)}
+                  style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}
+                >
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 5,
+                      borderWidth: 1.5,
+                      borderColor: agreed ? c.primary : c.border,
+                      backgroundColor: agreed ? c.primary : 'transparent',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginTop: 1,
+                    }}
+                  >
+                    {agreed && <Feather name="check" size={13} color={c.primaryForeground} />}
+                  </View>
+                  <Text style={{ flex: 1, color: c.mutedForeground, fontSize: 12, fontFamily: 'Inter_400Regular', lineHeight: 17 }}>
+                    I have read and agree to the terms of this Non-Disclosure Agreement, and my typed name constitutes my electronic signature.
+                  </Text>
+                </Pressable>
+                {signError && (
+                  <Text style={{ color: c.destructive, fontSize: 13, fontFamily: 'Inter_500Medium' }}>{signError}</Text>
+                )}
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <View style={{ flex: 1 }}>
+                    <GoldButton testID="button-nda-back" label="Back" variant="outline" onPress={() => setShowNda(false)} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <GoldButton
+                      testID="button-sign-nda"
+                      label={signNda.isPending ? 'Signing...' : 'Sign NDA'}
+                      icon="edit-3"
+                      loading={signNda.isPending}
+                      onPress={submitSignNda}
+                    />
+                  </View>
+                </View>
+              </View>
+            )}
+            {effectiveAccess === 'rejected' && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(220,80,80,0.1)', borderRadius: colors.radius, padding: 12 }}>
+                <Feather name="x-circle" size={18} color={c.destructive} />
+                <Text style={{ flex: 1, color: c.destructive, fontSize: 13, fontFamily: 'Inter_600SemiBold' }}>
+                  Your access request was declined by the broker.
+                </Text>
               </View>
             )}
             {effectiveAccess === 'granted' && (

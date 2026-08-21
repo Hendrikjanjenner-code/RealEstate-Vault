@@ -2,4 +2,6 @@
 - [Orval zod codegen needs zod/v4 import](orval-zod-v4.md) — generated api-zod code uses zod v4 APIs; codegen rewrites the import, and API responses must serialize Dates to ISO strings before parse.
 - [Playwright e2e setup](playwright-e2e-setup.md) — use Nix playwright-driver's REPLIT_PLAYWRIGHT_CHROMIUM_EXECUTABLE with a version-matched @playwright/test; run via scripts package against localhost:80.
 - [Task-environment DB may lag schema](task-env-db-schema.md) — "relation does not exist" in a task env means run drizzle push; isolated DBs can miss tables from freshly merged tasks.
+- [Shared dev DB across task branches](shared-dev-db.md) — drizzle push diffs against this branch's schema only and can drop other in-flight tasks' columns; apply additive SQL instead.
+- [Mobile auth & e2e sessions](mobile-e2e-auth.md) — Expo app auth is a bearer session token (SecureStore native / localStorage web); e2e tests seed a DB session sid into that storage.
 - [Replit Auth monorepo quirks](replit-auth-monorepo-quirks.md) — auth-web lib needs composite tsconfig + vite-env shim; session user snapshots must be updated on role change; confidential-deal redaction happens server-side per viewer.

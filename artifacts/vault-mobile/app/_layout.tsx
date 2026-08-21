@@ -4,7 +4,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { setBaseUrl } from '@workspace/api-client-react';
+import { setAuthTokenGetter, setBaseUrl } from '@workspace/api-client-react';
+import { AuthProvider } from '@/lib/auth';
+import { tokenStorage } from '@/lib/auth-token';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -18,6 +20,8 @@ import { StatusBar } from 'expo-status-bar';
 
 // Expo bundles run outside the web proxy and need absolute URLs to reach the API server.
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
+// No cookies outside the web proxy: attach the stored session token as a bearer.
+setAuthTokenGetter(() => tokenStorage.get());
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -56,12 +60,14 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <GestureHandlerRootView>
-            <KeyboardProvider>
-              <StatusBar style="light" />
-              <RootLayoutNav />
-            </KeyboardProvider>
-          </GestureHandlerRootView>
+          <AuthProvider>
+            <GestureHandlerRootView>
+              <KeyboardProvider>
+                <StatusBar style="light" />
+                <RootLayoutNav />
+              </KeyboardProvider>
+            </GestureHandlerRootView>
+          </AuthProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>
