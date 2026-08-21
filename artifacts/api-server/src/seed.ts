@@ -146,7 +146,6 @@ async function seed() {
         occupancyPct: 84,
         status: "active",
         confidential: true,
-        saved: true,
         teaser: "52-key boutique hotel across three restored canal houses in the UNESCO ring. Lease-free, operator flexible.",
         description:
           "A rare freehold opportunity comprising three interconnected canal houses fully renovated in 2019. Strong ADR growth, F&B income from destination restaurant, and planning consent for four additional suites. Sale is strictly off-market at the family office owner's request.",
@@ -175,7 +174,6 @@ async function seed() {
         occupancyPct: 93,
         status: "active",
         confidential: true,
-        saved: false,
         teaser: "Core office tower in the banking district, WALT 6.8 years, anchored by two investment-grade tenants.",
         description:
           "Institutional-quality tower with LEED Gold certification, fully refurbished lobby (2023), and indexed leases. Vendor is a closed-end fund at end of term; process limited to eight vetted parties.",
@@ -204,7 +202,6 @@ async function seed() {
         occupancyPct: 100,
         status: "active",
         confidential: false,
-        saved: true,
         teaser: "Three cross-dock facilities totalling 112,000 sqm, fully let to port-related tenants on long leases.",
         description:
           "Modern XXL logistics portfolio directly serving the deep-sea terminals. Triple-net leases with CPI indexation, average remaining term 9.2 years. Solar-ready roofs and expansion land included.",
@@ -234,7 +231,6 @@ async function seed() {
         occupancyPct: 97,
         status: "active",
         confidential: true,
-        saved: false,
         teaser: "164-unit Altbau ensemble across four addresses, significant reversionary potential, privatisation-ready.",
         description:
           "Meticulously maintained pre-war stock with an average in-place rent 31% below market. Condominium division completed for two of four buildings. Strictly confidential; owner is a third-generation family holding.",
@@ -263,7 +259,6 @@ async function seed() {
         occupancyPct: 100,
         status: "active",
         confidential: true,
-        saved: true,
         teaser: "Prime flagship retail on one of Europe's most coveted luxury corridors, let to a global maison until 2036.",
         description:
           "Haussmann corner building with 42 metres of frontage. Single luxury tenant on a 12-year lease with fixed uplifts. Upper floors hold consented office-to-retail conversion potential.",
@@ -293,7 +288,6 @@ async function seed() {
         occupancyPct: 76,
         status: "active",
         confidential: false,
-        saved: false,
         teaser: "128-key oceanfront resort with repositioning upside, vacant possession of operations available.",
         description:
           "Five-hectare oceanfront site with direct beach access, spa, and conference wing. Current operator contract expires 2027, allowing brand repositioning to the luxury segment. Feasibility study available in the data room.",
@@ -322,7 +316,6 @@ async function seed() {
         occupancyPct: 88,
         status: "active",
         confidential: true,
-        saved: false,
         teaser: "Grade-A campus of three buildings north of Nuevos Ministerios, BREEAM Excellent, multi-let to 11 tenants.",
         description:
           "Diversified rent roll with no tenant above 18% of income. On-site amenities include auditorium, gym, and 420 parking bays with EV charging. Vendor seeks discreet process ahead of fund wind-down.",
@@ -351,7 +344,6 @@ async function seed() {
         occupancyPct: 95,
         status: "active",
         confidential: true,
-        saved: false,
         teaser: "Trophy corner house in the first district: luxury retail at grade, offices and residences above.",
         description:
           "Landmark Grunderzeit building steps from the Graben. Ground-floor retail let to two luxury tenants, five office floors, and three penthouse residences. Generational asset offered for the first time in 60 years.",

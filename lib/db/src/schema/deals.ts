@@ -7,6 +7,7 @@ import {
   doublePrecision,
   timestamp,
   varchar,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -31,7 +32,6 @@ export const dealsTable = pgTable("deals", {
   occupancyPct: doublePrecision("occupancy_pct"),
   status: text("status").notNull().default("active"),
   confidential: boolean("confidential").notNull().default(false),
-  saved: boolean("saved").notNull().default(false),
   teaser: text("teaser"),
   description: text("description"),
   imageUrl: text("image_url"),
@@ -67,6 +67,21 @@ export const dealDocumentsTable = pgTable("deal_documents", {
 });
 
 export type DealDocument = typeof dealDocumentsTable.$inferSelect;
+
+// Per-user saved deals: one row means the user has saved that deal.
+export const savedDealsTable = pgTable(
+  "saved_deals",
+  {
+    userId: varchar("user_id").notNull(),
+    dealId: integer("deal_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.dealId] })],
+);
+
+export type SavedDeal = typeof savedDealsTable.$inferSelect;
 
 export const accessRequestsTable = pgTable("access_requests", {
   id: serial("id").primaryKey(),

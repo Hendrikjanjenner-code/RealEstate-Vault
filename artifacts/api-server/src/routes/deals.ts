@@ -7,6 +7,7 @@ import {
   dealDocumentsTable,
   accessRequestsTable,
   activityTable,
+  savedDealsTable,
   type Deal,
 } from "@workspace/db";
 import {
@@ -87,18 +88,37 @@ async function getAccessStatuses(
   return statuses;
 }
 
+/** Deal ids the viewer has saved, out of the given set. */
+async function getSavedDealIds(
+  dealIds: number[],
+  userId: string,
+): Promise<Set<number>> {
+  if (dealIds.length === 0) return new Set();
+  const rows = await db
+    .select({ dealId: savedDealsTable.dealId })
+    .from(savedDealsTable)
+    .where(
+      and(
+        eq(savedDealsTable.userId, userId),
+        inArray(savedDealsTable.dealId, dealIds),
+      ),
+    );
+  return new Set(rows.map((r) => r.dealId));
+}
+
 /**
  * Strip confidential fields from a deal the viewer has no NDA-signed access
  * to: title, exact location, description, and financials are withheld
  * server-side.
  */
-function presentDeal(deal: Deal, accessStatus: AccessStatus) {
+function presentDeal(deal: Deal, accessStatus: AccessStatus, saved: boolean) {
   if (accessStatus === "granted") {
-    return { ...deal, accessStatus };
+    return { ...deal, accessStatus, saved };
   }
   return {
     ...deal,
     accessStatus,
+    saved,
     title: `Confidential ${deal.assetClass} Opportunity`,
     city: deal.region || "Undisclosed",
     description: null,
@@ -126,7 +146,17 @@ router.get("/deals", async (req, res): Promise<void> => {
   if (assetClass) conditions.push(eq(dealsTable.assetClass, assetClass));
   if (country) conditions.push(eq(dealsTable.country, country));
   if (dealType) conditions.push(eq(dealsTable.dealType, dealType));
-  if (savedOnly) conditions.push(eq(dealsTable.saved, true));
+  if (savedOnly) {
+    conditions.push(
+      inArray(
+        dealsTable.id,
+        db
+          .select({ dealId: savedDealsTable.dealId })
+          .from(savedDealsTable)
+          .where(eq(savedDealsTable.userId, req.user.id)),
+      ),
+    );
+  }
   if (search) {
     conditions.push(
       or(
@@ -143,9 +173,15 @@ router.get("/deals", async (req, res): Promise<void> => {
     .where(conditions.length ? and(...conditions) : undefined)
     .orderBy(desc(dealsTable.createdAt));
 
-  const statuses = await getAccessStatuses(deals, req.user.id);
+  const [statuses, savedIds] = await Promise.all([
+    getAccessStatuses(deals, req.user.id),
+    getSavedDealIds(
+      deals.map((d) => d.id),
+      req.user.id,
+    ),
+  ]);
   const presented = deals.map((deal) =>
-    presentDeal(deal, statuses.get(deal.id) ?? "none"),
+    presentDeal(deal, statuses.get(deal.id) ?? "none", savedIds.has(deal.id)),
   );
 
   res.json(ListDealsResponse.parse(toJson(presented)));
@@ -184,7 +220,7 @@ router.post("/deals", async (req, res): Promise<void> => {
     description: `New listing: ${deal.title} (${deal.city}, ${deal.country})`,
   });
 
-  res.status(201).json(CreateDealResponse.parse(toJson(deal)));
+  res.status(201).json(CreateDealResponse.parse(toJson({ ...deal, saved: false })));
 });
 
 router.get("/deals/:id", async (req, res): Promise<void> => {
@@ -209,10 +245,15 @@ router.get("/deals/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const statuses = await getAccessStatuses([deal], req.user.id);
+  const [statuses, savedIds] = await Promise.all([
+    getAccessStatuses([deal], req.user.id),
+    getSavedDealIds([deal.id], req.user.id),
+  ]);
   res.json(
     GetDealResponse.parse(
-      toJson(presentDeal(deal, statuses.get(deal.id) ?? "none")),
+      toJson(
+        presentDeal(deal, statuses.get(deal.id) ?? "none", savedIds.has(deal.id)),
+      ),
     ),
   );
 });
@@ -229,20 +270,49 @@ router.patch("/deals/:id/save", async (req, res): Promise<void> => {
   }
 
   const [deal] = await db
-    .update(dealsTable)
-    .set({ saved: sql`NOT ${dealsTable.saved}` })
-    .where(eq(dealsTable.id, params.data.id))
-    .returning();
+    .select()
+    .from(dealsTable)
+    .where(eq(dealsTable.id, params.data.id));
 
   if (!deal) {
     res.status(404).json({ error: "Deal not found" });
     return;
   }
 
+  // Toggle the viewer's save row for this deal.
+  const existing = await db
+    .select()
+    .from(savedDealsTable)
+    .where(
+      and(
+        eq(savedDealsTable.userId, req.user.id),
+        eq(savedDealsTable.dealId, deal.id),
+      ),
+    );
+
+  let saved: boolean;
+  if (existing.length > 0) {
+    await db
+      .delete(savedDealsTable)
+      .where(
+        and(
+          eq(savedDealsTable.userId, req.user.id),
+          eq(savedDealsTable.dealId, deal.id),
+        ),
+      );
+    saved = false;
+  } else {
+    await db
+      .insert(savedDealsTable)
+      .values({ userId: req.user.id, dealId: deal.id })
+      .onConflictDoNothing();
+    saved = true;
+  }
+
   const statuses = await getAccessStatuses([deal], req.user.id);
   res.json(
     ToggleSaveDealResponse.parse(
-      toJson(presentDeal(deal, statuses.get(deal.id) ?? "none")),
+      toJson(presentDeal(deal, statuses.get(deal.id) ?? "none", saved)),
     ),
   );
 });

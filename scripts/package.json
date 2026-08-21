@@ -12,5 +12,9 @@
     "@playwright/test": "1.55.0",
     "@types/node": "catalog:",
     "tsx": "catalog:"
+  },
+  "dependencies": {
+    "@workspace/db": "workspace:*",
+    "drizzle-orm": "catalog:"
   }
 }
