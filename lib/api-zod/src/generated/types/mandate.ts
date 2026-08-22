@@ -5,6 +5,7 @@
  * RealEstate Vault API
  * OpenAPI spec version: 0.1.0
  */
+import type { MandateStatus } from './mandateStatus';
 
 export interface Mandate {
   id: number;
@@ -18,7 +19,8 @@ export interface Mandate {
   strategy: string;
   /** @nullable */
   yieldTarget?: number | null;
-  status: string;
+  status: MandateStatus;
   matches: number;
+  isOwn?: boolean;
   createdAt: string;
 }

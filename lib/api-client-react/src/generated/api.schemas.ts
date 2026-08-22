@@ -300,6 +300,15 @@ export interface BrokerProfileInput {
   avatarUrl?: string;
 }
 
+export type MandateStatus = typeof MandateStatus[keyof typeof MandateStatus];
+
+
+export const MandateStatus = {
+  active: 'active',
+  paused: 'paused',
+  closed: 'closed',
+} as const;
+
 export interface Mandate {
   id: number;
   title: string;
@@ -312,8 +321,9 @@ export interface Mandate {
   strategy: string;
   /** @nullable */
   yieldTarget?: number | null;
-  status: string;
+  status: MandateStatus;
   matches: number;
+  isOwn?: boolean;
   createdAt: string;
 }
 
@@ -329,6 +339,19 @@ export interface MandateInput {
   maxSize: number;
   strategy: string;
   yieldTarget?: number;
+}
+
+export type MandateStatusInputStatus = typeof MandateStatusInputStatus[keyof typeof MandateStatusInputStatus];
+
+
+export const MandateStatusInputStatus = {
+  active: 'active',
+  paused: 'paused',
+  closed: 'closed',
+} as const;
+
+export interface MandateStatusInput {
+  status: MandateStatusInputStatus;
 }
 
 export interface Transaction {

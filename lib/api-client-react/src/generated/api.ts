@@ -47,6 +47,7 @@ import type {
   LogoutSuccess,
   Mandate,
   MandateInput,
+  MandateStatusInput,
   MarkNotificationsReadResult,
   Message,
   MessageInput,
@@ -2360,6 +2361,78 @@ export const useCreateMandate = <TError = ErrorType<unknown>,
       return useMutation(getCreateMandateMutationOptions(options));
     }
 
+export const getUpdateMandateStatusUrl = (id: number,) => {
+
+
+
+
+  return `/api/mandates/${id}`
+}
+
+/**
+ * @summary Update a mandate's status (owner only)
+ */
+export const updateMandateStatus = async (id: number,
+    mandateStatusInput: MandateStatusInput, options?: Parameters<typeof customFetch>[1]): Promise<Mandate> => {
+
+  return customFetch<Mandate>(getUpdateMandateStatusUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(mandateStatusInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateMandateStatusMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMandateStatus>>, TError,{id: number;data: BodyType<MandateStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateMandateStatus>>, TError,{id: number;data: BodyType<MandateStatusInput>}, TContext> => {
+
+const mutationKey = ['updateMandateStatus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMandateStatus>>, {id: number;data: BodyType<MandateStatusInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateMandateStatus(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateMandateStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateMandateStatus>>>
+    export type UpdateMandateStatusMutationBody = BodyType<MandateStatusInput>
+    export type UpdateMandateStatusMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Update a mandate's status (owner only)
+ */
+export const useUpdateMandateStatus = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMandateStatus>>, TError,{id: number;data: BodyType<MandateStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateMandateStatus>>,
+        TError,
+        {id: number;data: BodyType<MandateStatusInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateMandateStatusMutationOptions(options));
+    }
+
 export const getListMandateMatchesUrl = (id: number,) => {
 
 
@@ -3035,6 +3108,7 @@ export function useListActivity<TData = Awaited<ReturnType<typeof listActivity>>
 
   return withQueryKey(query, queryOptions.queryKey);
 }
+
 
 
 

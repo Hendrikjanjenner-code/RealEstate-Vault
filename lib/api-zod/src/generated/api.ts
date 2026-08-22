@@ -725,8 +725,9 @@ export const ListMandatesResponseItem = zod.object({
   "maxSize": zod.number(),
   "strategy": zod.string(),
   "yieldTarget": zod.number().nullish(),
-  "status": zod.string(),
+  "status": zod.enum(['active', 'paused', 'closed']),
   "matches": zod.int(),
+  "isOwn": zod.boolean().optional(),
   "createdAt": zod.string()
 })
 export const ListMandatesResponse = zod.array(ListMandatesResponseItem)
@@ -762,8 +763,38 @@ export const CreateMandateResponse = zod.object({
   "maxSize": zod.number(),
   "strategy": zod.string(),
   "yieldTarget": zod.number().nullish(),
-  "status": zod.string(),
+  "status": zod.enum(['active', 'paused', 'closed']),
   "matches": zod.int(),
+  "isOwn": zod.boolean().optional(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Update a mandate's status (owner only)
+ */
+export const UpdateMandateStatusParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const UpdateMandateStatusBody = zod.object({
+  "status": zod.enum(['active', 'paused', 'closed'])
+})
+
+export const UpdateMandateStatusResponse = zod.object({
+  "id": zod.int(),
+  "title": zod.string(),
+  "investorName": zod.string(),
+  "investorType": zod.string(),
+  "assetClasses": zod.array(zod.string()),
+  "countries": zod.array(zod.string()),
+  "minSize": zod.number(),
+  "maxSize": zod.number(),
+  "strategy": zod.string(),
+  "yieldTarget": zod.number().nullish(),
+  "status": zod.enum(['active', 'paused', 'closed']),
+  "matches": zod.int(),
+  "isOwn": zod.boolean().optional(),
   "createdAt": zod.string()
 })
 

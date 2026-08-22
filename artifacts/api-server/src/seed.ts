@@ -580,7 +580,7 @@ async function seed() {
       maxSize: 80000000,
       strategy: "Value-add",
       yieldTarget: 4.0,
-      status: "fulfilled",
+      status: "closed",
       matches: 4,
       createdAt: daysAgo(38),
     },

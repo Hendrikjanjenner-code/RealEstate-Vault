@@ -34,6 +34,8 @@ export type Broker = typeof brokersTable.$inferSelect;
 
 export const mandatesTable = pgTable("mandates", {
   id: serial("id").primaryKey(),
+  // Auth user id of the investor who created the mandate. Null for seeded demo data.
+  ownerUserId: varchar("owner_user_id"),
   title: text("title").notNull(),
   investorName: text("investor_name").notNull(),
   investorType: text("investor_type").notNull(),

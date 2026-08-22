@@ -651,6 +651,37 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Mandate" }
+  /mandates/{id}:
+    patch:
+      operationId: updateMandateStatus
+      tags: [mandates]
+      summary: Update a mandate's status (owner only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MandateStatusInput" }
+      responses:
+        "200":
+          description: Updated mandate
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Mandate" }
+        "403":
+          description: Not the mandate owner
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /mandates/{id}/matches:
     get:
       operationId: listMandateMatches
@@ -1106,8 +1137,9 @@ components:
         maxSize: { type: number }
         strategy: { type: string }
         yieldTarget: { type: ["number", "null"] }
-        status: { type: string }
+        status: { type: string, enum: [active, paused, closed] }
         matches: { type: integer }
+        isOwn: { type: boolean }
         createdAt: { type: string }
     MandateInput:
       type: object
@@ -1126,6 +1158,11 @@ components:
         maxSize: { type: number }
         strategy: { type: string }
         yieldTarget: { type: number }
+    MandateStatusInput:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [active, paused, closed] }
     Transaction:
       type: object
       required: [id, dealTitle, assetClass, country, city, price, currency, verified, closedAt, brokerName, buyerType]

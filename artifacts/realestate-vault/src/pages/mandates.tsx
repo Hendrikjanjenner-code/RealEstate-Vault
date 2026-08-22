@@ -1,12 +1,12 @@
 import { formatMillions } from "@/lib/utils";
 import { useState } from "react";
 import { Link } from "wouter";
-import { useListMandates, useCreateMandate, getListMandatesQueryKey } from "@workspace/api-client-react";
+import { useListMandates, useCreateMandate, useUpdateMandateStatus, getListMandatesQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText, Plus, Target, Building2, MapPin, Search } from "lucide-react";
+import { Plus, Target, Building2, MapPin, Search, Pause, Play, XCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,11 +46,11 @@ export default function Mandates() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {mandates?.map((mandate) => (
-            <Card key={mandate.id} className="bg-card/30 backdrop-blur border-white/5 flex flex-col h-full hover:border-primary/30 transition-colors">
+            <Card key={mandate.id} className={`bg-card/30 backdrop-blur border-white/5 flex flex-col h-full hover:border-primary/30 transition-colors ${mandate.status !== 'active' ? 'opacity-60' : ''}`}>
               <CardContent className="p-6 flex-1 flex flex-col">
                 <div className="flex justify-between items-start mb-4">
                   <Badge variant="outline" className={`
-                    ${mandate.status === 'active' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted/10 text-muted-foreground border-white/10'}
+                    ${mandate.status === 'active' ? 'bg-primary/10 text-primary border-primary/20' : mandate.status === 'closed' ? 'bg-destructive/10 text-destructive border-destructive/20' : 'bg-muted/10 text-muted-foreground border-white/10'}
                   `}>
                     {mandate.status.toUpperCase()}
                   </Badge>
@@ -109,6 +109,7 @@ export default function Mandates() {
                       <Search className="w-4 h-4 mr-2" /> Find Matches
                     </Link>
                   </Button>
+                  {mandate.isOwn && <OwnerActions mandateId={mandate.id} status={mandate.status} />}
                 </div>
               </CardContent>
             </Card>
@@ -116,6 +117,69 @@ export default function Mandates() {
         </div>
       )}
     </div>
+  );
+}
+
+function OwnerActions({ mandateId, status }: { mandateId: number; status: string }) {
+  const queryClient = useQueryClient();
+  const updateStatus = useUpdateMandateStatus({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListMandatesQueryKey() });
+      },
+    },
+  });
+
+  const setStatus = (newStatus: "active" | "paused" | "closed") =>
+    updateStatus.mutate({ id: mandateId, data: { status: newStatus } });
+
+  if (status === "closed") {
+    return (
+      <Button
+        variant="outline"
+        disabled={updateStatus.isPending}
+        onClick={() => setStatus("active")}
+        className="border-white/10 text-muted-foreground hover:text-foreground"
+        data-testid={`reopen-mandate-${mandateId}`}
+      >
+        <Play className="w-4 h-4 mr-2" /> Reopen
+      </Button>
+    );
+  }
+
+  return (
+    <>
+      {status === "active" ? (
+        <Button
+          variant="outline"
+          disabled={updateStatus.isPending}
+          onClick={() => setStatus("paused")}
+          className="border-white/10 text-muted-foreground hover:text-foreground"
+          data-testid={`pause-mandate-${mandateId}`}
+        >
+          <Pause className="w-4 h-4 mr-2" /> Pause
+        </Button>
+      ) : (
+        <Button
+          variant="outline"
+          disabled={updateStatus.isPending}
+          onClick={() => setStatus("active")}
+          className="border-white/10 text-muted-foreground hover:text-foreground"
+          data-testid={`resume-mandate-${mandateId}`}
+        >
+          <Play className="w-4 h-4 mr-2" /> Resume
+        </Button>
+      )}
+      <Button
+        variant="outline"
+        disabled={updateStatus.isPending}
+        onClick={() => setStatus("closed")}
+        className="border-white/10 text-muted-foreground hover:text-destructive"
+        data-testid={`close-mandate-${mandateId}`}
+      >
+        <XCircle className="w-4 h-4 mr-2" /> Close
+      </Button>
+    </>
   );
 }
 

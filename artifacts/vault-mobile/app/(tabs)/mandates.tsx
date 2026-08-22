@@ -15,6 +15,7 @@ import {
   getListMandatesQueryKey,
   useCreateMandate,
   useListMandates,
+  useUpdateMandateStatus,
 } from '@workspace/api-client-react';
 import { useColors } from '@/hooks/useColors';
 import colors from '@/constants/colors';
@@ -97,7 +98,7 @@ export default function MandatesScreen() {
               style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
             >
             <Card>
-              <View style={{ padding: 16, gap: 10 }}>
+              <View style={{ padding: 16, gap: 10, opacity: mandate.status === 'active' ? 1 : 0.55 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
                   <Text style={{ flex: 1, color: c.foreground, fontSize: 16, fontFamily: 'Inter_700Bold' }}>
                     {mandate.title}
@@ -167,6 +168,7 @@ export default function MandatesScreen() {
                   </Text>
                   <Feather name="chevron-right" size={14} color={c.primary} />
                 </View>
+                {mandate.isOwn ? <OwnerStatusActions mandateId={mandate.id} status={mandate.status} /> : null}
               </View>
             </Card>
             </Pressable>
@@ -178,6 +180,76 @@ export default function MandatesScreen() {
   );
 }
 
+function OwnerStatusActions({ mandateId, status }: { mandateId: number; status: string }) {
+  const c = useColors();
+  const queryClient = useQueryClient();
+  const updateStatus = useUpdateMandateStatus({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListMandatesQueryKey() });
+      },
+    },
+  });
+
+  const setStatus = (newStatus: 'active' | 'paused' | 'closed') =>
+    updateStatus.mutate({ id: mandateId, data: { status: newStatus } });
+
+  const buttons: { label: string; icon: keyof typeof Feather.glyphMap; onPress: () => void; destructive?: boolean }[] =
+    status === 'closed'
+      ? [{ label: 'Reopen', icon: 'play', onPress: () => setStatus('active') }]
+      : [
+          status === 'active'
+            ? { label: 'Pause', icon: 'pause', onPress: () => setStatus('paused') }
+            : { label: 'Resume', icon: 'play', onPress: () => setStatus('active') },
+          { label: 'Close', icon: 'x-circle', onPress: () => setStatus('closed'), destructive: true },
+        ];
+
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        gap: 10,
+        borderTopWidth: StyleSheet.hairlineWidth,
+        borderTopColor: c.border,
+        paddingTop: 12,
+        marginTop: 2,
+      }}
+    >
+      {buttons.map((btn) => (
+        <Pressable
+          key={btn.label}
+          testID={`${btn.label.toLowerCase()}-mandate-${mandateId}`}
+          disabled={updateStatus.isPending}
+          onPress={btn.onPress}
+          style={({ pressed }) => ({
+            flex: 1,
+            opacity: pressed || updateStatus.isPending ? 0.6 : 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            height: 38,
+            borderRadius: colors.radius,
+            borderWidth: 1,
+            borderColor: btn.destructive ? c.destructive : c.border,
+            backgroundColor: c.secondary,
+          })}
+        >
+          <Feather name={btn.icon} size={14} color={btn.destructive ? c.destructive : c.foreground} />
+          <Text
+            style={{
+              color: btn.destructive ? c.destructive : c.foreground,
+              fontSize: 13,
+              fontFamily: 'Inter_600SemiBold',
+            }}
+          >
+            {btn.label}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
 function NewMandateModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const c = useColors();
   const insets = useSafeAreaInsets();
