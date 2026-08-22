@@ -22,16 +22,16 @@ export const GetCurrentAuthUserResponse = zod.object({
   "firstName": zod.string().nullable(),
   "lastName": zod.string().nullable(),
   "profileImageUrl": zod.string().nullable(),
-  "role": zod.string().nullable().describe('broker | investor. Null until the user chooses a role.')
+  "role": zod.string().nullable().describe('broker | investor | owner. Null until the user chooses a role.')
 }),zod.null()])
 })
 
 
 /**
- * @summary Set the current user's marketplace role (broker or investor)
+ * @summary Set the current user's marketplace role (broker, investor, or owner)
  */
 export const SetMyRoleBody = zod.object({
-  "role": zod.enum(['broker', 'investor'])
+  "role": zod.enum(['broker', 'investor', 'owner'])
 })
 
 export const SetMyRoleResponse = zod.object({
@@ -40,7 +40,7 @@ export const SetMyRoleResponse = zod.object({
   "firstName": zod.string().nullable(),
   "lastName": zod.string().nullable(),
   "profileImageUrl": zod.string().nullable(),
-  "role": zod.string().nullable().describe('broker | investor. Null until the user chooses a role.')
+  "role": zod.string().nullable().describe('broker | investor | owner. Null until the user chooses a role.')
 })
 
 
@@ -967,6 +967,189 @@ export const SendMessageResponse = zod.object({
   "body": zod.string(),
   "fromMe": zod.boolean(),
   "sentAt": zod.string()
+})
+
+
+/**
+ * @summary Owner assignments — owners see their own, brokers see open ones
+ */
+export const ListOwnerAssignmentsResponseItem = zod.object({
+  "id": zod.int(),
+  "ownerUserId": zod.string(),
+  "ownerName": zod.string(),
+  "ownerCompany": zod.string().nullish(),
+  "title": zod.string(),
+  "propertyType": zod.string(),
+  "country": zod.string(),
+  "city": zod.string(),
+  "areaSqm": zod.number().nullish(),
+  "indicativeValue": zod.number().nullish(),
+  "currency": zod.string(),
+  "goal": zod.enum(['sell', 'lease', 'valuation']),
+  "description": zod.string().nullish(),
+  "status": zod.enum(['open', 'closed']),
+  "createdAt": zod.string(),
+  "isOwn": zod.boolean()
+})
+export const ListOwnerAssignmentsResponse = zod.array(ListOwnerAssignmentsResponseItem)
+
+
+/**
+ * @summary Post a new property assignment (owners only)
+ */
+export const createOwnerAssignmentBodyTitleMin = 3;
+
+export const createOwnerAssignmentBodyPropertyTypeMin = 2;
+
+export const createOwnerAssignmentBodyCountryMin = 2;
+
+
+export const createOwnerAssignmentBodyAreaSqmMin = 0;
+
+export const createOwnerAssignmentBodyIndicativeValueMin = 0;
+
+
+
+export const CreateOwnerAssignmentBody = zod.object({
+  "title": zod.string().min(createOwnerAssignmentBodyTitleMin),
+  "propertyType": zod.string().min(createOwnerAssignmentBodyPropertyTypeMin),
+  "country": zod.string().min(createOwnerAssignmentBodyCountryMin),
+  "city": zod.string().min(1),
+  "areaSqm": zod.number().min(createOwnerAssignmentBodyAreaSqmMin).nullish(),
+  "indicativeValue": zod.number().min(createOwnerAssignmentBodyIndicativeValueMin).nullish(),
+  "goal": zod.enum(['sell', 'lease', 'valuation']),
+  "description": zod.string().nullish()
+})
+
+export const CreateOwnerAssignmentResponse = zod.object({
+  "id": zod.int(),
+  "ownerUserId": zod.string(),
+  "ownerName": zod.string(),
+  "ownerCompany": zod.string().nullish(),
+  "title": zod.string(),
+  "propertyType": zod.string(),
+  "country": zod.string(),
+  "city": zod.string(),
+  "areaSqm": zod.number().nullish(),
+  "indicativeValue": zod.number().nullish(),
+  "currency": zod.string(),
+  "goal": zod.enum(['sell', 'lease', 'valuation']),
+  "description": zod.string().nullish(),
+  "status": zod.enum(['open', 'closed']),
+  "createdAt": zod.string(),
+  "isOwn": zod.boolean()
+})
+
+
+/**
+ * @summary Open or close an assignment (owner only)
+ */
+export const UpdateOwnerAssignmentStatusParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const UpdateOwnerAssignmentStatusBody = zod.object({
+  "status": zod.enum(['open', 'closed'])
+})
+
+export const UpdateOwnerAssignmentStatusResponse = zod.object({
+  "id": zod.int(),
+  "ownerUserId": zod.string(),
+  "ownerName": zod.string(),
+  "ownerCompany": zod.string().nullish(),
+  "title": zod.string(),
+  "propertyType": zod.string(),
+  "country": zod.string(),
+  "city": zod.string(),
+  "areaSqm": zod.number().nullish(),
+  "indicativeValue": zod.number().nullish(),
+  "currency": zod.string(),
+  "goal": zod.enum(['sell', 'lease', 'valuation']),
+  "description": zod.string().nullish(),
+  "status": zod.enum(['open', 'closed']),
+  "createdAt": zod.string(),
+  "isOwn": zod.boolean()
+})
+
+
+/**
+ * @summary Connection requests — owners see sent, brokers see received
+ */
+export const ListBrokerConnectionsResponseItem = zod.object({
+  "id": zod.int(),
+  "ownerUserId": zod.string(),
+  "ownerName": zod.string(),
+  "ownerCompany": zod.string().nullish(),
+  "brokerId": zod.int(),
+  "brokerName": zod.string(),
+  "brokerCompany": zod.string().nullish(),
+  "assignmentId": zod.int().nullish(),
+  "assignmentTitle": zod.string().nullish(),
+  "message": zod.string(),
+  "status": zod.enum(['pending', 'accepted', 'declined']),
+  "threadId": zod.int().nullish(),
+  "createdAt": zod.string(),
+  "respondedAt": zod.string().nullish()
+})
+export const ListBrokerConnectionsResponse = zod.array(ListBrokerConnectionsResponseItem)
+
+
+/**
+ * @summary Send a connection request to a broker (owners only)
+ */
+
+
+
+export const CreateBrokerConnectionBody = zod.object({
+  "brokerId": zod.int(),
+  "assignmentId": zod.int().nullish(),
+  "message": zod.string().min(1)
+})
+
+export const CreateBrokerConnectionResponse = zod.object({
+  "id": zod.int(),
+  "ownerUserId": zod.string(),
+  "ownerName": zod.string(),
+  "ownerCompany": zod.string().nullish(),
+  "brokerId": zod.int(),
+  "brokerName": zod.string(),
+  "brokerCompany": zod.string().nullish(),
+  "assignmentId": zod.int().nullish(),
+  "assignmentTitle": zod.string().nullish(),
+  "message": zod.string(),
+  "status": zod.enum(['pending', 'accepted', 'declined']),
+  "threadId": zod.int().nullish(),
+  "createdAt": zod.string(),
+  "respondedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Accept or decline a connection request (addressed broker only)
+ */
+export const RespondBrokerConnectionParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const RespondBrokerConnectionBody = zod.object({
+  "status": zod.enum(['accepted', 'declined'])
+})
+
+export const RespondBrokerConnectionResponse = zod.object({
+  "id": zod.int(),
+  "ownerUserId": zod.string(),
+  "ownerName": zod.string(),
+  "ownerCompany": zod.string().nullish(),
+  "brokerId": zod.int(),
+  "brokerName": zod.string(),
+  "brokerCompany": zod.string().nullish(),
+  "assignmentId": zod.int().nullish(),
+  "assignmentTitle": zod.string().nullish(),
+  "message": zod.string(),
+  "status": zod.enum(['pending', 'accepted', 'declined']),
+  "threadId": zod.int().nullish(),
+  "createdAt": zod.string(),
+  "respondedAt": zod.string().nullish()
 })
 
 

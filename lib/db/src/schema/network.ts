@@ -77,6 +77,21 @@ export const threadsTable = pgTable("threads", {
   counterpartName: text("counterpart_name").notNull(),
   counterpartCompany: text("counterpart_company").notNull(),
   unread: integer("unread").notNull().default(0),
+  // Real account-to-account threads carry both participants' auth user ids.
+  // Legacy/seeded showcase threads leave both null and stay visible to all
+  // authenticated users.
+  participantAUserId: varchar("participant_a_user_id"),
+  participantBUserId: varchar("participant_b_user_id"),
+  // Display identities for each participant so the counterpart can be
+  // presented per viewer. Null on legacy threads (which use the static
+  // counterpartName/Company fields for everyone).
+  participantAName: text("participant_a_name"),
+  participantACompany: text("participant_a_company"),
+  participantBName: text("participant_b_name"),
+  participantBCompany: text("participant_b_company"),
+  // For participant threads: which participant the unread count applies to.
+  // Null on legacy threads (their static unread is shown to everyone).
+  unreadForUserId: varchar("unread_for_user_id"),
 });
 
 export type Thread = typeof threadsTable.$inferSelect;
@@ -87,10 +102,63 @@ export const messagesTable = pgTable("messages", {
   senderName: text("sender_name").notNull(),
   body: text("body").notNull(),
   fromMe: boolean("from_me").notNull().default(false),
+  // Auth user id of the sender for participant threads; null on legacy
+  // seeded messages (which rely on the static fromMe flag instead).
+  senderUserId: varchar("sender_user_id"),
   sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export type Message = typeof messagesTable.$inferSelect;
+
+// A property owner's assignment: a property they want a broker for
+// (sale, lease, or valuation). Visible to brokers while open.
+export const ownerAssignmentsTable = pgTable("owner_assignments", {
+  id: serial("id").primaryKey(),
+  // Auth user id of the property owner who posted the assignment.
+  ownerUserId: varchar("owner_user_id").notNull(),
+  ownerName: text("owner_name").notNull(),
+  ownerCompany: text("owner_company"),
+  title: text("title").notNull(),
+  // Property type, e.g. Hotels | Offices | Retail | Residential | Logistics | Mixed-use
+  propertyType: text("property_type").notNull(),
+  country: text("country").notNull(),
+  city: text("city").notNull(),
+  areaSqm: doublePrecision("area_sqm"),
+  indicativeValue: doublePrecision("indicative_value"),
+  currency: text("currency").notNull().default("EUR"),
+  // Goal: sell | lease | valuation
+  goal: text("goal").notNull(),
+  description: text("description"),
+  // open | closed
+  status: text("status").notNull().default("open"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type OwnerAssignment = typeof ownerAssignmentsTable.$inferSelect;
+
+// An owner's connection request to a broker (optionally about a specific
+// assignment). Acceptance opens a private thread between the two accounts.
+export const brokerConnectionsTable = pgTable("broker_connections", {
+  id: serial("id").primaryKey(),
+  ownerUserId: varchar("owner_user_id").notNull(),
+  ownerName: text("owner_name").notNull(),
+  ownerCompany: text("owner_company"),
+  // Broker directory profile the request is addressed to.
+  brokerId: integer("broker_id").notNull(),
+  assignmentId: integer("assignment_id"),
+  message: text("message").notNull(),
+  // pending | accepted | declined
+  status: text("status").notNull().default("pending"),
+  threadId: integer("thread_id"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  respondedAt: timestamp("responded_at", { withTimezone: true }),
+});
+
+export type BrokerConnection = typeof brokerConnectionsTable.$inferSelect;
 
 export const activityTable = pgTable("activity", {
   id: serial("id").primaryKey(),

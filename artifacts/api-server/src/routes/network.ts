@@ -148,20 +148,19 @@ router.get("/brokers/:id/deals", async (req, res): Promise<void> => {
     return;
   }
 
-  // A profile only owns deals when it is linked to a real account.
+  // Listings are associated to the directory profile via brokerId (the
+  // displayed broker), independent of which account manages them.
   // Only live listings are shown on the public profile.
-  const deals = broker.userId
-    ? await db
-        .select()
-        .from(dealsTable)
-        .where(
-          and(
-            eq(dealsTable.brokerUserId, broker.userId),
-            eq(dealsTable.status, "active"),
-          ),
-        )
-        .orderBy(desc(dealsTable.createdAt))
-    : [];
+  const deals = await db
+    .select()
+    .from(dealsTable)
+    .where(
+      and(
+        eq(dealsTable.brokerId, broker.id),
+        eq(dealsTable.status, "active"),
+      ),
+    )
+    .orderBy(desc(dealsTable.createdAt));
 
   const [statuses, savedIds, withProfiles] = await Promise.all([
     getAccessStatuses(deals, req.user.id),

@@ -215,13 +215,14 @@ router.post('/users/me/role', async (req: Request, res: Response) => {
 const DEMO_PERSONAS: Record<string, string> = {
   investor: 'demo-investor-jonathan',
   broker: 'demo-broker-willem',
+  owner: 'demo-owner-lucas',
 };
 
 router.get('/demo-login', async (req: Request, res: Response) => {
   const persona = typeof req.query.as === 'string' ? req.query.as : 'investor';
   const demoUserId = DEMO_PERSONAS[persona];
   if (!demoUserId) {
-    res.status(400).json({ message: 'Unknown demo persona. Use ?as=investor or ?as=broker.' });
+    res.status(400).json({ message: 'Unknown demo persona. Use ?as=investor, ?as=broker, or ?as=owner.' });
     return;
   }
 

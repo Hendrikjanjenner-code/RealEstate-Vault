@@ -17,7 +17,7 @@ export interface AuthUser {
   /** @nullable */
   profileImageUrl: string | null;
   /**
-     * broker | investor. Null until the user chooses a role.
+     * broker | investor | owner. Null until the user chooses a role.
      * @nullable
      */
   role: string | null;

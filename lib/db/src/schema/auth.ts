@@ -21,7 +21,7 @@ export const usersTable = pgTable('users', {
   firstName: varchar('first_name'),
   lastName: varchar('last_name'),
   profileImageUrl: varchar('profile_image_url'),
-  // Marketplace role: 'broker' | 'investor'. Null until the user picks one.
+  // Marketplace role: 'broker' | 'investor' | 'owner'. Null until the user picks one.
   role: varchar('role'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()

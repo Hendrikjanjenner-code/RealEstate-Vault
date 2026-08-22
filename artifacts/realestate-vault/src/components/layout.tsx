@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Shield, LayoutDashboard, Briefcase, Users, FileText, Send, ScrollText, Handshake, LogOut, UserRound } from "lucide-react";
+import { Shield, LayoutDashboard, Briefcase, Users, FileText, Send, Handshake, LogOut, UserRound, Building2 } from "lucide-react";
 import { VaultLogo } from "@/components/logo";
 import { NotificationsBell } from "@/components/notifications-bell";
 import { useAuth } from "@workspace/replit-auth-web";
@@ -35,18 +35,30 @@ export function AppLayout({ children }: { children: ReactNode }) {
       .slice(0, 2)
       .toUpperCase() || "M";
 
-  const navItems = [
-    { label: "Dashboard", href: "/demo", icon: LayoutDashboard },
-    ...(user?.role === "broker"
-      ? [{ label: "My Profile", href: "/demo/profile", icon: UserRound }]
-      : []),
-    { label: "Deals", href: "/demo/deals", icon: Briefcase },
-    { label: "Mandates", href: "/demo/mandates", icon: FileText },
-    { label: "Brokers", href: "/demo/brokers", icon: Users },
-    { label: "Messages", href: "/demo/messages", icon: Send },
-    { label: "Transactions", href: "/demo/transactions", icon: Handshake },
-    { label: "Access Requests", href: "/demo/access-requests", icon: Shield },
-  ];
+  const navItems =
+    user?.role === "owner"
+      ? [
+          { label: "Dashboard", href: "/demo", icon: LayoutDashboard },
+          { label: "My Properties", href: "/demo/assignments", icon: Building2 },
+          { label: "Find Brokers", href: "/demo/brokers", icon: Users },
+          { label: "Messages", href: "/demo/messages", icon: Send },
+          { label: "Transactions", href: "/demo/transactions", icon: Handshake },
+        ]
+      : [
+          { label: "Dashboard", href: "/demo", icon: LayoutDashboard },
+          ...(user?.role === "broker"
+            ? [
+                { label: "My Profile", href: "/demo/profile", icon: UserRound },
+                { label: "Owner Assignments", href: "/demo/assignments", icon: Building2 },
+              ]
+            : []),
+          { label: "Deals", href: "/demo/deals", icon: Briefcase },
+          { label: "Mandates", href: "/demo/mandates", icon: FileText },
+          { label: "Brokers", href: "/demo/brokers", icon: Users },
+          { label: "Messages", href: "/demo/messages", icon: Send },
+          { label: "Transactions", href: "/demo/transactions", icon: Handshake },
+          { label: "Access Requests", href: "/demo/access-requests", icon: Shield },
+        ];
 
   return (
     <SidebarProvider>
@@ -90,7 +102,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               </Avatar>
               <div className="flex flex-col overflow-hidden">
                 <span className="text-sm font-medium text-sidebar-foreground truncate">{displayName}</span>
-                <span className="text-xs text-sidebar-foreground/60 truncate">{user?.email || (user?.role === "broker" ? "Broker" : "Investor")}</span>
+                <span className="text-xs text-sidebar-foreground/60 truncate">{user?.email || (user?.role === "broker" ? "Broker" : user?.role === "owner" ? "Owner" : "Investor")}</span>
               </div>
             </div>
             <Button onClick={logout} variant="ghost" className="w-full mt-4 justify-start text-muted-foreground hover:text-foreground">
@@ -100,7 +112,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             {user?.role && (
               <div className="mt-4 flex items-center justify-center">
                 <div className="px-2 py-1 rounded border border-primary/20 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
-                  {user.role === "broker" ? "Broker Account" : "Investor Account"}
+                  {user.role === "broker" ? "Broker Account" : user.role === "owner" ? "Owner Account" : "Investor Account"}
                 </div>
               </div>
             )}

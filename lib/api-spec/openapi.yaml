@@ -42,7 +42,7 @@ paths:
     post:
       tags: [Auth]
       operationId: setMyRole
-      summary: Set the current user's marketplace role (broker or investor)
+      summary: Set the current user's marketplace role (broker, investor, or owner)
       requestBody:
         required: true
         content:
@@ -808,6 +808,104 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Message" }
+  /assignments:
+    get:
+      operationId: listOwnerAssignments
+      tags: [network]
+      summary: Owner assignments — owners see their own, brokers see open ones
+      responses:
+        "200":
+          description: Assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/OwnerAssignment" }
+    post:
+      operationId: createOwnerAssignment
+      tags: [network]
+      summary: Post a new property assignment (owners only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OwnerAssignmentInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OwnerAssignment" }
+  /assignments/{id}:
+    patch:
+      operationId: updateOwnerAssignmentStatus
+      tags: [network]
+      summary: Open or close an assignment (owner only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OwnerAssignmentStatusInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OwnerAssignment" }
+  /connections:
+    get:
+      operationId: listBrokerConnections
+      tags: [network]
+      summary: Connection requests — owners see sent, brokers see received
+      responses:
+        "200":
+          description: Connection requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/BrokerConnection" }
+    post:
+      operationId: createBrokerConnection
+      tags: [network]
+      summary: Send a connection request to a broker (owners only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BrokerConnectionInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BrokerConnection" }
+  /connections/{id}:
+    patch:
+      operationId: respondBrokerConnection
+      tags: [network]
+      summary: Accept or decline a connection request (addressed broker only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BrokerConnectionRespondInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BrokerConnection" }
   /notifications:
     get:
       operationId: listNotifications
@@ -900,7 +998,7 @@ components:
           type: [string, 'null']
         role:
           type: [string, 'null']
-          description: "broker | investor. Null until the user chooses a role."
+          description: "broker | investor | owner. Null until the user chooses a role."
     AuthUserEnvelope:
       type: object
       required: [user]
@@ -915,7 +1013,7 @@ components:
       properties:
         role:
           type: string
-          enum: [broker, investor]
+          enum: [broker, investor, owner]
     MobileTokenExchangeRequest:
       type: object
       required: [code, code_verifier, redirect_uri, state]
@@ -1249,6 +1347,73 @@ components:
       required: [body]
       properties:
         body: { type: string, minLength: 1 }
+    OwnerAssignment:
+      type: object
+      required: [id, ownerUserId, ownerName, title, propertyType, country, city, currency, goal, status, createdAt, isOwn]
+      properties:
+        id: { type: integer }
+        ownerUserId: { type: string }
+        ownerName: { type: string }
+        ownerCompany: { type: ["string", "null"] }
+        title: { type: string }
+        propertyType: { type: string }
+        country: { type: string }
+        city: { type: string }
+        areaSqm: { type: ["number", "null"] }
+        indicativeValue: { type: ["number", "null"] }
+        currency: { type: string }
+        goal: { type: string, enum: [sell, lease, valuation] }
+        description: { type: ["string", "null"] }
+        status: { type: string, enum: [open, closed] }
+        createdAt: { type: string }
+        isOwn: { type: boolean }
+    OwnerAssignmentInput:
+      type: object
+      required: [title, propertyType, country, city, goal]
+      properties:
+        title: { type: string, minLength: 3 }
+        propertyType: { type: string, minLength: 2 }
+        country: { type: string, minLength: 2 }
+        city: { type: string, minLength: 1 }
+        areaSqm: { type: ["number", "null"], minimum: 0 }
+        indicativeValue: { type: ["number", "null"], minimum: 0 }
+        goal: { type: string, enum: [sell, lease, valuation] }
+        description: { type: ["string", "null"] }
+    OwnerAssignmentStatusInput:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [open, closed] }
+    BrokerConnection:
+      type: object
+      required: [id, ownerUserId, ownerName, brokerId, brokerName, message, status, createdAt]
+      properties:
+        id: { type: integer }
+        ownerUserId: { type: string }
+        ownerName: { type: string }
+        ownerCompany: { type: ["string", "null"] }
+        brokerId: { type: integer }
+        brokerName: { type: string }
+        brokerCompany: { type: ["string", "null"] }
+        assignmentId: { type: ["integer", "null"] }
+        assignmentTitle: { type: ["string", "null"] }
+        message: { type: string }
+        status: { type: string, enum: [pending, accepted, declined] }
+        threadId: { type: ["integer", "null"] }
+        createdAt: { type: string }
+        respondedAt: { type: ["string", "null"] }
+    BrokerConnectionInput:
+      type: object
+      required: [brokerId, message]
+      properties:
+        brokerId: { type: integer }
+        assignmentId: { type: ["integer", "null"] }
+        message: { type: string, minLength: 1 }
+    BrokerConnectionRespondInput:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [accepted, declined] }
     DashboardStats:
       type: object
       required: [activeDeals, accessRequests, ndasSigned, pipelineValue, closedVolume, activeMandates, unreadMessages, dealActivity, assetClassBreakdown]

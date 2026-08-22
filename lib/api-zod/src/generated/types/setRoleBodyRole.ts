@@ -12,4 +12,5 @@ export type SetRoleBodyRole = typeof SetRoleBodyRole[keyof typeof SetRoleBodyRol
 export const SetRoleBodyRole = {
   broker: 'broker',
   investor: 'investor',
+  owner: 'owner',
 } as const;

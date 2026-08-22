@@ -1,6 +1,6 @@
 import { toJson } from "../lib/serialize";
 import { Router, type IRouter } from "express";
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, or, sql } from "drizzle-orm";
 import {
   db,
   dealsTable,
@@ -17,7 +17,11 @@ import {
 
 const router: IRouter = Router();
 
-router.get("/dashboard/stats", async (_req, res): Promise<void> => {
+router.get("/dashboard/stats", async (req, res): Promise<void> => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const deals = await db.select().from(dealsTable);
   const requests = await db.select().from(accessRequestsTable);
   const mandates = await db
@@ -25,9 +29,20 @@ router.get("/dashboard/stats", async (_req, res): Promise<void> => {
     .from(mandatesTable)
     .where(eq(mandatesTable.status, "active"));
   const transactions = await db.select().from(transactionsTable);
+  // Unread scoped to the viewer: legacy threads (no participants) count for
+  // everyone, participant threads only when the unread belongs to the viewer.
   const [{ unread }] = await db
     .select({ unread: sql<number>`COALESCE(SUM(${threadsTable.unread}), 0)` })
-    .from(threadsTable);
+    .from(threadsTable)
+    .where(
+      or(
+        and(
+          isNull(threadsTable.participantAUserId),
+          isNull(threadsTable.participantBUserId),
+        ),
+        eq(threadsTable.unreadForUserId, req.user.id),
+      ),
+    );
 
   const activeDeals = deals.filter((d) => d.status === "active");
   const pipelineValue = activeDeals.reduce(

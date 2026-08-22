@@ -4,7 +4,7 @@ import { useAuth } from '@workspace/replit-auth-web';
 import { useSetMyRole } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { VaultLogo } from '@/components/logo';
-import { Briefcase, Search } from 'lucide-react';
+import { Briefcase, Search, Building2 } from 'lucide-react';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -26,6 +26,7 @@ import Messages from '@/pages/messages';
 import Transactions from '@/pages/transactions';
 import NotFound from '@/pages/not-found';
 import BrokerProfile from '@/pages/broker-profile';
+import Assignments from '@/pages/assignments';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,7 +49,7 @@ function AuthScreen({ children }: { children: ReactNode }) {
 function RolePicker() {
   const setRole = useSetMyRole();
 
-  const choose = (role: 'broker' | 'investor') => {
+  const choose = (role: 'broker' | 'investor' | 'owner') => {
     setRole.mutate(
       { data: { role } },
       { onSuccess: () => window.location.reload() },
@@ -59,14 +60,17 @@ function RolePicker() {
     <AuthScreen>
       <h1 className="text-2xl font-heading font-bold">How will you use RealEstate Vault?</h1>
       <p className="text-muted-foreground max-w-md text-center">
-        Choose your role to continue. Brokers list deals and manage data room access; investors request access to confidential opportunities.
+        Choose your role to continue. Brokers list deals and manage data room access; investors request access to confidential opportunities; property owners find brokers for their assets.
       </p>
       <div className="flex flex-col sm:flex-row gap-4">
-        <Button size="lg" disabled={setRole.isPending} onClick={() => choose('broker')} className="bg-primary text-primary-foreground hover:bg-primary/90 px-8">
+        <Button size="lg" disabled={setRole.isPending} onClick={() => choose('broker')} className="bg-primary text-primary-foreground hover:bg-primary/90 px-8" data-testid="button-role-broker">
           <Briefcase className="w-5 h-5 mr-2" /> I'm a Broker
         </Button>
-        <Button size="lg" variant="outline" disabled={setRole.isPending} onClick={() => choose('investor')} className="border-primary/30 px-8">
+        <Button size="lg" variant="outline" disabled={setRole.isPending} onClick={() => choose('investor')} className="border-primary/30 px-8" data-testid="button-role-investor">
           <Search className="w-5 h-5 mr-2" /> I'm an Investor
+        </Button>
+        <Button size="lg" variant="outline" disabled={setRole.isPending} onClick={() => choose('owner')} className="border-primary/30 px-8" data-testid="button-role-owner">
+          <Building2 className="w-5 h-5 mr-2" /> I'm a Property Owner
         </Button>
       </div>
       {setRole.isError && (
@@ -125,6 +129,7 @@ function AppShellRouter() {
         <Route path="/demo/access-requests" component={AccessRequests} />
         <Route path="/demo/mandates" component={Mandates} />
         <Route path="/demo/mandates/:id/matches" component={MandateMatches} />
+        <Route path="/demo/assignments" component={Assignments} />
         <Route path="/demo/brokers" component={Brokers} />
         <Route path="/demo/brokers/:id" component={BrokerDetail} />
         <Route path="/demo/messages" component={Messages} />

@@ -5,6 +5,7 @@ import dealsRouter from "./deals";
 import accessRequestsRouter from "./access-requests";
 import networkRouter from "./network";
 import messagesRouter from "./messages";
+import ownerNetworkRouter from "./owner-network";
 import dashboardRouter from "./dashboard";
 import notificationsRouter from "./notifications";
 import storageRouter from "./storage";
@@ -35,6 +36,7 @@ function requireAuth(req: Request, res: Response, next: NextFunction): void {
 router.use(requireAuth);
 
 router.use(networkRouter);
+router.use(ownerNetworkRouter);
 router.use(messagesRouter);
 router.use(dashboardRouter);
 router.use(notificationsRouter);

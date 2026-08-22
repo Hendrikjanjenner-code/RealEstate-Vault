@@ -1,5 +1,31 @@
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { formatMillions } from "@/lib/utils";
-import { useListBrokers } from "@workspace/api-client-react";
+import {
+  useListBrokers,
+  useListOwnerAssignments,
+  useCreateBrokerConnection,
+  getListBrokerConnectionsQueryKey,
+} from "@workspace/api-client-react";
+import { useAuth } from "@workspace/replit-auth-web";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +35,95 @@ import { ShieldCheck, MapPin, Handshake, Star, Building2, Send } from "lucide-re
 import { Input } from "@/components/ui/input";
 import { Link } from "wouter";
 
+function ConnectDialog({ brokerId, brokerName }: { brokerId: number; brokerName: string }) {
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [assignmentId, setAssignmentId] = useState<string>("none");
+  const { data: assignments } = useListOwnerAssignments();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const connect = useCreateBrokerConnection({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListBrokerConnectionsQueryKey() });
+        setOpen(false);
+        setMessage("");
+        setAssignmentId("none");
+        toast({
+          title: "Request sent",
+          description: `${brokerName} has been notified of your connection request.`,
+        });
+      },
+      onError: () =>
+        toast({ title: "Could not send the request", description: "Please try again.", variant: "destructive" }),
+    },
+  });
+
+  const openAssignments = assignments?.filter((a) => a.isOwn && a.status === "open") ?? [];
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="w-full border-white/10" data-testid={`button-connect-${brokerId}`}>
+          <Send className="w-4 h-4 mr-2" /> Connect
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg bg-card border-white/10">
+        <DialogHeader>
+          <DialogTitle className="font-heading">Connect with {brokerName}</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4">
+          {openAssignments.length > 0 && (
+            <div className="grid gap-2">
+              <Label>About an assignment (optional)</Label>
+              <Select value={assignmentId} onValueChange={setAssignmentId}>
+                <SelectTrigger data-testid="select-connect-assignment"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">General introduction</SelectItem>
+                  {openAssignments.map((a) => (
+                    <SelectItem key={a.id} value={String(a.id)}>{a.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <div className="grid gap-2">
+            <Label>Message</Label>
+            <Textarea
+              rows={4}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Introduce yourself and describe what you are looking for..."
+              data-testid="input-connect-message"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            onClick={() =>
+              connect.mutate({
+                data: {
+                  brokerId,
+                  assignmentId: assignmentId === "none" ? null : Number(assignmentId),
+                  message,
+                },
+              })
+            }
+            disabled={connect.isPending || message.trim().length === 0}
+            data-testid="button-send-connect"
+          >
+            <Send className="w-4 h-4 mr-2" /> Send Request
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function Brokers() {
   const { data: brokers, isLoading } = useListBrokers();
+  const { user } = useAuth();
+  const isOwner = user?.role === "owner";
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
@@ -104,9 +217,7 @@ export default function Brokers() {
                     <Button asChild className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20" data-testid={`button-view-profile-${broker.id}`}>
                       <Link href={`/demo/brokers/${broker.id}`}>View Profile</Link>
                     </Button>
-                    <Button variant="outline" className="w-full border-white/10">
-                      <Send className="w-4 h-4 mr-2" /> Message
-                    </Button>
+                    {isOwner && <ConnectDialog brokerId={broker.id} brokerName={broker.name} />}
                   </div>
                 </div>
               </CardContent>

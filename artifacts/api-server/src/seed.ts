@@ -12,6 +12,8 @@ import {
   usersTable,
   savedDealsTable,
   notificationsTable,
+  ownerAssignmentsTable,
+  brokerConnectionsTable,
 } from "@workspace/db";
 import { and, asc, eq, isNull, notLike } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -71,6 +73,14 @@ const DEMO_USERS = [
     role: "investor",
     profileImageUrl: "/avatars/anneke.jpg",
   },
+  {
+    id: "demo-owner-lucas",
+    email: "lucas@demo.realestate-vault.example",
+    firstName: "Lucas",
+    lastName: "Janssen",
+    role: "owner",
+    profileImageUrl: "/avatars/lucas.jpg",
+  },
 ] as const;
 
 async function seed() {
@@ -84,6 +94,8 @@ async function seed() {
   logger.info(`Deleted ${removedFiles} stored data room file(s) from previous seed`);
   await db.delete(savedDealsTable);
   await db.delete(notificationsTable);
+  await db.delete(brokerConnectionsTable);
+  await db.delete(ownerAssignmentsTable);
   await db.delete(messagesTable);
   await db.delete(threadsTable);
   await db.delete(activityTable);
@@ -117,6 +129,10 @@ async function seed() {
     .values([
       {
         isDemo: true,
+        // Linked to the demo broker account so the demo broker persona can
+        // manage its profile and receive owner connection requests. Deal
+        // ownership is NOT linked (see the deal-claim notes below).
+        userId: "demo-broker-willem",
         avatarUrl: "/avatars/willem.jpg",
         name: "Willem van der Berg",
         company: "Van der Berg Capital Partners",
@@ -133,6 +149,7 @@ async function seed() {
       },
       {
         isDemo: true,
+        userId: "demo-broker-claire",
         avatarUrl: "/avatars/claire.jpg",
         name: "Claire Dubois",
         company: "Meridian Private Estates",
@@ -149,6 +166,7 @@ async function seed() {
       },
       {
         isDemo: true,
+        userId: "demo-broker-stefan",
         avatarUrl: "/avatars/stefan.jpg",
         name: "Stefan Richter",
         company: "Richter & Vogel Real Estate",
@@ -987,6 +1005,145 @@ async function seed() {
     { type: "mandate_created", description: "New mandate: Core Offices & Logistics, Northern Europe (Hollandse Pensioen Groep)", createdAt: daysAgo(20, 11) },
     { type: "access_request", description: "Dr. Anneke Visser (Hollandse Pensioen Groep) requested access to Maasvlakte Logistics Portfolio", createdAt: daysAgo(0, 8) },
   ]);
+
+  logger.info("Seeding owner assignments and broker connections");
+  const assignments = await db
+    .insert(ownerAssignmentsTable)
+    .values([
+      {
+        ownerUserId: "demo-owner-lucas",
+        ownerName: "Lucas Janssen",
+        ownerCompany: "Janssen Hospitality Holding",
+        title: "Boutique Hotel De Domtoren",
+        propertyType: "Hotels",
+        country: "Netherlands",
+        city: "Utrecht",
+        areaSqm: 3600,
+        indicativeValue: 21500000,
+        goal: "sell",
+        description:
+          "Family-owned 34-key boutique hotel in the historic centre of Utrecht. Third-generation ownership; looking for a discreet broker with hospitality track record to run an off-market sale.",
+        status: "open",
+        createdAt: daysAgo(3, 9),
+      },
+      {
+        ownerUserId: "demo-owner-lucas",
+        ownerName: "Lucas Janssen",
+        ownerCompany: "Janssen Hospitality Holding",
+        title: "Serviced Apartments Oudegracht",
+        propertyType: "Residential",
+        country: "Netherlands",
+        city: "Utrecht",
+        areaSqm: 1850,
+        indicativeValue: 8200000,
+        goal: "valuation",
+        description:
+          "22 serviced apartments along the Oudegracht. Seeking an independent valuation ahead of a possible refinancing.",
+        status: "open",
+        createdAt: daysAgo(1, 14),
+      },
+    ])
+    .returning();
+
+  const connections = await db
+    .insert(brokerConnectionsTable)
+    .values([
+      {
+        // Pending request the demo broker (Willem) can accept live.
+        ownerUserId: "demo-owner-lucas",
+        ownerName: "Lucas Janssen",
+        ownerCompany: "Janssen Hospitality Holding",
+        brokerId: b(0).id,
+        assignmentId: assignments[0].id,
+        message:
+          "Your hotel track record in the Benelux stands out. I would like to discuss a fully off-market sale of our boutique hotel in Utrecht.",
+        status: "pending",
+        createdAt: daysAgo(0, 8),
+      },
+      {
+        // Declined example for realistic history.
+        ownerUserId: "demo-owner-lucas",
+        ownerName: "Lucas Janssen",
+        ownerCompany: "Janssen Hospitality Holding",
+        brokerId: b(4).id,
+        assignmentId: assignments[0].id,
+        message: "Would you take on a boutique hotel sale in the Netherlands?",
+        status: "declined",
+        createdAt: daysAgo(2, 10),
+        respondedAt: daysAgo(2, 15),
+      },
+    ])
+    .returning();
+
+  // An already-accepted connection with a live private thread between the
+  // demo owner and demo broker Claire.
+  const [ownerThread] = await db
+    .insert(threadsTable)
+    .values({
+      subject: "Assignment: Serviced Apartments Oudegracht",
+      counterpartName: "Lucas Janssen",
+      counterpartCompany: "Janssen Hospitality Holding",
+      unread: 0,
+      participantAUserId: "demo-owner-lucas",
+      participantBUserId: "demo-broker-claire",
+      participantAName: "Lucas Janssen",
+      participantACompany: "Janssen Hospitality Holding",
+      participantBName: "Claire Dubois",
+      participantBCompany: "Meridian Private Estates",
+    })
+    .returning();
+  await db.insert(messagesTable).values([
+    {
+      threadId: ownerThread.id,
+      senderName: "Lucas Janssen",
+      senderUserId: "demo-owner-lucas",
+      body: "Thank you for accepting. Could we plan a visit to the apartments next week?",
+      fromMe: false,
+      sentAt: daysAgo(1, 9),
+    },
+    {
+      threadId: ownerThread.id,
+      senderName: "Claire Dubois",
+      senderUserId: "demo-broker-claire",
+      body: "With pleasure, Mr. Janssen. Tuesday or Thursday afternoon works well — I will bring our hospitality valuation lead.",
+      fromMe: false,
+      sentAt: daysAgo(1, 11),
+    },
+  ]);
+  await db
+    .insert(brokerConnectionsTable)
+    .values({
+      ownerUserId: "demo-owner-lucas",
+      ownerName: "Lucas Janssen",
+      ownerCompany: "Janssen Hospitality Holding",
+      brokerId: b(1).id,
+      assignmentId: assignments[1].id,
+      message: "We need an independent valuation of our serviced apartments.",
+      status: "accepted",
+      threadId: ownerThread.id,
+      createdAt: daysAgo(1, 8),
+      respondedAt: daysAgo(1, 8),
+    });
+
+  await db.insert(notificationsTable).values([
+    {
+      userId: "demo-broker-willem",
+      type: "connection_request",
+      message: "Lucas Janssen (Janssen Hospitality Holding) wants to connect about Boutique Hotel De Domtoren.",
+      createdAt: daysAgo(0, 8),
+    },
+    {
+      userId: "demo-owner-lucas",
+      type: "connection_response",
+      message: "Claire Dubois accepted your connection request — you can now message directly.",
+      createdAt: daysAgo(1, 8),
+    },
+  ]);
+  await db.insert(activityTable).values([
+    { type: "assignment_posted", description: "New owner assignment: Boutique Hotel De Domtoren (Utrecht)", createdAt: daysAgo(3, 9) },
+    { type: "connection_accepted", description: "Claire Dubois connected with Lucas Janssen", createdAt: daysAgo(1, 8) },
+  ]);
+  void connections;
 
   logger.info("Seed complete");
 }

@@ -31,6 +31,9 @@ import type {
   AuthUserEnvelope,
   BeginBrowserLoginParams,
   Broker,
+  BrokerConnection,
+  BrokerConnectionInput,
+  BrokerConnectionRespondInput,
   BrokerProfileEnvelope,
   BrokerProfileInput,
   DashboardStats,
@@ -55,6 +58,9 @@ import type {
   MobileTokenExchangeRequest,
   MobileTokenExchangeSuccess,
   Notification,
+  OwnerAssignment,
+  OwnerAssignmentInput,
+  OwnerAssignmentStatusInput,
   SessionResponse,
   SetRoleBody,
   SignNdaInput,
@@ -176,7 +182,7 @@ export const getSetMyRoleUrl = () => {
 }
 
 /**
- * @summary Set the current user's marketplace role (broker or investor)
+ * @summary Set the current user's marketplace role (broker, investor, or owner)
  */
 export const setMyRole = async (setRoleBody: SetRoleBody, options?: Parameters<typeof customFetch>[1]): Promise<AuthUser> => {
 
@@ -225,7 +231,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type SetMyRoleMutationError = ErrorType<ErrorEnvelope>
 
     /**
- * @summary Set the current user's marketplace role (broker or investor)
+ * @summary Set the current user's marketplace role (broker, investor, or owner)
  */
 export const useSetMyRole = <TError = ErrorType<ErrorEnvelope>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setMyRole>>, TError,{data: BodyType<SetRoleBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -2966,6 +2972,446 @@ export const useSendMessage = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getSendMessageMutationOptions(options));
+    }
+
+export const getListOwnerAssignmentsUrl = () => {
+
+
+
+
+  return `/api/assignments`
+}
+
+/**
+ * @summary Owner assignments — owners see their own, brokers see open ones
+ */
+export const listOwnerAssignments = async ( options?: Parameters<typeof customFetch>[1]): Promise<OwnerAssignment[]> => {
+
+  return customFetch<OwnerAssignment[]>(getListOwnerAssignmentsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListOwnerAssignmentsQueryKey = () => {
+    return [
+    `/api/assignments`
+    ] as const;
+    }
+
+
+export const getListOwnerAssignmentsQueryOptions = <TData = Awaited<ReturnType<typeof listOwnerAssignments>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listOwnerAssignments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListOwnerAssignmentsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOwnerAssignments>>> = ({ signal }) => listOwnerAssignments({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOwnerAssignments>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListOwnerAssignmentsQueryResult = NonNullable<Awaited<ReturnType<typeof listOwnerAssignments>>>
+export type ListOwnerAssignmentsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Owner assignments — owners see their own, brokers see open ones
+ */
+
+export function useListOwnerAssignments<TData = Awaited<ReturnType<typeof listOwnerAssignments>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listOwnerAssignments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListOwnerAssignmentsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateOwnerAssignmentUrl = () => {
+
+
+
+
+  return `/api/assignments`
+}
+
+/**
+ * @summary Post a new property assignment (owners only)
+ */
+export const createOwnerAssignment = async (ownerAssignmentInput: OwnerAssignmentInput, options?: Parameters<typeof customFetch>[1]): Promise<OwnerAssignment> => {
+
+  return customFetch<OwnerAssignment>(getCreateOwnerAssignmentUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(ownerAssignmentInput)
+  }
+);}
+
+
+
+
+
+export const getCreateOwnerAssignmentMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOwnerAssignment>>, TError,{data: BodyType<OwnerAssignmentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createOwnerAssignment>>, TError,{data: BodyType<OwnerAssignmentInput>}, TContext> => {
+
+const mutationKey = ['createOwnerAssignment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOwnerAssignment>>, {data: BodyType<OwnerAssignmentInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createOwnerAssignment(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateOwnerAssignmentMutationResult = NonNullable<Awaited<ReturnType<typeof createOwnerAssignment>>>
+    export type CreateOwnerAssignmentMutationBody = BodyType<OwnerAssignmentInput>
+    export type CreateOwnerAssignmentMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Post a new property assignment (owners only)
+ */
+export const useCreateOwnerAssignment = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOwnerAssignment>>, TError,{data: BodyType<OwnerAssignmentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createOwnerAssignment>>,
+        TError,
+        {data: BodyType<OwnerAssignmentInput>},
+        TContext
+      > => {
+      return useMutation(getCreateOwnerAssignmentMutationOptions(options));
+    }
+
+export const getUpdateOwnerAssignmentStatusUrl = (id: number,) => {
+
+
+
+
+  return `/api/assignments/${id}`
+}
+
+/**
+ * @summary Open or close an assignment (owner only)
+ */
+export const updateOwnerAssignmentStatus = async (id: number,
+    ownerAssignmentStatusInput: OwnerAssignmentStatusInput, options?: Parameters<typeof customFetch>[1]): Promise<OwnerAssignment> => {
+
+  return customFetch<OwnerAssignment>(getUpdateOwnerAssignmentStatusUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(ownerAssignmentStatusInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateOwnerAssignmentStatusMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateOwnerAssignmentStatus>>, TError,{id: number;data: BodyType<OwnerAssignmentStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateOwnerAssignmentStatus>>, TError,{id: number;data: BodyType<OwnerAssignmentStatusInput>}, TContext> => {
+
+const mutationKey = ['updateOwnerAssignmentStatus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateOwnerAssignmentStatus>>, {id: number;data: BodyType<OwnerAssignmentStatusInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateOwnerAssignmentStatus(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateOwnerAssignmentStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateOwnerAssignmentStatus>>>
+    export type UpdateOwnerAssignmentStatusMutationBody = BodyType<OwnerAssignmentStatusInput>
+    export type UpdateOwnerAssignmentStatusMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Open or close an assignment (owner only)
+ */
+export const useUpdateOwnerAssignmentStatus = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateOwnerAssignmentStatus>>, TError,{id: number;data: BodyType<OwnerAssignmentStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateOwnerAssignmentStatus>>,
+        TError,
+        {id: number;data: BodyType<OwnerAssignmentStatusInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateOwnerAssignmentStatusMutationOptions(options));
+    }
+
+export const getListBrokerConnectionsUrl = () => {
+
+
+
+
+  return `/api/connections`
+}
+
+/**
+ * @summary Connection requests — owners see sent, brokers see received
+ */
+export const listBrokerConnections = async ( options?: Parameters<typeof customFetch>[1]): Promise<BrokerConnection[]> => {
+
+  return customFetch<BrokerConnection[]>(getListBrokerConnectionsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBrokerConnectionsQueryKey = () => {
+    return [
+    `/api/connections`
+    ] as const;
+    }
+
+
+export const getListBrokerConnectionsQueryOptions = <TData = Awaited<ReturnType<typeof listBrokerConnections>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBrokerConnections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBrokerConnectionsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBrokerConnections>>> = ({ signal }) => listBrokerConnections({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBrokerConnections>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListBrokerConnectionsQueryResult = NonNullable<Awaited<ReturnType<typeof listBrokerConnections>>>
+export type ListBrokerConnectionsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Connection requests — owners see sent, brokers see received
+ */
+
+export function useListBrokerConnections<TData = Awaited<ReturnType<typeof listBrokerConnections>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBrokerConnections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListBrokerConnectionsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateBrokerConnectionUrl = () => {
+
+
+
+
+  return `/api/connections`
+}
+
+/**
+ * @summary Send a connection request to a broker (owners only)
+ */
+export const createBrokerConnection = async (brokerConnectionInput: BrokerConnectionInput, options?: Parameters<typeof customFetch>[1]): Promise<BrokerConnection> => {
+
+  return customFetch<BrokerConnection>(getCreateBrokerConnectionUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(brokerConnectionInput)
+  }
+);}
+
+
+
+
+
+export const getCreateBrokerConnectionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBrokerConnection>>, TError,{data: BodyType<BrokerConnectionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBrokerConnection>>, TError,{data: BodyType<BrokerConnectionInput>}, TContext> => {
+
+const mutationKey = ['createBrokerConnection'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBrokerConnection>>, {data: BodyType<BrokerConnectionInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createBrokerConnection(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateBrokerConnectionMutationResult = NonNullable<Awaited<ReturnType<typeof createBrokerConnection>>>
+    export type CreateBrokerConnectionMutationBody = BodyType<BrokerConnectionInput>
+    export type CreateBrokerConnectionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Send a connection request to a broker (owners only)
+ */
+export const useCreateBrokerConnection = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBrokerConnection>>, TError,{data: BodyType<BrokerConnectionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createBrokerConnection>>,
+        TError,
+        {data: BodyType<BrokerConnectionInput>},
+        TContext
+      > => {
+      return useMutation(getCreateBrokerConnectionMutationOptions(options));
+    }
+
+export const getRespondBrokerConnectionUrl = (id: number,) => {
+
+
+
+
+  return `/api/connections/${id}`
+}
+
+/**
+ * @summary Accept or decline a connection request (addressed broker only)
+ */
+export const respondBrokerConnection = async (id: number,
+    brokerConnectionRespondInput: BrokerConnectionRespondInput, options?: Parameters<typeof customFetch>[1]): Promise<BrokerConnection> => {
+
+  return customFetch<BrokerConnection>(getRespondBrokerConnectionUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(brokerConnectionRespondInput)
+  }
+);}
+
+
+
+
+
+export const getRespondBrokerConnectionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondBrokerConnection>>, TError,{id: number;data: BodyType<BrokerConnectionRespondInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof respondBrokerConnection>>, TError,{id: number;data: BodyType<BrokerConnectionRespondInput>}, TContext> => {
+
+const mutationKey = ['respondBrokerConnection'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof respondBrokerConnection>>, {id: number;data: BodyType<BrokerConnectionRespondInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  respondBrokerConnection(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RespondBrokerConnectionMutationResult = NonNullable<Awaited<ReturnType<typeof respondBrokerConnection>>>
+    export type RespondBrokerConnectionMutationBody = BodyType<BrokerConnectionRespondInput>
+    export type RespondBrokerConnectionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Accept or decline a connection request (addressed broker only)
+ */
+export const useRespondBrokerConnection = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondBrokerConnection>>, TError,{id: number;data: BodyType<BrokerConnectionRespondInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof respondBrokerConnection>>,
+        TError,
+        {id: number;data: BodyType<BrokerConnectionRespondInput>},
+        TContext
+      > => {
+      return useMutation(getRespondBrokerConnectionMutationOptions(options));
     }
 
 export const getListNotificationsUrl = () => {

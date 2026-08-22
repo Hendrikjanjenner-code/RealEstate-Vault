@@ -24,7 +24,7 @@ export interface AuthUser {
   /** @nullable */
   profileImageUrl: string | null;
   /**
-     * broker | investor. Null until the user chooses a role.
+     * broker | investor | owner. Null until the user chooses a role.
      * @nullable
      */
   role: string | null;
@@ -40,6 +40,7 @@ export type SetRoleBodyRole = typeof SetRoleBodyRole[keyof typeof SetRoleBodyRol
 export const SetRoleBodyRole = {
   broker: 'broker',
   investor: 'investor',
+  owner: 'owner',
 } as const;
 
 export interface SetRoleBody {
@@ -396,6 +397,143 @@ export interface Message {
 export interface MessageInput {
   /** @minLength 1 */
   body: string;
+}
+
+export type OwnerAssignmentGoal = typeof OwnerAssignmentGoal[keyof typeof OwnerAssignmentGoal];
+
+
+export const OwnerAssignmentGoal = {
+  sell: 'sell',
+  lease: 'lease',
+  valuation: 'valuation',
+} as const;
+
+export type OwnerAssignmentStatus = typeof OwnerAssignmentStatus[keyof typeof OwnerAssignmentStatus];
+
+
+export const OwnerAssignmentStatus = {
+  open: 'open',
+  closed: 'closed',
+} as const;
+
+export interface OwnerAssignment {
+  id: number;
+  ownerUserId: string;
+  ownerName: string;
+  /** @nullable */
+  ownerCompany?: string | null;
+  title: string;
+  propertyType: string;
+  country: string;
+  city: string;
+  /** @nullable */
+  areaSqm?: number | null;
+  /** @nullable */
+  indicativeValue?: number | null;
+  currency: string;
+  goal: OwnerAssignmentGoal;
+  /** @nullable */
+  description?: string | null;
+  status: OwnerAssignmentStatus;
+  createdAt: string;
+  isOwn: boolean;
+}
+
+export type OwnerAssignmentInputGoal = typeof OwnerAssignmentInputGoal[keyof typeof OwnerAssignmentInputGoal];
+
+
+export const OwnerAssignmentInputGoal = {
+  sell: 'sell',
+  lease: 'lease',
+  valuation: 'valuation',
+} as const;
+
+export interface OwnerAssignmentInput {
+  /** @minLength 3 */
+  title: string;
+  /** @minLength 2 */
+  propertyType: string;
+  /** @minLength 2 */
+  country: string;
+  /** @minLength 1 */
+  city: string;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  areaSqm?: number | null;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  indicativeValue?: number | null;
+  goal: OwnerAssignmentInputGoal;
+  /** @nullable */
+  description?: string | null;
+}
+
+export type OwnerAssignmentStatusInputStatus = typeof OwnerAssignmentStatusInputStatus[keyof typeof OwnerAssignmentStatusInputStatus];
+
+
+export const OwnerAssignmentStatusInputStatus = {
+  open: 'open',
+  closed: 'closed',
+} as const;
+
+export interface OwnerAssignmentStatusInput {
+  status: OwnerAssignmentStatusInputStatus;
+}
+
+export type BrokerConnectionStatus = typeof BrokerConnectionStatus[keyof typeof BrokerConnectionStatus];
+
+
+export const BrokerConnectionStatus = {
+  pending: 'pending',
+  accepted: 'accepted',
+  declined: 'declined',
+} as const;
+
+export interface BrokerConnection {
+  id: number;
+  ownerUserId: string;
+  ownerName: string;
+  /** @nullable */
+  ownerCompany?: string | null;
+  brokerId: number;
+  brokerName: string;
+  /** @nullable */
+  brokerCompany?: string | null;
+  /** @nullable */
+  assignmentId?: number | null;
+  /** @nullable */
+  assignmentTitle?: string | null;
+  message: string;
+  status: BrokerConnectionStatus;
+  /** @nullable */
+  threadId?: number | null;
+  createdAt: string;
+  /** @nullable */
+  respondedAt?: string | null;
+}
+
+export interface BrokerConnectionInput {
+  brokerId: number;
+  /** @nullable */
+  assignmentId?: number | null;
+  /** @minLength 1 */
+  message: string;
+}
+
+export type BrokerConnectionRespondInputStatus = typeof BrokerConnectionRespondInputStatus[keyof typeof BrokerConnectionRespondInputStatus];
+
+
+export const BrokerConnectionRespondInputStatus = {
+  accepted: 'accepted',
+  declined: 'declined',
+} as const;
+
+export interface BrokerConnectionRespondInput {
+  status: BrokerConnectionRespondInputStatus;
 }
 
 export interface ActivityPoint {

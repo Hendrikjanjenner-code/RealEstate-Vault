@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearch } from "wouter";
 import { useListThreads, useListThreadMessages, useSendMessage, getListThreadMessagesQueryKey, getListThreadsQueryKey } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -9,7 +10,11 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export default function Messages() {
   const { data: threads, isLoading: threadsLoading } = useListThreads();
-  const [activeThreadId, setActiveThreadId] = useState<number | null>(null);
+  const search = useSearch();
+  const requestedThreadId = Number(new URLSearchParams(search).get("thread"));
+  const [activeThreadId, setActiveThreadId] = useState<number | null>(
+    Number.isInteger(requestedThreadId) && requestedThreadId > 0 ? requestedThreadId : null,
+  );
 
   const activeThread = threads?.find(t => t.id === activeThreadId);
 
