@@ -12,6 +12,7 @@ import {
   usersTable,
 } from "@workspace/db";
 import { asc, eq, isNull } from "drizzle-orm";
+import { attachFilesToDocuments } from "./lib/attachDocumentFiles";
 const logger = { info: (m: unknown) => console.log(m), error: (o: unknown, m?: unknown) => console.error(m ?? o, o) };
 
 const daysAgo = (n: number, h = 10) => {
@@ -448,6 +449,10 @@ async function seed() {
       ["Heritage Protection Assessment.pdf", "Legal", 4800, true],
     ]),
   ]);
+
+  logger.info("Uploading data room files for seeded documents");
+  const attached = await attachFilesToDocuments();
+  logger.info(`Attached files to ${attached} seeded document(s)`);
 
   logger.info("Seeding access requests");
   await db.insert(accessRequestsTable).values([
