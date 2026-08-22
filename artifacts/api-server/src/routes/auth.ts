@@ -60,7 +60,13 @@ function getSafeReturnTo(value: unknown): string {
   if (
     typeof value !== 'string' ||
     !value.startsWith('/') ||
-    value.startsWith('//')
+    value.startsWith('//') ||
+    // Backslashes are normalized to '/' by browsers, so '/\evil.example'
+    // would become a scheme-relative external redirect. Reject them and any
+    // encoded control/backslash sequences outright.
+    value.includes('\\') ||
+    /%5c/i.test(value) ||
+    /[\u0000-\u001f]/.test(value)
   ) {
     return '/';
   }
@@ -164,7 +170,10 @@ router.post('/users/me/role', async (req: Request, res: Response) => {
   // Claim flow for seeded demo listings: unowned deals (no broker owner)
   // are assigned to the first user who takes the broker role, so every
   // listing always has a real owner controlling access requests.
-  if (user.role === 'broker') {
+  // Demo personas must never claim ownership of generic unowned deals —
+  // otherwise any anonymous visitor using the demo link could take control
+  // of real listings' access requests and data rooms.
+  if (user.role === 'broker' && !user.id.startsWith('demo-')) {
     const claimed = await db
       .update(dealsTable)
       .set({ brokerUserId: user.id })
@@ -198,6 +207,58 @@ router.post('/users/me/role', async (req: Request, res: Response) => {
       role: user.role,
     }),
   );
+});
+
+// Demo entry: signs the visitor in as a seeded demo persona without going
+// through Replit Auth. Only works for the fixed, clearly fictional demo
+// accounts created by the seed script — never for real users.
+const DEMO_PERSONAS: Record<string, string> = {
+  investor: 'demo-investor-jonathan',
+  broker: 'demo-broker-willem',
+};
+
+router.get('/demo-login', async (req: Request, res: Response) => {
+  const persona = typeof req.query.as === 'string' ? req.query.as : 'investor';
+  const demoUserId = DEMO_PERSONAS[persona];
+  if (!demoUserId) {
+    res.status(400).json({ message: 'Unknown demo persona. Use ?as=investor or ?as=broker.' });
+    return;
+  }
+
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, demoUserId));
+  if (!user) {
+    res.status(503).json({
+      message: 'Demo accounts are not seeded yet. Run the seed script first.',
+    });
+    return;
+  }
+
+  // Revoke any existing session before switching identities so we never
+  // leave orphaned active sessions behind.
+  const previousSid = getSessionId(req);
+  if (previousSid) {
+    await deleteSession(previousSid);
+  }
+
+  const sid = await createSession({
+    user: {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profileImageUrl: user.profileImageUrl,
+      role: user.role,
+    },
+    // Demo sessions have no OIDC tokens; without expires_at the middleware
+    // never attempts a token refresh (same pattern as e2e sessions).
+    access_token: 'demo',
+  });
+
+  setSessionCookie(res, sid);
+  res.redirect(getSafeReturnTo(req.query.returnTo));
 });
 
 router.get('/login', async (req: Request, res: Response) => {
