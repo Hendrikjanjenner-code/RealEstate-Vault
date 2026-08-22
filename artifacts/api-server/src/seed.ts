@@ -10,9 +10,15 @@ import {
   messagesTable,
   activityTable,
   usersTable,
+  savedDealsTable,
+  notificationsTable,
 } from "@workspace/db";
-import { asc, eq, isNull } from "drizzle-orm";
-import { attachFilesToDocuments } from "./lib/attachDocumentFiles";
+import { and, asc, eq, isNull, notLike } from "drizzle-orm";
+import { randomUUID } from "crypto";
+import {
+  attachFilesToDocuments,
+  deleteAttachedDocumentFiles,
+} from "./lib/attachDocumentFiles";
 const logger = { info: (m: unknown) => console.log(m), error: (o: unknown, m?: unknown) => console.error(m ?? o, o) };
 
 const daysAgo = (n: number, h = 10) => {
@@ -22,8 +28,62 @@ const daysAgo = (n: number, h = 10) => {
   return d;
 };
 
+// Stable ids for seeded demo accounts so re-running the seed is idempotent.
+// All demo accounts use the reserved .example TLD and a "demo-" id prefix.
+const DEMO_USERS = [
+  {
+    id: "demo-broker-willem",
+    email: "willem@demo.realestate-vault.example",
+    firstName: "Willem",
+    lastName: "van der Berg",
+    role: "broker",
+    profileImageUrl: "/avatars/willem.jpg",
+  },
+  {
+    id: "demo-broker-claire",
+    email: "claire@demo.realestate-vault.example",
+    firstName: "Claire",
+    lastName: "Dubois",
+    role: "broker",
+    profileImageUrl: "/avatars/claire.jpg",
+  },
+  {
+    id: "demo-broker-stefan",
+    email: "stefan@demo.realestate-vault.example",
+    firstName: "Stefan",
+    lastName: "Richter",
+    role: "broker",
+    profileImageUrl: "/avatars/stefan.jpg",
+  },
+  {
+    id: "demo-investor-jonathan",
+    email: "jonathan@demo.realestate-vault.example",
+    firstName: "Jonathan",
+    lastName: "Meyer",
+    role: "investor",
+    profileImageUrl: "/avatars/jonathan.jpg",
+  },
+  {
+    id: "demo-investor-anneke",
+    email: "anneke@demo.realestate-vault.example",
+    firstName: "Anneke",
+    lastName: "Visser",
+    role: "investor",
+    profileImageUrl: "/avatars/anneke.jpg",
+  },
+] as const;
+
 async function seed() {
+  // This seed is an explicitly DESTRUCTIVE development reset: every deal is
+  // deleted and recreated with new ids, so all rows that reference deals
+  // (saved deals, notifications, access requests, documents, threads) are
+  // cleared too — including real users' rows, which would otherwise dangle
+  // against the deleted deal ids. User accounts themselves are preserved.
   logger.info("Clearing existing data");
+  const removedFiles = await deleteAttachedDocumentFiles();
+  logger.info(`Deleted ${removedFiles} stored data room file(s) from previous seed`);
+  await db.delete(savedDealsTable);
+  await db.delete(notificationsTable);
   await db.delete(messagesTable);
   await db.delete(threadsTable);
   await db.delete(activityTable);
@@ -34,12 +94,30 @@ async function seed() {
   await db.delete(transactionsTable);
   await db.delete(brokersTable);
 
+  logger.info("Seeding demo user accounts");
+  for (const user of DEMO_USERS) {
+    await db
+      .insert(usersTable)
+      .values(user)
+      .onConflictDoUpdate({
+        target: usersTable.id,
+        set: {
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          profileImageUrl: user.profileImageUrl,
+        },
+      });
+  }
+
   logger.info("Seeding brokers");
   const brokers = await db
     .insert(brokersTable)
     .values([
       {
         isDemo: true,
+        avatarUrl: "/avatars/willem.jpg",
         name: "Willem van der Berg",
         company: "Van der Berg Capital Partners",
         title: "Managing Partner",
@@ -55,6 +133,7 @@ async function seed() {
       },
       {
         isDemo: true,
+        avatarUrl: "/avatars/claire.jpg",
         name: "Claire Dubois",
         company: "Meridian Private Estates",
         title: "Head of Capital Markets",
@@ -70,6 +149,7 @@ async function seed() {
       },
       {
         isDemo: true,
+        avatarUrl: "/avatars/stefan.jpg",
         name: "Stefan Richter",
         company: "Richter & Vogel Real Estate",
         title: "Senior Director",
@@ -85,6 +165,7 @@ async function seed() {
       },
       {
         isDemo: true,
+        avatarUrl: "/avatars/sofia.jpg",
         name: "Sofia Almeida",
         company: "Atlantico Advisory",
         title: "Founding Partner",
@@ -100,6 +181,7 @@ async function seed() {
       },
       {
         isDemo: true,
+        avatarUrl: "/avatars/marcus.jpg",
         name: "Marcus Lindqvist",
         company: "Nordkap Partners",
         title: "Partner",
@@ -115,6 +197,7 @@ async function seed() {
       },
       {
         isDemo: true,
+        avatarUrl: "/avatars/isabella.jpg",
         name: "Isabella Conti",
         company: "Conti Immobiliare Privata",
         title: "Managing Director",
@@ -133,21 +216,25 @@ async function seed() {
 
   const b = (i: number) => brokers[i];
 
-  // Seeded listings must have a real broker owner so only they can manage
-  // access requests. Assign them to the earliest broker-role user; if none
-  // exists yet, the first user to take the broker role claims them
-  // (see the role-selection claim flow in routes/auth.ts).
+  // Seeded listings are assigned to the earliest real (non-demo) broker-role
+  // user so only they can manage access requests; if none exists yet, the
+  // first user to take the broker role claims them (see the role-selection
+  // claim flow in routes/auth.ts). Demo broker accounts intentionally do NOT
+  // own deals until one-click demo sign-in exists, so the existing unowned-
+  // seeded-deal behavior (e.g. passcode data room management) is preserved.
   const [ownerUser] = await db
     .select({ id: usersTable.id })
     .from(usersTable)
-    .where(eq(usersTable.role, "broker"))
+    .where(
+      and(eq(usersTable.role, "broker"), notLike(usersTable.id, "demo-%")),
+    )
     .orderBy(asc(usersTable.createdAt))
     .limit(1);
-  const brokerUserId = ownerUser?.id ?? null;
+  const realBrokerUserId = ownerUser?.id ?? null;
   logger.info(
-    brokerUserId
-      ? "Assigning seeded deals to existing broker user"
-      : "No broker user yet; seeded deals will be claimed by the first broker",
+    realBrokerUserId
+      ? "Assigning seeded deals to existing real broker user"
+      : "No real broker user yet; seeded deals will be claimed by the first broker",
   );
 
   logger.info("Seeding deals");
@@ -384,10 +471,10 @@ async function seed() {
     ])
     .returning();
 
-  if (brokerUserId) {
+  if (realBrokerUserId) {
     await db
       .update(dealsTable)
-      .set({ brokerUserId })
+      .set({ brokerUserId: realBrokerUserId })
       .where(isNull(dealsTable.brokerUserId));
   }
 
@@ -420,11 +507,14 @@ async function seed() {
     ...docsFor(d(2).id, [
       ["Portfolio Overview.pdf", "Teaser", 3120, false],
       ["Lease Abstracts.pdf", "Financials", 5400, true],
+      ["Independent Valuation Report.pdf", "Valuation", 8900, true],
       ["Environmental Phase I Reports.pdf", "Technical", 12800, true],
     ]),
     ...docsFor(d(3).id, [
       ["Anonymised Teaser.pdf", "Teaser", 1540, false],
       ["Unit-by-Unit Rent Roll.xlsx", "Financials", 1180, true],
+      ["Independent Valuation Report.pdf", "Valuation", 7600, true],
+      ["ESG Screening Report.pdf", "Technical", 5200, true],
       ["Condominium Division Documents.pdf", "Legal", 9400, true],
     ]),
     ...docsFor(d(4).id, [
@@ -441,6 +531,7 @@ async function seed() {
     ...docsFor(d(6).id, [
       ["Campus Overview.pdf", "Teaser", 2760, false],
       ["Multi-Tenant Rent Roll.xlsx", "Financials", 890, true],
+      ["Independent Valuation Report.pdf", "Valuation", 9100, true],
       ["BREEAM Assessment.pdf", "Technical", 6100, true],
     ]),
     ...docsFor(d(7).id, [
@@ -459,20 +550,57 @@ async function seed() {
     {
       dealId: d(0).id,
       dealTitle: d(0).title,
+      requesterUserId: "demo-investor-jonathan",
       requesterName: "Jonathan Meyer",
       requesterCompany: "Alpenrose Family Office",
       message: "We hold two boutique hotels in Belgium and are actively expanding into the Amsterdam market. Proof of funds available on request.",
       status: "nda_signed",
+      requestKey: randomUUID(),
+      downloadToken: randomUUID(),
+      signerName: "Jonathan Meyer",
+      signedAt: daysAgo(3, 17),
+      ndaSignedAt: daysAgo(3, 17),
       createdAt: daysAgo(4, 9),
     },
     {
       dealId: d(1).id,
       dealTitle: d(1).title,
+      requesterUserId: "demo-investor-anneke",
       requesterName: "Dr. Anneke Visser",
       requesterCompany: "Hollandse Pensioen Groep",
       message: "Core office exposure in German top-7 cities fits our 2026 allocation. Requesting CIM and tenancy schedule.",
       status: "nda_sent",
+      requestKey: randomUUID(),
       createdAt: daysAgo(3, 11),
+    },
+    {
+      dealId: d(5).id,
+      dealTitle: d(5).title,
+      requesterUserId: "demo-investor-jonathan",
+      requesterName: "Jonathan Meyer",
+      requesterCompany: "Alpenrose Family Office",
+      message: "The Cascais repositioning thesis matches our hospitality value-add sleeve. Keen to review the feasibility study.",
+      status: "nda_signed",
+      requestKey: randomUUID(),
+      downloadToken: randomUUID(),
+      signerName: "Jonathan Meyer",
+      signedAt: daysAgo(1, 12),
+      ndaSignedAt: daysAgo(1, 12),
+      createdAt: daysAgo(2, 10),
+    },
+    {
+      // On Stefan's listing so the pending request is actionable by a demo
+      // broker account (deals of profiles without accounts stay unowned
+      // until a real broker claims them).
+      dealId: d(3).id,
+      dealTitle: d(3).title,
+      requesterUserId: "demo-investor-anneke",
+      requesterName: "Dr. Anneke Visser",
+      requesterCompany: "Hollandse Pensioen Groep",
+      message: "Berlin residential with reversionary potential suits our long-duration allocation. Requesting the rent roll.",
+      status: "pending",
+      requestKey: randomUUID(),
+      createdAt: daysAgo(0, 8),
     },
     {
       dealId: d(4).id,
@@ -527,6 +655,36 @@ async function seed() {
       status: "active",
       matches: 3,
       createdAt: daysAgo(24),
+    },
+    {
+      ownerUserId: "demo-investor-jonathan",
+      title: "Boutique Hospitality, Northwest Europe",
+      investorName: "Alpenrose Family Office",
+      investorType: "Family office",
+      assetClasses: ["Hotels"],
+      countries: ["Netherlands", "Belgium", "France"],
+      minSize: 20000000,
+      maxSize: 90000000,
+      strategy: "Value-add",
+      yieldTarget: 5.5,
+      status: "active",
+      matches: 2,
+      createdAt: daysAgo(14),
+    },
+    {
+      ownerUserId: "demo-investor-anneke",
+      title: "Core Offices & Logistics, Northern Europe",
+      investorName: "Hollandse Pensioen Groep",
+      investorType: "Pension fund",
+      assetClasses: ["Offices", "Logistics"],
+      countries: ["Netherlands", "Germany"],
+      minSize: 60000000,
+      maxSize: 250000000,
+      strategy: "Core",
+      yieldTarget: 4.8,
+      status: "active",
+      matches: 3,
+      createdAt: daysAgo(20),
     },
     {
       title: "Luxury Hospitality, Southern Europe",
@@ -750,6 +908,71 @@ async function seed() {
     },
   ]);
 
+  logger.info("Seeding saved deals for demo investors");
+  await db.insert(savedDealsTable).values([
+    { userId: "demo-investor-jonathan", dealId: d(0).id, createdAt: daysAgo(4, 8) },
+    { userId: "demo-investor-jonathan", dealId: d(5).id, createdAt: daysAgo(2, 9) },
+    { userId: "demo-investor-jonathan", dealId: d(7).id, createdAt: daysAgo(1, 18) },
+    { userId: "demo-investor-anneke", dealId: d(1).id, createdAt: daysAgo(3, 10) },
+    { userId: "demo-investor-anneke", dealId: d(2).id, createdAt: daysAgo(0, 7) },
+    { userId: "demo-investor-anneke", dealId: d(6).id, createdAt: daysAgo(5, 15) },
+  ]);
+
+  logger.info("Seeding notifications for demo accounts");
+  await db.insert(notificationsTable).values([
+    {
+      userId: "demo-investor-jonathan",
+      type: "access_request_status",
+      message: "Your access request for Canal House Boutique Hotel was approved. The NDA is ready to sign.",
+      dealId: d(0).id,
+      readAt: daysAgo(3, 18),
+      createdAt: daysAgo(3, 16),
+    },
+    {
+      userId: "demo-investor-jonathan",
+      type: "access_request_status",
+      message: "Data room unlocked for Cascais Coastal Resort after NDA signature.",
+      dealId: d(5).id,
+      createdAt: daysAgo(1, 12),
+    },
+    {
+      userId: "demo-investor-anneke",
+      type: "access_request_status",
+      message: "The NDA for Taunusanlage Office Tower has been sent to you for signature.",
+      dealId: d(1).id,
+      createdAt: daysAgo(3, 12),
+    },
+    {
+      userId: "demo-investor-anneke",
+      type: "mandate_match",
+      message: "New match for your mandate Core Offices & Logistics, Northern Europe: Maasvlakte Logistics Portfolio.",
+      dealId: d(2).id,
+      createdAt: daysAgo(0, 9),
+    },
+    {
+      userId: "demo-broker-willem",
+      type: "access_request",
+      message: "Jonathan Meyer (Alpenrose Family Office) requested access to Canal House Boutique Hotel.",
+      dealId: d(0).id,
+      readAt: daysAgo(4, 10),
+      createdAt: daysAgo(4, 9),
+    },
+    {
+      userId: "demo-broker-stefan",
+      type: "access_request",
+      message: "Dr. Anneke Visser (Hollandse Pensioen Groep) requested access to Taunusanlage Office Tower.",
+      dealId: d(1).id,
+      createdAt: daysAgo(3, 11),
+    },
+    {
+      userId: "demo-broker-claire",
+      type: "access_request",
+      message: "Laurent Mercier (Mercier Freres Investissements) requested access to Rue Saint-Honore Flagship.",
+      dealId: d(4).id,
+      createdAt: daysAgo(2, 14),
+    },
+  ]);
+
   logger.info("Seeding activity feed");
   await db.insert(activityTable).values([
     { type: "deal_listed", description: "New listing: Graben Quarter Mixed-Use House (Vienna, Austria)", createdAt: daysAgo(2, 9) },
@@ -760,6 +983,9 @@ async function seed() {
     { type: "transaction_closed", description: "Verified closing: Herengracht Office Conversion at EUR 47.5m", createdAt: daysAgo(28, 17) },
     { type: "deal_listed", description: "New listing: Castellana Corporate Campus (Madrid, Spain)", createdAt: daysAgo(4, 10) },
     { type: "message", description: "New message from Laurent Mercier regarding Rue Saint-Honore Flagship", createdAt: daysAgo(0, 11) },
+    { type: "nda_signed", description: "Jonathan Meyer signed the NDA for Cascais Coastal Resort", createdAt: daysAgo(1, 12) },
+    { type: "mandate_created", description: "New mandate: Core Offices & Logistics, Northern Europe (Hollandse Pensioen Groep)", createdAt: daysAgo(20, 11) },
+    { type: "access_request", description: "Dr. Anneke Visser (Hollandse Pensioen Groep) requested access to Maasvlakte Logistics Portfolio", createdAt: daysAgo(0, 8) },
   ]);
 
   logger.info("Seed complete");

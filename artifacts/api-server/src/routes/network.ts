@@ -58,13 +58,9 @@ router.get("/brokers/me", async (req, res): Promise<void> => {
   }
 
   const [profile] = await db
-    .insert(brokersTable)
-    .values(values)
-    .onConflictDoUpdate({
-      target: brokersTable.userId,
-      set: values,
-    })
-    .returning();
+    .select()
+    .from(brokersTable)
+    .where(eq(brokersTable.userId, req.user.id));
 
   res.json(GetMyBrokerProfileResponse.parse({ profile: profile ? toJson(profile) : null }));
 });
@@ -79,7 +75,7 @@ router.put("/brokers/me", async (req, res): Promise<void> => {
     return;
   }
 
-  const parsed = CreateMandateBody.safeParse(req.body);
+  const parsed = UpsertMyBrokerProfileBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
@@ -112,7 +108,7 @@ router.put("/brokers/me", async (req, res): Promise<void> => {
 });
 
 router.get("/brokers/:id", async (req, res): Promise<void> => {
-  const params = UpdateMandateStatusParams.safeParse(req.params);
+  const params = GetBrokerParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
@@ -136,7 +132,7 @@ router.get("/brokers/:id/deals", async (req, res): Promise<void> => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-  const params = UpdateMandateStatusParams.safeParse(req.params);
+  const params = ListBrokerDealsParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
@@ -168,12 +164,12 @@ router.get("/brokers/:id/deals", async (req, res): Promise<void> => {
     : [];
 
   const [statuses, savedIds, withProfiles] = await Promise.all([
-    getAccessStatuses(matching, req.user.id),
+    getAccessStatuses(deals, req.user.id),
     getSavedDealIds(
-      matching.map((d) => d.id),
+      deals.map((deal) => deal.id),
       req.user.id,
     ),
-    overlayBrokerProfiles(matching),
+    overlayBrokerProfiles(deals),
   ]);
   const presented = withProfiles.map((deal) =>
     presentDeal(deal, statuses.get(deal.id) ?? "none", savedIds.has(deal.id)),
@@ -208,21 +204,16 @@ router.get("/mandates/:id/matches", async (req, res): Promise<void> => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-  const params = UpdateMandateStatusParams.safeParse(req.params);
+  const params = ListMandateMatchesParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
   const [mandate] = await db
-    .insert(mandatesTable)
-    .values({
-      ...parsed.data,
-      ownerUserId: req.user.id,
-      status: "active",
-      matches: 0,
-    })
-    .returning();
+    .select()
+    .from(mandatesTable)
+    .where(eq(mandatesTable.id, params.data.id));
 
   if (!mandate) {
     res.status(404).json({ error: "Mandate not found" });
