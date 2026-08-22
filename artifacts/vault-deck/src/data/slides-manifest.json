@@ -1,18 +1,130 @@
 [
-  { "id": "1f4a9c2e-8b3d-4e5f-9a1b-0c2d3e4f5a61", "position": 1, "filepath": "src/pages/slides/TitleSlide.tsx", "title": "RealEstate Vault", "description": "Title slide with tagline", "speakerNotes": "" },
-  { "id": "2a5b8d3f-9c4e-4f6a-8b2c-1d3e4f5a6b72", "position": 2, "filepath": "src/pages/slides/ProblemSlide.tsx", "title": "The problem with off-market deals", "description": "Pain points of confidential deal flow today", "speakerNotes": "" },
-  { "id": "3b6c9e4a-0d5f-4a7b-9c3d-2e4f5a6b7c83", "position": 3, "filepath": "src/pages/slides/SolutionSlide.tsx", "title": "The solution: a vault, not a listing site", "description": "Core value proposition", "speakerNotes": "" },
-  { "id": "4c7d0f5b-1e6a-4b8c-0d4e-3f5a6b7c8d94", "position": 4, "filepath": "src/pages/slides/HowItWorksSlide.tsx", "title": "How it works", "description": "Four-step access flow", "speakerNotes": "" },
-  { "id": "5d8e1a6c-2f7b-4c9d-1e5f-4a6b7c8d9e05", "position": 5, "filepath": "src/pages/slides/DealDiscoverySlide.tsx", "title": "Confidential deal discovery", "description": "Teaser listings and filters", "speakerNotes": "" },
-  { "id": "6e9f2b7d-3a8c-4d0e-2f6a-5b7c8d9e0f16", "position": 6, "filepath": "src/pages/slides/DataRoomSlide.tsx", "title": "The NDA-gated data room", "description": "Document-level access control", "speakerNotes": "" },
-  { "id": "7f0a3c8e-4b9d-4e1f-3a7b-6c8d9e0f1a27", "position": 7, "filepath": "src/pages/slides/LifecycleSlide.tsx", "title": "Access request lifecycle", "description": "Pending to NDA signed pipeline", "speakerNotes": "" },
-  { "id": "8a1b4d9f-5c0e-4f2a-4b8c-7d9e0f1a2b38", "position": 8, "filepath": "src/pages/slides/MandatesSlide.tsx", "title": "Investor mandates", "description": "Acquisition profiles and matching", "speakerNotes": "" },
-  { "id": "9b2c5e0a-6d1f-4a3b-5c9d-8e0f1a2b3c49", "position": 9, "filepath": "src/pages/slides/BrokerNetworkSlide.tsx", "title": "A trusted broker network", "description": "Ranked, verified broker directory", "speakerNotes": "" },
-  { "id": "0c3d6f1b-7e2a-4b4c-6d0e-9f1a2b3c4d50", "position": 10, "filepath": "src/pages/slides/MessagingSlide.tsx", "title": "Secure messaging", "description": "Deal-scoped conversations", "speakerNotes": "" },
-  { "id": "1d4e7a2c-8f3b-4c5d-7e1f-0a2b3c4d5e61", "position": 11, "filepath": "src/pages/slides/TransactionsSlide.tsx", "title": "Verified transactions ledger", "description": "Track record of closed deals", "speakerNotes": "" },
-  { "id": "2e5f8b3d-9a4c-4d6e-8f2a-1b3c4d5e6f72", "position": 12, "filepath": "src/pages/slides/DashboardSlide.tsx", "title": "The dashboard", "description": "Portfolio-level KPIs and activity", "speakerNotes": "" },
-  { "id": "3f6a9c4e-0b5d-4e7f-9a3b-2c4d5e6f7a83", "position": 13, "filepath": "src/pages/slides/BrandSlide.tsx", "title": "Built like a private bank, not a portal", "description": "Brand identity and design principles", "speakerNotes": "" },
-  { "id": "4a7b0d5f-1c6e-4f8a-0b4c-3d5e6f7a8b94", "position": 14, "filepath": "src/pages/slides/TechSlide.tsx", "title": "Under the hood", "description": "Technology stack", "speakerNotes": "" },
-  { "id": "5b8c1e6a-2d7f-4a9b-1c5d-4e6f7a8b9c05", "position": 15, "filepath": "src/pages/slides/RoadmapSlide.tsx", "title": "Roadmap", "description": "Next steps for the platform", "speakerNotes": "" },
-  { "id": "6c9d2f7b-3e8a-4b0c-2d6e-5f7a8b9c0d16", "position": 16, "filepath": "src/pages/slides/ClosingSlide.tsx", "title": "Private Deals. Trusted Access.", "description": "Closing slide with call to action", "speakerNotes": "" }
+  {
+    "id": "1f4a9c2e-8b3d-4e5f-9a1b-0c2d3e4f5a61",
+    "position": 1,
+    "filepath": "src/pages/slides/TitleSlide.tsx",
+    "title": "Closa",
+    "description": "Title slide with positioning",
+    "speakerNotes": ""
+  },
+  {
+    "id": "2a5b8d3f-9c4e-4f6a-8b2c-1d3e4f5a6b72",
+    "position": 2,
+    "filepath": "src/pages/slides/ProblemSlide.tsx",
+    "title": "The problem with off-market deals",
+    "description": "Pain points of confidential deal flow today",
+    "speakerNotes": ""
+  },
+  {
+    "id": "3b6c9e4a-0d5f-4a7b-9c3d-2e4f5a6b7c83",
+    "position": 3,
+    "filepath": "src/pages/slides/SolutionSlide.tsx",
+    "title": "The solution: infrastructure, not a listing site",
+    "description": "Core value proposition and lifecycle",
+    "speakerNotes": ""
+  },
+  {
+    "id": "4c7d0f5b-1e6a-4b8c-0d4e-3f5a6b7c8d94",
+    "position": 4,
+    "filepath": "src/pages/slides/HowItWorksSlide.tsx",
+    "title": "How it works",
+    "description": "Four-step access flow",
+    "speakerNotes": ""
+  },
+  {
+    "id": "5d8e1a6c-2f7b-4c9d-1e5f-4a6b7c8d9e05",
+    "position": 5,
+    "filepath": "src/pages/slides/DealDiscoverySlide.tsx",
+    "title": "Confidential deal discovery",
+    "description": "Teaser listings and filters",
+    "speakerNotes": ""
+  },
+  {
+    "id": "6e9f2b7d-3a8c-4d0e-2f6a-5b7c8d9e0f16",
+    "position": 6,
+    "filepath": "src/pages/slides/DataRoomSlide.tsx",
+    "title": "The NDA-gated data room",
+    "description": "Document-level access control",
+    "speakerNotes": ""
+  },
+  {
+    "id": "7f0a3c8e-4b9d-4e1f-3a7b-6c8d9e0f1a27",
+    "position": 7,
+    "filepath": "src/pages/slides/LifecycleSlide.tsx",
+    "title": "Access request lifecycle",
+    "description": "Pending to NDA signed pipeline",
+    "speakerNotes": ""
+  },
+  {
+    "id": "8a1b4d9f-5c0e-4f2a-4b8c-7d9e0f1a2b38",
+    "position": 8,
+    "filepath": "src/pages/slides/MandatesSlide.tsx",
+    "title": "Investor mandates",
+    "description": "Acquisition profiles and matching",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9b2c5e0a-6d1f-4a3b-5c9d-8e0f1a2b3c49",
+    "position": 9,
+    "filepath": "src/pages/slides/BrokerNetworkSlide.tsx",
+    "title": "A trusted broker network",
+    "description": "Ranked, verified broker directory",
+    "speakerNotes": ""
+  },
+  {
+    "id": "0c3d6f1b-7e2a-4b4c-6d0e-9f1a2b3c4d50",
+    "position": 10,
+    "filepath": "src/pages/slides/MessagingSlide.tsx",
+    "title": "Secure messaging",
+    "description": "Deal-scoped conversations",
+    "speakerNotes": ""
+  },
+  {
+    "id": "1d4e7a2c-8f3b-4c5d-7e1f-0a2b3c4d5e61",
+    "position": 11,
+    "filepath": "src/pages/slides/TransactionsSlide.tsx",
+    "title": "Verified transactions ledger",
+    "description": "Track record of closed deals",
+    "speakerNotes": ""
+  },
+  {
+    "id": "2e5f8b3d-9a4c-4d6e-8f2a-1b3c4d5e6f72",
+    "position": 12,
+    "filepath": "src/pages/slides/DashboardSlide.tsx",
+    "title": "The dashboard",
+    "description": "Portfolio-level KPIs and activity",
+    "speakerNotes": ""
+  },
+  {
+    "id": "3f6a9c4e-0b5d-4e7f-9a3b-2c4d5e6f7a83",
+    "position": 13,
+    "filepath": "src/pages/slides/BrandSlide.tsx",
+    "title": "Built like infrastructure, not a portal",
+    "description": "Brand identity and design principles",
+    "speakerNotes": ""
+  },
+  {
+    "id": "4a7b0d5f-1c6e-4f8a-0b4c-3d5e6f7a8b94",
+    "position": 14,
+    "filepath": "src/pages/slides/TechSlide.tsx",
+    "title": "Under the hood",
+    "description": "Technology stack",
+    "speakerNotes": ""
+  },
+  {
+    "id": "5b8c1e6a-2d7f-4a9b-1c5d-4e6f7a8b9c05",
+    "position": 15,
+    "filepath": "src/pages/slides/RoadmapSlide.tsx",
+    "title": "Roadmap",
+    "description": "Next steps for the platform",
+    "speakerNotes": ""
+  },
+  {
+    "id": "6c9d2f7b-3e8a-4b0c-2d6e-5f7a8b9c0d16",
+    "position": 16,
+    "filepath": "src/pages/slides/ClosingSlide.tsx",
+    "title": "From opportunity to close.",
+    "description": "Closing slide with call to action",
+    "speakerNotes": ""
+  }
 ]

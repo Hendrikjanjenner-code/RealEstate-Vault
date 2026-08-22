@@ -14,6 +14,7 @@ import {
   Inter_700Bold,
   useFonts,
 } from '@expo-google-fonts/inter';
+import { Sora_600SemiBold, Sora_700Bold } from '@expo-google-fonts/sora';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -38,7 +39,7 @@ const queryClient = new QueryClient({
 
 function RootLayoutNav() {
   return (
-    <Stack screenOptions={{ headerBackTitle: 'Back', headerShown: false, contentStyle: { backgroundColor: '#081F1B' } }}>
+    <Stack screenOptions={{ headerBackTitle: 'Back', headerShown: false, contentStyle: { backgroundColor: '#0C0D0E' } }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="deal/[id]" />
       <Stack.Screen name="mandate/[id]" />
@@ -54,6 +55,8 @@ export default function RootLayout() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
+    Sora_600SemiBold,
+    Sora_700Bold,
   });
 
   useEffect(() => {

@@ -234,9 +234,9 @@ export default function DealDetailScreen() {
                     width: 52,
                     height: 52,
                     borderRadius: 26,
-                    backgroundColor: 'rgba(200,169,90,0.15)',
+                    backgroundColor: 'rgba(20,168,125,0.15)',
                     borderWidth: 1,
-                    borderColor: 'rgba(200,169,90,0.4)',
+                    borderColor: 'rgba(20,168,125,0.4)',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
@@ -415,7 +415,7 @@ export default function DealDetailScreen() {
               </View>
             )}
             {effectiveAccess === 'granted' && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(200,169,90,0.1)', borderRadius: colors.radius, padding: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(20,168,125,0.1)', borderRadius: colors.radius, padding: 12 }}>
                 <Feather name="check-circle" size={18} color={c.primary} />
                 <Text style={{ flex: 1, color: c.primary, fontSize: 13, fontFamily: 'Inter_600SemiBold' }}>
                   Access granted. Full data room unlocked.
@@ -489,7 +489,7 @@ export default function DealDetailScreen() {
                       width: 36,
                       height: 36,
                       borderRadius: 10,
-                      backgroundColor: locked ? c.secondary : 'rgba(200,169,90,0.12)',
+                      backgroundColor: locked ? c.secondary : 'rgba(20,168,125,0.12)',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}

@@ -79,7 +79,7 @@ export default function NotificationsScreen() {
                   padding: 14,
                   borderTopWidth: i === 0 ? 0 : StyleSheet.hairlineWidth,
                   borderTopColor: c.border,
-                  backgroundColor: n.read ? 'transparent' : 'rgba(200,169,90,0.06)',
+                  backgroundColor: n.read ? 'transparent' : 'rgba(20,168,125,0.06)',
                 })}
               >
                 <View

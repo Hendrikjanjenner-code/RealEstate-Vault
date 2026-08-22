@@ -68,7 +68,7 @@ export function ScreenHeader({
           style={{
             color: c.foreground,
             fontSize: 21,
-            fontFamily: 'Inter_700Bold',
+            fontFamily: 'Sora_700Bold',
             letterSpacing: -0.3,
           }}
         >
@@ -175,9 +175,9 @@ export function Badge({ label, gold = false }: { label: string; gold?: boolean }
         paddingHorizontal: 9,
         paddingVertical: 4,
         borderRadius: 999,
-        backgroundColor: gold ? 'rgba(200,169,90,0.15)' : c.secondary,
+        backgroundColor: gold ? 'rgba(20,168,125,0.15)' : c.secondary,
         borderWidth: StyleSheet.hairlineWidth,
-        borderColor: gold ? 'rgba(200,169,90,0.4)' : c.border,
+        borderColor: gold ? 'rgba(20,168,125,0.4)' : c.border,
       }}
     >
       <Text

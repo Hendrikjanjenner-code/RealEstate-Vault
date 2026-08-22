@@ -11,13 +11,13 @@
 }
 
 :root {
-  /* RealEstate Vault brand on Corporate Grid template */
-  --slide-primary: #0b2d26;
-  --slide-accent: #c8a95a;
-  --slide-bg: #fdfdfb;
-  --slide-text: #111111;
-  --slide-muted: #666666;
-  --font-display-family: 'Inter', system-ui, sans-serif;
+  /* Closa brand on Corporate Grid template */
+  --slide-primary: #0c0d0e;
+  --slide-accent: #14a87d;
+  --slide-bg: #f6f4ef;
+  --slide-text: #0c0d0e;
+  --slide-muted: #5d615e;
+  --font-display-family: 'Sora', 'Inter', system-ui, sans-serif;
   --font-body-family: 'Inter', system-ui, sans-serif;
   color-scheme: light;
 }

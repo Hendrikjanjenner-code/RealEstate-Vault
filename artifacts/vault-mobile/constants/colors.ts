@@ -1,49 +1,50 @@
 /**
- * RealEstate Vault brand tokens.
- * Dark green vault surfaces, gold accents, ivory text — matches the web app.
+ * Closa brand tokens.
+ * Near-black ink surfaces, warm off-white text, a single jade accent —
+ * mirrors lib/brand (the master brand's single source of truth).
  */
 
-const vault = {
+const closa = {
   // Legacy aliases
-  text: '#F3F0E6',
-  tint: '#C8A95A',
+  text: '#F6F4EF',
+  tint: '#14A87D',
 
   // Core surfaces
-  background: '#081F1B',
-  foreground: '#F3F0E6',
+  background: '#0C0D0E',
+  foreground: '#F6F4EF',
 
   // Cards / elevated surfaces
-  card: '#0F2C26',
-  cardForeground: '#F3F0E6',
+  card: '#17191C',
+  cardForeground: '#F6F4EF',
 
-  // Primary action color (gold)
-  primary: '#C8A95A',
-  primaryForeground: '#0B2D26',
+  // Primary action color (jade accent)
+  primary: '#14A87D',
+  primaryForeground: '#0C0D0E',
 
   // Secondary surfaces
-  secondary: '#123129',
-  secondaryForeground: '#F3F0E6',
+  secondary: '#22262B',
+  secondaryForeground: '#F6F4EF',
 
   // Muted elements
-  muted: '#123129',
-  mutedForeground: '#8AA39B',
+  muted: '#22262B',
+  mutedForeground: '#9AA0A6',
 
   // Accent highlights
-  accent: '#1A3B33',
-  accentForeground: '#C8A95A',
+  accent: '#17191C',
+  accentForeground: '#14A87D',
 
   // Destructive
-  destructive: '#E2574C',
-  destructiveForeground: '#F3F0E6',
+  destructive: '#C24E4E',
+  destructiveForeground: '#F6F4EF',
 
   // Borders and inputs
-  border: '#1E3B34',
-  input: '#1E3B34',
+  border: '#2A2E33',
+  input: '#2A2E33',
 };
 
 const colors = {
-  light: vault,
-  radius: 14,
+  light: closa,
+  radius: 10,
 };
 
 export default colors;

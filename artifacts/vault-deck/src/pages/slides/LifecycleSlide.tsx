@@ -1,28 +1,28 @@
 export default function LifecycleSlide() {
   return (
     <div className="w-screen h-screen overflow-hidden relative bg-bg font-body">
-      <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(to bottom, #EFEEE7 1px, transparent 1px), linear-gradient(to right, #EFEEE7 1px, transparent 1px)", backgroundSize: "5vw 5vh" }} />
+      <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(to bottom, #EAE7DE 1px, transparent 1px), linear-gradient(to right, #EAE7DE 1px, transparent 1px)", backgroundSize: "5vw 5vh" }} />
       <div className="absolute top-[5vh] left-[5vw] w-[3vw] h-[3vw] bg-primary z-10" />
       <div className="absolute top-[5vh] right-[5vw] z-10 text-right">
-        <div className="text-primary text-[0.9vw] font-semibold uppercase tracking-[0.1em] mb-[0.5vh]">RealEstate Vault</div>
+        <div className="text-primary text-[0.9vw] font-semibold uppercase tracking-[0.1em] mb-[0.5vh]">CLOSA</div>
         <div className="text-[#999999] text-[0.8vw] uppercase tracking-[0.1em]">Confidential / 2026</div>
       </div>
       <div className="absolute top-[20vh] left-[10vw] z-10 w-[80vw]">
-        <h2 className="text-text text-[4vw] font-bold leading-[1.1] tracking-[-0.02em] m-0 mb-[3vh]">Access request lifecycle</h2>
+        <h2 className="font-display text-text text-[4vw] font-bold leading-[1.1] tracking-[-0.02em] m-0 mb-[3vh]">Access request lifecycle</h2>
         <p className="text-muted text-[1.4vw] leading-[1.5] m-0 mb-[6vh] max-w-[50vw]">Every request moves through a controlled pipeline</p>
         <div className="flex items-center gap-[1.2vw] mb-[6vh]">
-          <div className="flex-1 bg-white border border-[#E4E2DA] py-[2.5vh] text-center">
+          <div className="flex-1 bg-white border border-[#E2DFD5] py-[2.5vh] text-center">
             <span className="text-primary text-[1.4vw] font-semibold">Pending</span>
           </div>
-          <div className="w-[1.5vw] h-[0.3vh] bg-[#C9C6BB]" />
-          <div className="flex-1 bg-white border border-[#E4E2DA] py-[2.5vh] text-center">
+          <div className="w-[1.5vw] h-[0.3vh] bg-[#CBC8BD]" />
+          <div className="flex-1 bg-white border border-[#E2DFD5] py-[2.5vh] text-center">
             <span className="text-primary text-[1.4vw] font-semibold">Approved</span>
           </div>
-          <div className="w-[1.5vw] h-[0.3vh] bg-[#C9C6BB]" />
-          <div className="flex-1 bg-white border border-[#E4E2DA] py-[2.5vh] text-center">
+          <div className="w-[1.5vw] h-[0.3vh] bg-[#CBC8BD]" />
+          <div className="flex-1 bg-white border border-[#E2DFD5] py-[2.5vh] text-center">
             <span className="text-primary text-[1.4vw] font-semibold">NDA Sent</span>
           </div>
-          <div className="w-[1.5vw] h-[0.3vh] bg-[#C9C6BB]" />
+          <div className="w-[1.5vw] h-[0.3vh] bg-[#CBC8BD]" />
           <div className="flex-1 bg-primary py-[2.5vh] text-center">
             <span className="text-accent text-[1.4vw] font-semibold">NDA Signed</span>
           </div>

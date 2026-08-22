@@ -569,7 +569,7 @@ function ChipRow({
               paddingHorizontal: 12,
               paddingVertical: 8,
               borderRadius: 999,
-              backgroundColor: active ? 'rgba(200,169,90,0.15)' : c.secondary,
+              backgroundColor: active ? 'rgba(20,168,125,0.15)' : c.secondary,
               borderWidth: 1,
               borderColor: active ? c.primary : c.border,
             })}

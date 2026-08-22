@@ -32,8 +32,8 @@ export default function DashboardScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
       <ScreenHeader
-        title="RealEstate Vault"
-        subtitle="Private Deals. Trusted Access."
+        title="Closa"
+        subtitle="From opportunity to close."
         right={<NotificationsBell />}
       />
       <ScrollView
