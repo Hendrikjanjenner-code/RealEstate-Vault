@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { NDA_PARAGRAPHS, NDA_TITLE } from "@workspace/nda-terms";
 
 type AccessState = "locked" | "requested" | "nda_sent" | "granted" | "rejected";
 
@@ -506,12 +507,10 @@ export default function DealDetail() {
             {effectiveAccess === "nda_sent" && showNda && (
               <form onSubmit={handleSignNda} className="space-y-4" data-testid="form-sign-nda">
                 <div className="p-4 rounded-xl bg-background/70 border border-white/10 max-h-48 overflow-y-auto text-xs text-muted-foreground leading-relaxed space-y-2">
-                  <p className="font-semibold text-foreground uppercase tracking-wider">Non-Disclosure Agreement</p>
-                  <p>This Non-Disclosure Agreement governs your access to confidential information concerning the investment opportunity marketed through RealEstate Vault.</p>
-                  <p>1. You agree to keep all deal materials — including pricing, tenancy schedules, financial models, and the identity or location of the asset — strictly confidential.</p>
-                  <p>2. Confidential information may be used solely to evaluate a potential acquisition and may not be shared with third parties without the listing broker's prior written consent.</p>
-                  <p>3. This obligation remains in force for 24 months from the date of signature or until the information becomes public through no fault of your own.</p>
-                  <p>4. By signing electronically below, you confirm you are authorised to bind yourself and your firm to these terms.</p>
+                  <p className="font-semibold text-foreground uppercase tracking-wider">{NDA_TITLE}</p>
+                  {NDA_PARAGRAPHS.map((p, i) => (
+                    <p key={i}>{p}</p>
+                  ))}
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="nda-signer" className="text-xs uppercase tracking-wider text-muted-foreground">Full Legal Name</Label>

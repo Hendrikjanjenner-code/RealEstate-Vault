@@ -13,6 +13,9 @@
       "path": "./lib/api-zod"
     },
     {
+      "path": "./lib/nda-terms"
+    },
+    {
       "path": "lib/replit-auth-web"
     },
     {

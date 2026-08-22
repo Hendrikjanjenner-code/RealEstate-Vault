@@ -19,7 +19,7 @@ import {
   SignAccessRequestNdaBody,
   SignAccessRequestNdaResponse,
 } from "@workspace/api-zod";
-import { NDA_TITLE, NDA_PREAMBLE, NDA_CLAUSES } from "../lib/ndaTerms";
+import { NDA_TITLE, NDA_PREAMBLE, NDA_CLAUSES } from "@workspace/nda-terms";
 
 const router: IRouter = Router();
 

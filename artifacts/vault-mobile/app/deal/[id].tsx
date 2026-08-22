@@ -20,6 +20,7 @@ import {
   useRequestDealAccess,
   useSignAccessRequestNda,
 } from '@workspace/api-client-react';
+import { NDA_PARAGRAPHS, NDA_TITLE } from '@workspace/nda-terms';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
@@ -47,13 +48,6 @@ function toAccessState(accessStatus: string | null | undefined): AccessState {
   }
 }
 
-const NDA_PARAGRAPHS = [
-  'This Non-Disclosure Agreement governs your access to confidential information concerning the investment opportunity marketed through RealEstate Vault.',
-  "1. You agree to keep all deal materials — including pricing, tenancy schedules, financial models, and the identity or location of the asset — strictly confidential.",
-  "2. Confidential information may be used solely to evaluate a potential acquisition and may not be shared with third parties without the listing broker's prior written consent.",
-  '3. This obligation remains in force for 24 months from the date of signature or until the information becomes public through no fault of your own.',
-  '4. By signing electronically below, you confirm you are authorised to bind yourself and your firm to these terms.',
-];
 
 export default function DealDetailScreen() {
   const c = useColors();
@@ -332,7 +326,7 @@ export default function DealDetailScreen() {
                   }}
                 >
                   <Text style={{ color: c.foreground, fontSize: 11, fontFamily: 'Inter_700Bold', textTransform: 'uppercase', letterSpacing: 1 }}>
-                    Non-Disclosure Agreement
+                    {NDA_TITLE}
                   </Text>
                   {NDA_PARAGRAPHS.map((p, i) => (
                     <Text key={i} style={{ color: c.mutedForeground, fontSize: 12, fontFamily: 'Inter_400Regular', lineHeight: 18 }}>
