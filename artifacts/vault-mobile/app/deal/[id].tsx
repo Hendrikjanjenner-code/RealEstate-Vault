@@ -28,6 +28,7 @@ import { useColors } from '@/hooks/useColors';
 import colors from '@/constants/colors';
 import { Badge, Card, ErrorState, GoldButton, LoadingState, ScreenHeader } from '@/components/VaultUI';
 import { formatMillions, resolveImageUrl } from '@/lib/format';
+import { openSignedNdaRecord } from '@/lib/nda-record';
 import { useAuth } from '@/lib/auth';
 
 type AccessState = 'locked' | 'requested' | 'nda_sent' | 'granted' | 'rejected';
@@ -69,12 +70,16 @@ export default function DealDetailScreen() {
   const [signerName, setSignerName] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [signError, setSignError] = useState<string | null>(null);
+  const [ndaRecordLoading, setNdaRecordLoading] = useState(false);
+  const [ndaRecordError, setNdaRecordError] = useState<string | null>(null);
 
   // Find this investor's own request for the deal so they can sign it.
   const { data: myRequests } = useListAccessRequests({
     query: { enabled: !!id && isAuthenticated, queryKey: getListAccessRequestsQueryKey() },
   });
   const myRequest = myRequests?.find((r) => r.dealId === id && r.status === 'nda_sent');
+  // The investor's signed request for this deal, used to open the NDA record.
+  const signedRequest = myRequests?.find((r) => r.dealId === id && r.status === 'nda_signed');
 
   if (!authLoading && !isAuthenticated) {
     return (
@@ -164,6 +169,19 @@ export default function DealDetailScreen() {
         onError: () => setSignError('Signing failed. Please try again.'),
       },
     );
+  };
+
+  const viewSignedNda = async () => {
+    if (!signedRequest) return;
+    setNdaRecordError(null);
+    setNdaRecordLoading(true);
+    try {
+      await openSignedNdaRecord(signedRequest.id);
+    } catch {
+      setNdaRecordError('Could not open your signed NDA. Please try again.');
+    } finally {
+      setNdaRecordLoading(false);
+    }
   };
 
   return (
@@ -402,6 +420,23 @@ export default function DealDetailScreen() {
                 <Text style={{ flex: 1, color: c.primary, fontSize: 13, fontFamily: 'Inter_600SemiBold' }}>
                   Access granted. Full data room unlocked.
                 </Text>
+              </View>
+            )}
+            {signedRequest && (
+              <View style={{ gap: 8, marginTop: 4 }}>
+                <GoldButton
+                  testID="button-view-signed-nda"
+                  label={ndaRecordLoading ? 'Opening...' : 'View Signed NDA'}
+                  icon="file-text"
+                  variant="outline"
+                  loading={ndaRecordLoading}
+                  onPress={viewSignedNda}
+                />
+                {ndaRecordError && (
+                  <Text style={{ color: c.destructive, fontSize: 13, fontFamily: 'Inter_500Medium' }}>
+                    {ndaRecordError}
+                  </Text>
+                )}
               </View>
             )}
           </Card>
