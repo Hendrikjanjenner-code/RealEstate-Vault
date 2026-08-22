@@ -6,3 +6,4 @@
 - [Shared dev DB across task branches](shared-dev-db.md) — drizzle push diffs against this branch's schema only and can drop other in-flight tasks' columns; apply additive SQL instead.
 - [Mobile auth & e2e sessions](mobile-e2e-auth.md) — Expo app auth is a bearer session token (SecureStore native / localStorage web); e2e tests seed a DB session sid into that storage.
 - [Replit Auth monorepo quirks](replit-auth-monorepo-quirks.md) — auth-web lib needs composite tsconfig + vite-env shim; session user snapshots must be updated on role change; confidential-deal redaction happens server-side per viewer.
+- [Completion review covers the whole branch diff](completion-review-whole-diff.md) — review rejects on inherited base regressions too; typecheck and sanity-check merged features before completing.

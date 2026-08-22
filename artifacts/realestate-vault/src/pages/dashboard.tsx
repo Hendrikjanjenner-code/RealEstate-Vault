@@ -1,10 +1,12 @@
 import { useGetDashboardStats, useListActivity } from "@workspace/api-client-react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Briefcase, Key, ScrollText, Users, FileText, Activity } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: activity, isLoading: activityLoading } = useListActivity();
 
@@ -29,7 +31,7 @@ export default function Dashboard() {
     <div className="p-8 space-y-8 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-foreground">Welcome back, Alexander</h1>
+          <h1 className="text-3xl font-heading font-bold text-foreground">{user?.firstName ? `Welcome back, ${user.firstName}` : user?.email ? `Welcome back, ${user.email}` : "Welcome back"}</h1>
           <p className="text-muted-foreground mt-1">Here's what's happening in your vault today.</p>
         </div>
         <div className="flex gap-4">

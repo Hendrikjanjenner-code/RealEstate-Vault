@@ -75,6 +75,20 @@ function RolePicker() {
   );
 }
 
+function SignInPrompt() {
+  const { login } = useAuth();
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-background p-8 text-center">
+      <VaultLogo />
+      <div>
+        <h1 className="text-2xl font-heading font-bold text-foreground">Sign in to continue</h1>
+        <p className="text-muted-foreground mt-2">You need an account to browse deals, mandates, and your data rooms.</p>
+      </div>
+      <Button onClick={login} size="lg">Sign in</Button>
+    </div>
+  );
+}
+
 function AppShellRouter() {
   const { isLoading, isAuthenticated, user } = useAuth();
 
@@ -83,7 +97,6 @@ function AppShellRouter() {
     return <RolePicker />;
   }
 
-  // Allow unauthenticated demo browsing. The API enforces auth on write operations.
   // A brief loading state keeps the layout stable while the auth state resolves.
   if (isLoading) {
     return (
@@ -93,6 +106,12 @@ function AppShellRouter() {
         </div>
       </AppLayout>
     );
+  }
+
+  // The in-app pages depend on authenticated API routes, so anonymous
+  // visitors get a sign-in prompt instead of broken/empty pages.
+  if (!isAuthenticated) {
+    return <SignInPrompt />;
   }
 
   return (
