@@ -1,6 +1,6 @@
 import { formatMillions } from "@/lib/utils";
-import { useState } from "react";
-import { Link } from "wouter";
+import { useCallback } from "react";
+import { Link, useSearch, useLocation } from "wouter";
 import { useListDeals, useToggleSaveDeal } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,29 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getListDealsQueryKey } from "@workspace/api-client-react";
 
 export default function DealsList() {
-  const [search, setSearch] = useState("");
-  const [assetClass, setAssetClass] = useState<string>("all");
-  const [savedOnly, setSavedOnly] = useState(false);
+  const searchString = useSearch();
+  const [location, navigate] = useLocation();
+  const params = new URLSearchParams(searchString);
+  const search = params.get("q") ?? "";
+  const assetClass = params.get("asset") ?? "all";
+  const savedOnly = params.get("saved") === "1";
+
+  const updateParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const next = new URLSearchParams(window.location.search);
+      for (const [key, value] of Object.entries(updates)) {
+        if (value === null || value === "") next.delete(key);
+        else next.set(key, value);
+      }
+      const qs = next.toString();
+      navigate(qs ? `${location}?${qs}` : location, { replace: true });
+    },
+    [navigate, location]
+  );
+
+  const setSearch = (value: string) => updateParams({ q: value });
+  const setAssetClass = (value: string) => updateParams({ asset: value === "all" ? null : value });
+  const toggleSavedOnly = () => updateParams({ saved: savedOnly ? null : "1" });
   const listParams = {
     search,
     assetClass: assetClass === "all" ? undefined : assetClass,
@@ -81,7 +101,7 @@ export default function DealsList() {
         </div>
         <Button
           variant="outline"
-          onClick={() => setSavedOnly((v) => !v)}
+          onClick={toggleSavedOnly}
           aria-pressed={savedOnly}
           data-testid="button-saved-only"
           className={cn(
