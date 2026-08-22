@@ -5,17 +5,9 @@
  * RealEstate Vault API
  * OpenAPI spec version: 0.1.0
  */
+import type { AccessRequest } from './accessRequest';
 
-export interface AccessRequestCreateResult {
-  id: number;
-  dealId: number;
-  dealTitle: string;
-  requesterName: string;
-  requesterCompany: string;
-  /** @nullable */
-  message?: string | null;
-  status: string;
-  createdAt: string;
-  /** Secret capability returned only to the creator; needed later to sign the NDA. */
-  requestKey: string;
-}
+export type AccessRequestCreateResult = AccessRequest & {
+  /** Secret issued to the requester at creation; lets them self-sign the NDA and check status without a session. Only returned at creation. */
+  requestKey?: string;
+};

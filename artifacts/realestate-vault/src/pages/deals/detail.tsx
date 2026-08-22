@@ -8,6 +8,8 @@ import {
   useListAccessRequests,
   useSignAccessRequestNda,
   useCreateDealDocument,
+  useUpdateDealDocument,
+  useDeleteDealDocument,
   useRequestUploadUrl,
   useGetSession,
   getGetDealQueryKey,
@@ -15,10 +17,11 @@ import {
   getListAccessRequestsQueryKey,
 } from "@workspace/api-client-react";
 import { ObjectUploader } from "@workspace/object-storage-web";
+import { useAuth } from "@workspace/replit-auth-web";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Building2, Lock, FileText, Download, CheckCircle2, AlertCircle, Clock, Info, Key, Shield, FileSignature, Upload } from "lucide-react";
+import { MapPin, Building2, Lock, FileText, Download, CheckCircle2, AlertCircle, Clock, Info, Key, Shield, FileSignature, Upload, Pencil, Trash2, X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -53,6 +56,8 @@ export default function DealDetail() {
   const requestAccess = useRequestDealAccess();
   const signNda = useSignAccessRequestNda();
   const createDoc = useCreateDealDocument();
+  const updateDoc = useUpdateDealDocument();
+  const deleteDoc = useDeleteDealDocument();
   const requestUploadUrl = useRequestUploadUrl();
   const { data: session } = useGetSession();
   const queryClient = useQueryClient();
@@ -63,8 +68,48 @@ export default function DealDetail() {
   const [agreed, setAgreed] = useState(false);
   const [newDocName, setNewDocName] = useState("");
   const [newDocNdaRequired, setNewDocNdaRequired] = useState(false);
+  const [editingDocId, setEditingDocId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", category: "", ndaRequired: false });
 
-  const isBroker = !!session?.broker;
+  const handleSaveDocEdit = (docId: number) => {
+    if (!editForm.name.trim() || !editForm.category.trim()) {
+      toast({ title: "Missing details", description: "Name and category are required.", variant: "destructive" });
+      return;
+    }
+    updateDoc.mutate(
+      { id, docId, data: { name: editForm.name.trim(), category: editForm.category.trim(), ndaRequired: editForm.ndaRequired } },
+      {
+        onSuccess: () => {
+          toast({ title: "Document Updated", description: `${editForm.name.trim()} saved.` });
+          setEditingDocId(null);
+          queryClient.invalidateQueries({ queryKey: getListDealDocumentsQueryKey(id) });
+        },
+        onError: () => {
+          toast({ title: "Update failed", description: "Could not update the document.", variant: "destructive" });
+        },
+      },
+    );
+  };
+
+  const handleDeleteDoc = (docId: number, docName: string) => {
+    if (!window.confirm(`Delete "${docName}" from the data room? This cannot be undone.`)) return;
+    deleteDoc.mutate(
+      { id, docId },
+      {
+        onSuccess: () => {
+          toast({ title: "Document Deleted", description: `${docName} removed from the data room.` });
+          queryClient.invalidateQueries({ queryKey: getListDealDocumentsQueryKey(id) });
+        },
+        onError: () => {
+          toast({ title: "Delete failed", description: "Could not delete the document.", variant: "destructive" });
+        },
+      },
+    );
+  };
+
+  // Broker via Replit Auth role OR legacy broker-passcode session.
+  const { user } = useAuth();
+  const isBroker = user?.role === "broker" || !!session?.broker;
 
   // Find this investor's own request for the deal so they can sign it.
   const { data: myRequests } = useListAccessRequests();
@@ -223,6 +268,51 @@ export default function DealDetail() {
                     const downloadUrl = doc.ndaRequired && storedDownloadToken
                       ? `/api/deals/${id}/documents/${doc.id}/download?token=${storedDownloadToken}`
                       : `/api/deals/${id}/documents/${doc.id}/download`;
+                    if (isBroker && editingDocId === doc.id) {
+                      return (
+                        <div key={doc.id} className="p-4 bg-white/[0.02]" data-testid={`form-edit-doc-${doc.id}`}>
+                          <div className="flex gap-2 items-end flex-wrap">
+                            <div className="flex-1 min-w-40">
+                              <Label htmlFor={`edit-doc-name-${doc.id}`} className="text-xs text-muted-foreground mb-1 block">Document Name</Label>
+                              <Input
+                                id={`edit-doc-name-${doc.id}`}
+                                value={editForm.name}
+                                onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                                className="bg-background/50 border-white/10 h-8 text-sm"
+                                data-testid={`input-edit-doc-name-${doc.id}`}
+                              />
+                            </div>
+                            <div className="w-40">
+                              <Label htmlFor={`edit-doc-category-${doc.id}`} className="text-xs text-muted-foreground mb-1 block">Category</Label>
+                              <Input
+                                id={`edit-doc-category-${doc.id}`}
+                                value={editForm.category}
+                                onChange={(e) => setEditForm((f) => ({ ...f, category: e.target.value }))}
+                                className="bg-background/50 border-white/10 h-8 text-sm"
+                                data-testid={`input-edit-doc-category-${doc.id}`}
+                              />
+                            </div>
+                            <div className="flex items-center gap-2 pb-1.5">
+                              <Checkbox
+                                id={`edit-doc-nda-${doc.id}`}
+                                checked={editForm.ndaRequired}
+                                onCheckedChange={(v) => setEditForm((f) => ({ ...f, ndaRequired: v === true }))}
+                                data-testid={`checkbox-edit-doc-nda-${doc.id}`}
+                              />
+                              <Label htmlFor={`edit-doc-nda-${doc.id}`} className="text-xs text-muted-foreground cursor-pointer">NDA required</Label>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" onClick={() => handleSaveDocEdit(doc.id)} disabled={updateDoc.isPending} className="h-8 bg-primary text-primary-foreground hover:bg-primary/90" data-testid={`btn-save-doc-${doc.id}`}>
+                                {updateDoc.isPending ? "Saving..." : "Save"}
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => setEditingDocId(null)} className="h-8 border border-white/10" data-testid={`btn-cancel-edit-doc-${doc.id}`}>
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
                     return (
                       <div key={doc.id} className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
                         <div className="flex items-center gap-4">
@@ -237,19 +327,47 @@ export default function DealDetail() {
                             </p>
                           </div>
                         </div>
-                        {isDocLocked ? (
-                          <Button variant="ghost" size="sm" disabled className="opacity-50 cursor-not-allowed">
-                            <Lock className="w-4 h-4 mr-2" /> Locked
-                          </Button>
-                        ) : doc.hasFile ? (
-                          <a href={downloadUrl} download>
-                            <Button variant="outline" size="sm" className="border-white/10 hover:bg-primary/10 hover:text-primary hover:border-primary/30" data-testid={`btn-download-${doc.id}`}>
-                              <Download className="w-4 h-4 mr-2" /> Download
+                        <div className="flex items-center gap-2">
+                          {isDocLocked ? (
+                            <Button variant="ghost" size="sm" disabled className="opacity-50 cursor-not-allowed">
+                              <Lock className="w-4 h-4 mr-2" /> Locked
                             </Button>
-                          </a>
-                        ) : (
-                          <span className="text-xs text-muted-foreground italic">No file yet</span>
-                        )}
+                          ) : doc.hasFile ? (
+                            <a href={downloadUrl} download>
+                              <Button variant="outline" size="sm" className="border-white/10 hover:bg-primary/10 hover:text-primary hover:border-primary/30" data-testid={`btn-download-${doc.id}`}>
+                                <Download className="w-4 h-4 mr-2" /> Download
+                              </Button>
+                            </a>
+                          ) : (
+                            <span className="text-xs text-muted-foreground italic">No file yet</span>
+                          )}
+                          {isBroker && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                                onClick={() => {
+                                  setEditingDocId(doc.id);
+                                  setEditForm({ name: doc.name, category: doc.category ?? "", ndaRequired: doc.ndaRequired });
+                                }}
+                                data-testid={`btn-edit-doc-${doc.id}`}
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                                onClick={() => handleDeleteDoc(doc.id, doc.name)}
+                                disabled={deleteDoc.isPending}
+                                data-testid={`btn-delete-doc-${doc.id}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     );
                   })}

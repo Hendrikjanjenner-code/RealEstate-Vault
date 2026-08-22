@@ -161,6 +161,7 @@ export interface DealDocument {
   category: string;
   sizeKb: number;
   ndaRequired: boolean;
+  /** True when a file has been uploaded; objectPath is never exposed to clients. */
   hasFile: boolean;
   uploadedAt: string;
 }
@@ -177,6 +178,30 @@ export interface DealDocumentInput {
   objectPath: string;
   contentType?: string;
 }
+
+export interface DealDocumentUpdate {
+  /** @minLength 1 */
+  name?: string;
+  /** @minLength 1 */
+  category?: string;
+  ndaRequired?: boolean;
+}
+
+export interface UploadUrlRequest {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata?: UploadUrlRequest;
+}
+
 export interface AccessRequest {
   id: number;
   dealId: number;
@@ -194,6 +219,19 @@ export interface AccessRequest {
   createdAt: string;
 }
 
+export type AccessRequestCreateResult = AccessRequest & {
+  /** Secret issued to the requester at creation; lets them self-sign the NDA and check status without a session. Only returned at creation. */
+  requestKey?: string;
+};
+
+export type AccessRequestUpdateResult = AccessRequest & ({
+  /**
+     * Capability token for NDA-gated downloads; only returned when the transition is to nda_signed.
+     * @nullable
+     */
+  downloadToken?: string | null;
+});
+
 export interface AccessRequestInput {
   /** @minLength 1 */
   requesterName: string;
@@ -208,35 +246,6 @@ export interface AccessRequestUpdate {
   requestKey?: string;
 }
 
-export interface AccessRequestCreateResult {
-  id: number;
-  dealId: number;
-  dealTitle: string;
-  requesterName: string;
-  requesterCompany: string;
-  /** @nullable */
-  message?: string | null;
-  status: string;
-  createdAt: string;
-  /** Secret capability returned only to the creator; needed later to sign the NDA. */
-  requestKey: string;
-}
-export interface AccessRequestUpdateResult {
-  id: number;
-  dealId: number;
-  dealTitle: string;
-  requesterName: string;
-  requesterCompany: string;
-  /** @nullable */
-  message?: string | null;
-  status: string;
-  createdAt: string;
-  /**
-     * Only returned by the request that transitions the status to nda_signed.
-     * @nullable
-     */
-  downloadToken?: string | null;
-}
 export interface SignNdaInput {
   /** @minLength 1 */
   signerName: string;
@@ -440,17 +449,3 @@ search?: string;
 savedOnly?: boolean;
 };
 
-export interface UploadUrlRequest {
-  /** @minLength 1 */
-  name: string;
-  /** @minimum 1 */
-  size: number;
-  /** @minLength 1 */
-  contentType: string;
-}
-
-export interface UploadUrlResponse {
-  uploadURL: string;
-  objectPath: string;
-  metadata?: UploadUrlRequest;
-}

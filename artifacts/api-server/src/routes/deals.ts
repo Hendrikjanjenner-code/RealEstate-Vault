@@ -30,6 +30,11 @@ import {
   CreateDealDocumentParams,
   CreateDealDocumentBody,
   CreateDealDocumentResponse,
+  UpdateDealDocumentParams,
+  UpdateDealDocumentBody,
+  UpdateDealDocumentResponse,
+  DeleteDealDocumentParams,
+  DeleteDealDocumentResponse,
   DownloadDealDocumentParams,
 } from "@workspace/api-zod";
 import { isBroker } from "../lib/brokerAuth";
@@ -52,6 +57,39 @@ type AccessStatus =
 
 function isOwner(deal: Deal, userId: string): boolean {
   return deal.brokerUserId != null && deal.brokerUserId === userId;
+}
+
+/**
+ * Public shape of a data room document: storage internals (objectPath,
+ * contentType) are never exposed; clients only see whether a file exists.
+ */
+function toPublicDocument<
+  T extends { objectPath: string | null; contentType: string | null },
+>(doc: T) {
+  const { objectPath, contentType: _ct, ...rest } = doc;
+  return { ...rest, hasFile: !!objectPath };
+}
+
+/** Any broker credential: passcode session OR authenticated user with the broker role. */
+function hasBrokerCredential(req: Parameters<typeof isBroker>[0]): boolean {
+  return isBroker(req) || (req.isAuthenticated() && req.user.role === "broker");
+}
+
+/**
+ * Ownership gate for broker mutations on a deal's data room.
+ * Deals owned by an identified broker may only be mutated by that
+ * authenticated broker. Unowned (seeded/demo) deals may be managed by any
+ * broker session, including the shared-passcode session which carries no
+ * user identity.
+ */
+function canManageDealDocuments(
+  req: Parameters<typeof isBroker>[0],
+  deal: Deal,
+): boolean {
+  if (deal.brokerUserId != null) {
+    return req.isAuthenticated() && req.user.id === deal.brokerUserId;
+  }
+  return hasBrokerCredential(req);
 }
 
 /**
@@ -420,7 +458,7 @@ router.get("/deals/:id/documents", async (req, res): Promise<void> => {
   // NDA-required documents are withheld entirely until access is granted.
   const visible = granted ? docs : docs.filter((doc) => !doc.ndaRequired);
 
-  res.json(ListDealDocumentsResponse.parse(toJson(visible)));
+  res.json(ListDealDocumentsResponse.parse(toJson(visible.map(toPublicDocument))));
 });
 
 router.post("/deals/:id/access-requests", async (req, res): Promise<void> => {
@@ -509,7 +547,7 @@ router.post("/deals/:id/access-requests", async (req, res): Promise<void> => {
 const DOWNLOAD_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 h
 
 router.post("/deals/:id/documents", async (req, res): Promise<void> => {
-  if (!isBroker(req)) {
+  if (!hasBrokerCredential(req)) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
@@ -534,9 +572,7 @@ router.post("/deals/:id/documents", async (req, res): Promise<void> => {
     return;
   }
 
-  // Authenticated brokers may only upload to their own listings.
-  // The global broker passcode is a dev/test override that bypasses this check.
-  if (req.isAuthenticated() && deal.brokerUserId !== req.user.id) {
+  if (!canManageDealDocuments(req, deal)) {
     res.status(403).json({ error: "You are not the listing broker for this deal" });
     return;
   }
@@ -554,15 +590,130 @@ router.post("/deals/:id/documents", async (req, res): Promise<void> => {
     })
     .returning();
 
-  function toPublicDocument(d: typeof doc) {
-    const { objectPath: _op, contentType: _ct, ...rest } = d;
-    return { ...rest, hasFile: !!_op };
-  }
-
   res
     .status(201)
     .json(CreateDealDocumentResponse.parse(toJson(toPublicDocument(doc))));
 });
+
+// ── Broker: update a document's metadata (name, category, NDA flag) ──────────
+router.patch(
+  "/deals/:id/documents/:docId",
+  async (req, res): Promise<void> => {
+    if (!hasBrokerCredential(req)) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const params = UpdateDealDocumentParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+    const body = UpdateDealDocumentBody.safeParse(req.body);
+    if (!body.success) {
+      res.status(400).json({ error: body.error.message });
+      return;
+    }
+
+    const [deal] = await db
+      .select()
+      .from(dealsTable)
+      .where(eq(dealsTable.id, params.data.id));
+    if (!deal) {
+      res.status(404).json({ error: "Deal not found" });
+      return;
+    }
+
+    if (!canManageDealDocuments(req, deal)) {
+      res
+        .status(403)
+        .json({ error: "You are not the listing broker for this deal" });
+      return;
+    }
+
+    const updates: Partial<{
+      name: string;
+      category: string;
+      ndaRequired: boolean;
+    }> = {};
+    if (body.data.name !== undefined) updates.name = body.data.name;
+    if (body.data.category !== undefined) updates.category = body.data.category;
+    if (body.data.ndaRequired !== undefined)
+      updates.ndaRequired = body.data.ndaRequired;
+    if (Object.keys(updates).length === 0) {
+      res.status(400).json({ error: "No fields to update" });
+      return;
+    }
+
+    const [doc] = await db
+      .update(dealDocumentsTable)
+      .set(updates)
+      .where(
+        and(
+          eq(dealDocumentsTable.id, params.data.docId),
+          eq(dealDocumentsTable.dealId, params.data.id),
+        ),
+      )
+      .returning();
+    if (!doc) {
+      res.status(404).json({ error: "Document not found" });
+      return;
+    }
+
+    res.json(UpdateDealDocumentResponse.parse(toJson(toPublicDocument(doc))));
+  },
+);
+
+// ── Broker: delete a document from the data room ─────────────────────────────
+router.delete(
+  "/deals/:id/documents/:docId",
+  async (req, res): Promise<void> => {
+    if (!hasBrokerCredential(req)) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const params = DeleteDealDocumentParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+
+    const [deal] = await db
+      .select()
+      .from(dealsTable)
+      .where(eq(dealsTable.id, params.data.id));
+    if (!deal) {
+      res.status(404).json({ error: "Deal not found" });
+      return;
+    }
+
+    if (!canManageDealDocuments(req, deal)) {
+      res
+        .status(403)
+        .json({ error: "You are not the listing broker for this deal" });
+      return;
+    }
+
+    const [doc] = await db
+      .delete(dealDocumentsTable)
+      .where(
+        and(
+          eq(dealDocumentsTable.id, params.data.docId),
+          eq(dealDocumentsTable.dealId, params.data.id),
+        ),
+      )
+      .returning();
+    if (!doc) {
+      res.status(404).json({ error: "Document not found" });
+      return;
+    }
+
+    res.json(
+      DeleteDealDocumentResponse.parse({ error: `Deleted ${doc.name}` }),
+    );
+  },
+);
 
 // ── Investor / broker: download a data-room document ─────────────────────────
 router.get(

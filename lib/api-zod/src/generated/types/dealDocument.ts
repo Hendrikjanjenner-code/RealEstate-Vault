@@ -13,6 +13,7 @@ export interface DealDocument {
   category: string;
   sizeKb: number;
   ndaRequired: boolean;
+  /** True when a file has been uploaded; objectPath is never exposed to clients. */
   hasFile: boolean;
   uploadedAt: string;
 }

@@ -26,6 +26,7 @@ export * from './dashboardStats';
 export * from './deal';
 export * from './dealDocument';
 export * from './dealDocumentInput';
+export * from './dealDocumentUpdate';
 export * from './dealInput';
 export * from './errorEnvelope';
 export * from './handleBrowserLoginCallbackParams';

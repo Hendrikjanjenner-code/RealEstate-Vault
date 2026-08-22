@@ -5,20 +5,12 @@
  * RealEstate Vault API
  * OpenAPI spec version: 0.1.0
  */
+import type { AccessRequest } from './accessRequest';
 
-export interface AccessRequestUpdateResult {
-  id: number;
-  dealId: number;
-  dealTitle: string;
-  requesterName: string;
-  requesterCompany: string;
-  /** @nullable */
-  message?: string | null;
-  status: string;
-  createdAt: string;
+export type AccessRequestUpdateResult = AccessRequest & ({
   /**
-     * Only returned by the request that transitions the status to nda_signed.
+     * Capability token for NDA-gated downloads; only returned when the transition is to nda_signed.
      * @nullable
      */
   downloadToken?: string | null;
-}
+});

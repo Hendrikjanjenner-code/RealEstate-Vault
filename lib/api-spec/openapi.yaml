@@ -305,6 +305,60 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/documents/{docId}:
+    patch:
+      operationId: updateDealDocument
+      tags: [deals]
+      summary: Update a data room document's metadata (broker only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: docId
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DealDocumentUpdate" }
+      responses:
+        "200":
+          description: Updated document
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DealDocument" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+    delete:
+      operationId: deleteDealDocument
+      tags: [deals]
+      summary: Delete a data room document (broker only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: docId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /deals/{id}/documents/{docId}/download:
     get:
       operationId: downloadDealDocument
@@ -433,7 +487,7 @@ paths:
           description: Created
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/AccessRequest" }
+              schema: { $ref: "#/components/schemas/AccessRequestCreateResult" }
   /access-requests:
     get:
       operationId: listAccessRequests
@@ -467,7 +521,7 @@ paths:
           description: Updated
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/AccessRequest" }
+              schema: { $ref: "#/components/schemas/AccessRequestUpdateResult" }
   /access-requests/{id}/sign:
     post:
       operationId: signAccessRequestNda
@@ -917,6 +971,12 @@ components:
         ndaRequired: { type: boolean }
         objectPath: { type: string, minLength: 1 }
         contentType: { type: string }
+    DealDocumentUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        category: { type: string, minLength: 1 }
+        ndaRequired: { type: boolean }
     UploadUrlRequest:
       type: object
       required: [name, size, contentType]
@@ -946,6 +1006,22 @@ components:
         signerName: { type: ["string", "null"] }
         signedAt: { type: ["string", "null"] }
         createdAt: { type: string }
+    AccessRequestCreateResult:
+      allOf:
+        - $ref: "#/components/schemas/AccessRequest"
+        - type: object
+          properties:
+            requestKey:
+              type: string
+              description: "Secret issued to the requester at creation; lets them self-sign the NDA and check status without a session. Only returned at creation."
+    AccessRequestUpdateResult:
+      allOf:
+        - $ref: "#/components/schemas/AccessRequest"
+        - type: object
+          properties:
+            downloadToken:
+              type: ["string", "null"]
+              description: "Capability token for NDA-gated downloads; only returned when the transition is to nda_signed."
     AccessRequestInput:
       type: object
       required: [requesterName, requesterCompany]
@@ -958,6 +1034,9 @@ components:
       required: [status]
       properties:
         status: { type: string }
+        requestKey:
+          type: string
+          description: "Secret issued to the requester at creation; required to transition to nda_signed."
     SignNdaInput:
       type: object
       required: [signerName, agreed]
