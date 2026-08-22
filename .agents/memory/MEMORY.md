@@ -9,4 +9,5 @@
 - [Hand-edited generated API client](generated-client-hand-edits.md) — codegen wipes hand-appended auth hooks in api-client-react; re-append after regen, rebuild libs for composite typecheck.
 - [Replit Auth monorepo quirks](replit-auth-monorepo-quirks.md) — auth-web lib needs composite tsconfig + vite-env shim; session user snapshots must be updated on role change; confidential-deal redaction happens server-side per viewer.
 - [Completion review covers the whole branch diff](completion-review-whole-diff.md) — review rejects on inherited base regressions too; typecheck and sanity-check merged features before completing.
+- [Public/anonymous endpoint rules](public-endpoint-redaction.md) — honour locationPrivacy, count distinct verified populations, fall back to static data only on API error (empty ≠ error).
 - [Broken-merge route corruption](merge-corruption-route-files.md) — a merge scrambled route handlers (wrong schemas, swapped bodies) while still typechecking; diff against last good commit and restore.

@@ -2,7 +2,14 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { brand } from "@workspace/brand";
 import { BrandMark, BrandLogo } from "@/components/logo";
-import { useListDeals } from "@workspace/api-client-react";
+import {
+  useListDeals,
+  getListDealsQueryKey,
+  useListPublicDealTeasers,
+  getListPublicDealTeasersQueryKey,
+  useGetPublicPlatformStats,
+  getGetPublicPlatformStatsQueryKey,
+} from "@workspace/api-client-react";
 import {
   ArrowRight,
   ShieldCheck,
@@ -32,8 +39,30 @@ function formatPrice(deal: { askingPrice?: number | null; priceMax?: number | nu
 }
 
 function LiveOpportunities() {
-  const { data: deals } = useListDeals();
+  // Signed-in visitors get the full (per-viewer redacted) deals list; for
+  // anonymous visitors that call 401s, so fall back to the public,
+  // server-redacted teaser endpoint.
+  const dealsQuery = useListDeals(undefined, {
+    query: { retry: false, queryKey: getListDealsQueryKey() },
+  });
+  const deals = dealsQuery.data;
+  const teasersQuery = useListPublicDealTeasers(
+    { limit: 3 },
+    {
+      query: {
+        retry: false,
+        enabled: !deals?.length,
+        queryKey: getListPublicDealTeasersQueryKey({ limit: 3 }),
+      },
+    },
+  );
   const preview = (deals ?? []).slice(0, 3);
+  const teaserPreview = deals?.length ? [] : (teasersQuery.data ?? []).slice(0, 3);
+  // Static placeholder cards only when the public API is unreachable — a
+  // successful-but-empty response gets a truthful empty state instead.
+  const apiUnreachable = teasersQuery.isError && !deals;
+  const emptyButHealthy =
+    preview.length === 0 && teaserPreview.length === 0 && !apiUnreachable;
 
   return (
     <section id="opportunities" className="py-20 px-6 md:px-12 border-t border-border">
@@ -71,6 +100,34 @@ function LiveOpportunities() {
                   </dl>
                 </Link>
               ))
+            : teaserPreview.length > 0
+            ? teaserPreview.map((t) => (
+                <Link key={t.id} href={`/demo/deals/${t.id}`} className="group block border border-border rounded-md bg-card p-5 hover:border-primary/40 transition-colors" data-testid={`card-opportunity-${t.id}`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-1.5">
+                      <Lock className="w-3 h-3" /> {t.confidential ? "Confidential" : "Off-market"}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground uppercase tracking-wider">{t.assetClass}</span>
+                  </div>
+                  <h3 className="font-heading font-semibold text-lg leading-snug group-hover:text-primary transition-colors">{t.title}</h3>
+                  <dl className="mt-4 space-y-1.5 text-sm [font-feature-settings:'tnum'_1]">
+                    <div className="flex justify-between"><dt className="text-muted-foreground">Location</dt><dd>{t.region || t.country}</dd></div>
+                    <div className="flex justify-between"><dt className="text-muted-foreground">Value</dt><dd>{t.valueBand}</dd></div>
+                    {t.grossYield != null && (
+                      <div className="flex justify-between"><dt className="text-muted-foreground">Gross yield</dt><dd>{t.grossYield.toFixed(1)}%</dd></div>
+                    )}
+                  </dl>
+                  <p className="text-xs text-muted-foreground mt-4">Sign in to request access.</p>
+                </Link>
+              ))
+            : emptyButHealthy
+            ? [
+                <div key="empty" className="md:col-span-3 border border-border rounded-md bg-card p-8 text-center" data-testid="text-no-opportunities">
+                  <Lock className="w-5 h-5 text-primary mx-auto mb-3" />
+                  <p className="font-heading font-semibold">No live opportunities right now</p>
+                  <p className="text-sm text-muted-foreground mt-1">New off-market listings appear here as brokers publish them.</p>
+                </div>,
+              ]
             : [
                 { title: "Core logistics portfolio", meta: "Netherlands · Logistics", value: "€40M+" },
                 { title: "Prime city-centre hotel", meta: "Amsterdam region · Hospitality", value: "€20–25M" },
@@ -87,6 +144,51 @@ function LiveOpportunities() {
                 </div>
               ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function formatPipelineValue(eur: number): string {
+  if (eur <= 0) return "€0";
+  if (eur >= 1_000_000_000) return `€${(eur / 1_000_000_000).toFixed(1).replace(/\.0$/, "")}B+`;
+  if (eur >= 1_000_000) return `€${Math.round(eur / 1_000_000)}M+`;
+  return `€${Math.round(eur / 1000)}K+`;
+}
+
+function PlatformStats() {
+  // Live aggregate stats from the public endpoint; falls back to static
+  // figures if the API is unreachable.
+  const { data: stats } = useGetPublicPlatformStats({
+    query: { retry: false, queryKey: getGetPublicPlatformStatsQueryKey() },
+  });
+
+  // Real numbers whenever the public API responds (including zeros); static
+  // figures only when it is unreachable.
+  const tiles =
+    stats
+      ? [
+          { value: formatPipelineValue(stats.pipelineValue), label: "Pipeline value" },
+          { value: `${stats.liveDeals}`, label: "Live opportunities" },
+          { value: `${stats.verifiedProfessionals}+`, label: "Verified professionals" },
+          { value: "100%", label: "Off-market" },
+        ]
+      : [
+          { value: "€4.2B+", label: "Pipeline value" },
+          { value: "850+", label: "Verified professionals" },
+          { value: "100%", label: "Off-market" },
+          { value: "24/7", label: "Secure access" },
+        ];
+
+  return (
+    <section className="py-16 px-6 md:px-12 border-t border-border">
+      <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center [font-feature-settings:'tnum'_1]">
+        {tiles.map((s) => (
+          <div key={s.label} data-testid={`stat-${s.label.toLowerCase().replace(/\s+/g, "-")}`}>
+            <div className="font-heading text-3xl md:text-4xl font-bold">{s.value}</div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wider mt-2">{s.label}</div>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -251,21 +353,7 @@ export default function LandingPage() {
       </section>
 
       {/* Platform statistics */}
-      <section className="py-16 px-6 md:px-12 border-t border-border">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center [font-feature-settings:'tnum'_1]">
-          {[
-            { value: "€4.2B+", label: "Pipeline value" },
-            { value: "850+", label: "Verified professionals" },
-            { value: "100%", label: "Off-market" },
-            { value: "24/7", label: "Secure access" },
-          ].map((s) => (
-            <div key={s.label}>
-              <div className="font-heading text-3xl md:text-4xl font-bold">{s.value}</div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wider mt-2">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <PlatformStats />
 
       {/* Final CTA */}
       <section className="py-24 px-6 md:px-12 border-t border-border relative overflow-hidden">

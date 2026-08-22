@@ -192,6 +192,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /public/deal-teasers:
+    get:
+      operationId: listPublicDealTeasers
+      tags: [deals]
+      summary: Anonymous, redacted teasers of live deals for the public homepage
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 12 }
+      responses:
+        "200":
+          description: Redacted deal teasers
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PublicDealTeaser" }
+  /public/stats:
+    get:
+      operationId: getPublicPlatformStats
+      tags: [dashboard]
+      summary: Anonymous aggregate platform statistics for the public homepage
+      responses:
+        "200":
+          description: Aggregate stats
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PublicPlatformStats" }
   /deals:
     get:
       operationId: listDeals
@@ -1053,6 +1081,39 @@ components:
       properties:
         error:
           type: string
+    PublicDealTeaser:
+      type: object
+      description: >-
+        Redacted, pre-NDA teaser of a live deal. Never contains exact title,
+        city, broker identity, prices, or documents.
+      required: [id, title, assetClass, country, valueBand, confidential]
+      properties:
+        id: { type: integer }
+        title:
+          type: string
+          description: Masked title derived from the asset class, never the real title.
+        assetClass: { type: string }
+        country: { type: string }
+        region: { type: ["string", "null"] }
+        valueBand:
+          type: string
+          description: Coarse value band (e.g. "€25–50M"), or "On request".
+        grossYield: { type: ["number", "null"] }
+        confidential: { type: boolean }
+    PublicPlatformStats:
+      type: object
+      required: [pipelineValue, liveDeals, verifiedProfessionals]
+      properties:
+        pipelineValue:
+          type: number
+          description: Sum of asking prices of active deals, in EUR.
+        liveDeals: { type: integer }
+        verifiedProfessionals:
+          type: integer
+          description: >-
+            Distinct verified professionals: verified broker profiles plus
+            registered users with a marketplace role, without double-counting
+            users linked to a verified broker profile.
     Deal:
       type: object
       required:

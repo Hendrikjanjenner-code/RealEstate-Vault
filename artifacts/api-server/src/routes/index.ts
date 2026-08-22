@@ -9,12 +9,14 @@ import ownerNetworkRouter from "./owner-network";
 import dashboardRouter from "./dashboard";
 import notificationsRouter from "./notifications";
 import storageRouter from "./storage";
+import publicRouter from "./public";
 
 const router: IRouter = Router();
 
 // Public routes
 router.use(healthRouter);
 router.use(authRouter);
+router.use(publicRouter);
 
 // Storage routes use their own broker auth, not the session-based requireAuth.
 router.use(storageRouter);

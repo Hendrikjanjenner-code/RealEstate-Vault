@@ -134,6 +134,40 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
+ * @summary Anonymous, redacted teasers of live deals for the public homepage
+ */
+export const listPublicDealTeasersQueryLimitMax = 12;
+
+
+
+export const ListPublicDealTeasersQueryParams = zod.object({
+  "limit": zod.coerce.number().int().min(1).max(listPublicDealTeasersQueryLimitMax).optional()
+})
+
+export const ListPublicDealTeasersResponseItem = zod.object({
+  "id": zod.int(),
+  "title": zod.string().describe('Masked title derived from the asset class, never the real title.'),
+  "assetClass": zod.string(),
+  "country": zod.string(),
+  "region": zod.string().nullish(),
+  "valueBand": zod.string().describe('Coarse value band (e.g. \"€25–50M\"), or \"On request\".'),
+  "grossYield": zod.number().nullish(),
+  "confidential": zod.boolean()
+}).describe('Redacted, pre-NDA teaser of a live deal. Never contains exact title, city, broker identity, prices, or documents.')
+export const ListPublicDealTeasersResponse = zod.array(ListPublicDealTeasersResponseItem)
+
+
+/**
+ * @summary Anonymous aggregate platform statistics for the public homepage
+ */
+export const GetPublicPlatformStatsResponse = zod.object({
+  "pipelineValue": zod.number().describe('Sum of asking prices of active deals, in EUR.'),
+  "liveDeals": zod.int(),
+  "verifiedProfessionals": zod.int().describe('Distinct verified professionals: verified broker profiles plus registered users with a marketplace role, without double-counting users linked to a verified broker profile.')
+})
+
+
+/**
  * @summary List deals with optional filters
  */
 export const ListDealsQueryParams = zod.object({

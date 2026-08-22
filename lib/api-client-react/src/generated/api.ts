@@ -46,6 +46,7 @@ import type {
   HandleBrowserLoginCallbackParams,
   HealthStatus,
   ListDealsParams,
+  ListPublicDealTeasersParams,
   LogoutBrowserSessionParams,
   LogoutSuccess,
   Mandate,
@@ -61,6 +62,8 @@ import type {
   OwnerAssignment,
   OwnerAssignmentInput,
   OwnerAssignmentStatusInput,
+  PublicDealTeaser,
+  PublicPlatformStats,
   SessionResponse,
   SetRoleBody,
   SignNdaInput,
@@ -780,6 +783,167 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getHealthCheckQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListPublicDealTeasersUrl = (params?: ListPublicDealTeasersParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/public/deal-teasers?${stringifiedParams}` : `/api/public/deal-teasers`
+}
+
+/**
+ * @summary Anonymous, redacted teasers of live deals for the public homepage
+ */
+export const listPublicDealTeasers = async (params?: ListPublicDealTeasersParams, options?: Parameters<typeof customFetch>[1]): Promise<PublicDealTeaser[]> => {
+
+  return customFetch<PublicDealTeaser[]>(getListPublicDealTeasersUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPublicDealTeasersQueryKey = (params?: ListPublicDealTeasersParams,) => {
+    return [
+    `/api/public/deal-teasers`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListPublicDealTeasersQueryOptions = <TData = Awaited<ReturnType<typeof listPublicDealTeasers>>, TError = ErrorType<unknown>>(params?: ListPublicDealTeasersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPublicDealTeasers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPublicDealTeasersQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPublicDealTeasers>>> = ({ signal }) => listPublicDealTeasers(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPublicDealTeasers>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPublicDealTeasersQueryResult = NonNullable<Awaited<ReturnType<typeof listPublicDealTeasers>>>
+export type ListPublicDealTeasersQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Anonymous, redacted teasers of live deals for the public homepage
+ */
+
+export function useListPublicDealTeasers<TData = Awaited<ReturnType<typeof listPublicDealTeasers>>, TError = ErrorType<unknown>>(
+ params?: ListPublicDealTeasersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPublicDealTeasers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPublicDealTeasersQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetPublicPlatformStatsUrl = () => {
+
+
+
+
+  return `/api/public/stats`
+}
+
+/**
+ * @summary Anonymous aggregate platform statistics for the public homepage
+ */
+export const getPublicPlatformStats = async ( options?: Parameters<typeof customFetch>[1]): Promise<PublicPlatformStats> => {
+
+  return customFetch<PublicPlatformStats>(getGetPublicPlatformStatsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicPlatformStatsQueryKey = () => {
+    return [
+    `/api/public/stats`
+    ] as const;
+    }
+
+
+export const getGetPublicPlatformStatsQueryOptions = <TData = Awaited<ReturnType<typeof getPublicPlatformStats>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicPlatformStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicPlatformStatsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicPlatformStats>>> = ({ signal }) => getPublicPlatformStats({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicPlatformStats>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicPlatformStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicPlatformStats>>>
+export type GetPublicPlatformStatsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Anonymous aggregate platform statistics for the public homepage
+ */
+
+export function useGetPublicPlatformStats<TData = Awaited<ReturnType<typeof getPublicPlatformStats>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicPlatformStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicPlatformStatsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

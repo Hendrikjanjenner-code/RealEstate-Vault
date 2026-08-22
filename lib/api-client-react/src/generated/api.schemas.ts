@@ -73,6 +73,32 @@ export interface ErrorEnvelope {
   error: string;
 }
 
+/**
+ * Redacted, pre-NDA teaser of a live deal. Never contains exact title, city, broker identity, prices, or documents.
+ */
+export interface PublicDealTeaser {
+  id: number;
+  /** Masked title derived from the asset class, never the real title. */
+  title: string;
+  assetClass: string;
+  country: string;
+  /** @nullable */
+  region?: string | null;
+  /** Coarse value band (e.g. "€25–50M"), or "On request". */
+  valueBand: string;
+  /** @nullable */
+  grossYield?: number | null;
+  confidential: boolean;
+}
+
+export interface PublicPlatformStats {
+  /** Sum of asking prices of active deals, in EUR. */
+  pipelineValue: number;
+  liveDeals: number;
+  /** Distinct verified professionals: verified broker profiles plus registered users with a marketplace role, without double-counting users linked to a verified broker profile. */
+  verifiedProfessionals: number;
+}
+
 export interface Deal {
   id: number;
   title: string;
@@ -604,6 +630,14 @@ iss?: string;
 
 export type LogoutBrowserSessionParams = {
 returnTo?: string;
+};
+
+export type ListPublicDealTeasersParams = {
+/**
+ * @minimum 1
+ * @maximum 12
+ */
+limit?: number;
 };
 
 export type ListDealsParams = {
