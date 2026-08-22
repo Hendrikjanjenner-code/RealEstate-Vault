@@ -4,7 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { setAuthTokenGetter, setBaseUrl } from '@workspace/api-client-react';
+import { isUnauthorizedError, setAuthTokenGetter, setBaseUrl } from '@workspace/api-client-react';
 import { AuthProvider } from '@/lib/auth';
 import { tokenStorage } from '@/lib/auth-token';
 import {
@@ -26,7 +26,15 @@ setAuthTokenGetter(() => tokenStorage.get());
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
+// Do not retry unauthorized responses: surface the sign-in prompt immediately
+// instead of leaving the user staring at a spinner through retries.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => !isUnauthorizedError(error) && failureCount < 3,
+    },
+  },
+});
 
 function RootLayoutNav() {
   return (

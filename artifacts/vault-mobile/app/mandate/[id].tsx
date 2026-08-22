@@ -35,7 +35,7 @@ export default function MandateMatchesScreen() {
   const id = Number(idParam ?? 0);
   const { data: mandates } = useListMandates();
   const mandate = mandates?.find((m) => m.id === id);
-  const { data: deals, isLoading, isError, refetch } = useListMandateMatches(id, {
+  const { data: deals, isLoading, isError, error, refetch } = useListMandateMatches(id, {
     query: { enabled: !!id, queryKey: getListMandateMatchesQueryKey(id) },
   });
 
@@ -67,7 +67,7 @@ export default function MandateMatchesScreen() {
       {isLoading ? (
         <LoadingState />
       ) : isError ? (
-        <ErrorState onRetry={() => refetch()} />
+        <ErrorState error={error} signInMessage="Sign in to view matched deals for this mandate." onRetry={() => refetch()} />
       ) : (
         <FlatList
           data={deals ?? []}

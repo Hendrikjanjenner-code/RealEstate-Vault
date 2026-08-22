@@ -199,6 +199,21 @@ export class ApiError<T = unknown> extends Error {
   }
 }
 
+/**
+ * Returns true when the given error represents an HTTP 401 Unauthorized
+ * response, i.e. the user is not signed in. Duck-types on `name` and
+ * `status` so it works across module instances/bundles.
+ */
+export function isUnauthorizedError(error: unknown): boolean {
+  if (error instanceof ApiError) return error.status === 401;
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    (error as { name?: unknown }).name === "ApiError" &&
+    (error as { status?: unknown }).status === 401
+  );
+}
+
 export class ResponseParseError extends Error {
   readonly name = "ResponseParseError";
   readonly status: number;

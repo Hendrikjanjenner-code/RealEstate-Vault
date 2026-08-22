@@ -35,7 +35,7 @@ import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollV
 
 export default function MandatesScreen() {
   const c = useColors();
-  const { data: mandates, isLoading, isError, refetch, isRefetching } = useListMandates();
+  const { data: mandates, isLoading, isError, error, refetch, isRefetching } = useListMandates();
   const [showForm, setShowForm] = useState(false);
 
   return (
@@ -69,7 +69,7 @@ export default function MandatesScreen() {
       {isLoading ? (
         <LoadingState />
       ) : isError ? (
-        <ErrorState onRetry={() => refetch()} />
+        <ErrorState error={error} signInMessage="Sign in to view and manage your acquisition mandates." onRetry={() => refetch()} />
       ) : (
         <FlatList
           data={mandates ?? []}

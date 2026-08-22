@@ -37,7 +37,7 @@ export default function DealsScreen() {
     assetClass: assetClass === 'All' ? undefined : assetClass,
     savedOnly: savedOnly || undefined,
   };
-  const { data: deals, isLoading, isError, refetch, isRefetching } = useListDeals(params);
+  const { data: deals, isLoading, isError, error, refetch, isRefetching } = useListDeals(params);
   const toggleSave = useToggleSaveDeal();
   const queryClient = useQueryClient();
 
@@ -158,7 +158,7 @@ export default function DealsScreen() {
       {isLoading ? (
         <LoadingState />
       ) : isError ? (
-        <ErrorState onRetry={() => refetch()} />
+        <ErrorState error={error} signInMessage="Sign in to browse live deals on the platform." onRetry={() => refetch()} />
       ) : (
         <FlatList
           data={deals ?? []}

@@ -8,7 +8,7 @@ import { timeAgo } from '@/lib/format';
 
 export default function MessagesScreen() {
   const c = useColors();
-  const { data: threads, isLoading, isError, refetch, isRefetching } = useListThreads();
+  const { data: threads, isLoading, isError, error, refetch, isRefetching } = useListThreads();
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
@@ -16,7 +16,7 @@ export default function MessagesScreen() {
       {isLoading ? (
         <LoadingState />
       ) : isError ? (
-        <ErrorState onRetry={() => refetch()} />
+        <ErrorState error={error} signInMessage="Sign in to view your conversations." onRetry={() => refetch()} />
       ) : (
         <FlatList
           data={threads ?? []}

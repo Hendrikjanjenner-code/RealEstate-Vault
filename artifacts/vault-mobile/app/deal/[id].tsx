@@ -54,7 +54,7 @@ export default function DealDetailScreen() {
   const { id: idParam } = useLocalSearchParams<{ id: string }>();
   const id = Number(idParam ?? 0);
   const { isAuthenticated, isLoading: authLoading, login } = useAuth();
-  const { data: deal, isLoading, isError, refetch } = useGetDeal(id, {
+  const { data: deal, isLoading, isError, error, refetch } = useGetDeal(id, {
     query: { enabled: !!id && isAuthenticated, queryKey: getGetDealQueryKey(id) },
   });
   const { data: docs, isError: docsError } = useListDealDocuments(id, {
@@ -98,7 +98,7 @@ export default function DealDetailScreen() {
     return (
       <View style={{ flex: 1, backgroundColor: c.background }}>
         <ScreenHeader title="Deal" showBack />
-        <ErrorState onRetry={() => refetch()} />
+        <ErrorState error={error} signInMessage="Sign in to view this deal, request access, and sign NDAs." onRetry={() => refetch()} />
       </View>
     );
   }

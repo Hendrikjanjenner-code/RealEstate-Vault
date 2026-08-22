@@ -49,7 +49,7 @@ export default function DashboardScreen() {
         {stats.isLoading ? (
           <LoadingState />
         ) : stats.isError ? (
-          <ErrorState onRetry={() => stats.refetch()} />
+          <ErrorState error={stats.error} signInMessage="Sign in to see your dashboard stats." onRetry={() => stats.refetch()} />
         ) : stats.data ? (
           <>
             <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -112,7 +112,7 @@ export default function DashboardScreen() {
         {activity.isLoading ? (
           <LoadingState />
         ) : activity.isError ? (
-          <ErrorState onRetry={() => activity.refetch()} />
+          <ErrorState error={activity.error} signInMessage="Sign in to see recent activity." onRetry={() => activity.refetch()} />
         ) : activity.data && activity.data.length > 0 ? (
           <Card>
             {activity.data.slice(0, 8).map((item, i) => (

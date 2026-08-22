@@ -58,7 +58,7 @@ export default function NotificationsScreen() {
         {notifications.isLoading ? (
           <LoadingState />
         ) : notifications.isError ? (
-          <ErrorState onRetry={() => notifications.refetch()} />
+          <ErrorState error={notifications.error} signInMessage="Sign in to view your notifications." onRetry={() => notifications.refetch()} />
         ) : notifications.data && notifications.data.length > 0 ? (
           <Card>
             {notifications.data.map((n, i) => (

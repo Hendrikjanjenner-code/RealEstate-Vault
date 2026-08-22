@@ -22,7 +22,7 @@ import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useColors } from '@/hooks/useColors';
 import colors from '@/constants/colors';
-import { LoadingState, ScreenHeader } from '@/components/VaultUI';
+import { ErrorState, LoadingState, ScreenHeader } from '@/components/VaultUI';
 import { timeAgo } from '@/lib/format';
 
 export default function ThreadScreen() {
@@ -30,7 +30,7 @@ export default function ThreadScreen() {
   const insets = useSafeAreaInsets();
   const { id: idParam } = useLocalSearchParams<{ id: string }>();
   const id = Number(idParam ?? 0);
-  const { data: messages, isLoading } = useListThreadMessages(id, {
+  const { data: messages, isLoading, isError, error, refetch } = useListThreadMessages(id, {
     query: { enabled: !!id, queryKey: getListThreadMessagesQueryKey(id) },
   });
   const { data: threads } = useListThreads();
@@ -69,6 +69,12 @@ export default function ThreadScreen() {
       <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         {isLoading ? (
           <LoadingState />
+        ) : isError ? (
+          <ErrorState
+            error={error}
+            signInMessage="Sign in to view this conversation."
+            onRetry={() => refetch()}
+          />
         ) : (
           <FlatList
             data={inverted}

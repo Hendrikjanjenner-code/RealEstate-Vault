@@ -11,7 +11,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { isUnauthorizedError } from '@workspace/api-client-react';
 import { useColors } from '@/hooks/useColors';
+import { useAuth } from '@/lib/auth';
 import colors from '@/constants/colors';
 
 export function ScreenHeader({
@@ -244,8 +246,61 @@ export function LoadingState() {
   );
 }
 
-export function ErrorState({ onRetry }: { onRetry: () => void }) {
+export function SignInPrompt({ message }: { message?: string }) {
   const c = useColors();
+  const { login } = useAuth();
+  return (
+    <View
+      testID="sign-in-prompt"
+      style={{ alignItems: 'center', paddingVertical: 48, gap: 14, paddingHorizontal: 32 }}
+    >
+      <View
+        style={{
+          width: 56,
+          height: 56,
+          borderRadius: 28,
+          backgroundColor: c.secondary,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Feather name="lock" size={24} color={c.primary} />
+      </View>
+      <Text style={{ color: c.foreground, fontSize: 17, fontFamily: 'Inter_700Bold' }}>
+        Members Only
+      </Text>
+      <Text
+        style={{
+          color: c.mutedForeground,
+          fontSize: 13,
+          fontFamily: 'Inter_400Regular',
+          textAlign: 'center',
+          lineHeight: 19,
+        }}
+      >
+        {message ?? 'Sign in to view this content.'}
+      </Text>
+      <View style={{ alignSelf: 'stretch' }}>
+        <GoldButton testID="button-sign-in" label="Sign In" icon="log-in" onPress={login} />
+      </View>
+    </View>
+  );
+}
+
+export function ErrorState({
+  onRetry,
+  error,
+  signInMessage,
+}: {
+  onRetry: () => void;
+  /** The query error; when it is an HTTP 401, a sign-in prompt is shown instead. */
+  error?: unknown;
+  signInMessage?: string;
+}) {
+  const c = useColors();
+  if (isUnauthorizedError(error)) {
+    return <SignInPrompt message={signInMessage} />;
+  }
   return (
     <View style={{ alignItems: 'center', paddingVertical: 48, gap: 14, paddingHorizontal: 32 }}>
       <Feather name="alert-circle" size={28} color={c.destructive} />
