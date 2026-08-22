@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -77,59 +77,60 @@
   --elevate-1: rgba(255, 255, 255, 0.04);
   --elevate-2: rgba(255, 255, 255, 0.09);
 
-  /* Deep Vault Green */
-  --background: 168 61% 11%;
-  
-  /* Ivory */
-  --foreground: 46 31% 93%;
+  /* Closa palette — see @workspace/brand (lib/brand). */
+  /* Ink (near-black) */
+  --background: 210 8% 5%;
 
-  /* Near-black / Grayish */
-  --border: 168 40% 20%;
+  /* Warm off-white */
+  --foreground: 43 28% 95%;
 
-  /* Near-black */
-  --card: 206 17% 8%;
-  --card-foreground: 46 31% 93%;
-  --card-border: 168 40% 15%;
+  /* Graphite border */
+  --border: 214 12% 15%;
 
-  --sidebar: 168 61% 9%;
-  --sidebar-foreground: 46 31% 93%;
-  --sidebar-border: 168 40% 15%;
-  --sidebar-primary: 43 49% 57%;
-  --sidebar-primary-foreground: 206 17% 8%;
-  --sidebar-accent: 168 40% 20%;
-  --sidebar-accent-foreground: 46 31% 93%;
-  --sidebar-ring: 43 49% 57%;
+  /* Deep charcoal surfaces */
+  --card: 216 10% 10%;
+  --card-foreground: 43 28% 95%;
+  --card-border: 214 12% 15%;
 
-  --popover: 206 17% 8%;
-  --popover-foreground: 46 31% 93%;
-  --popover-border: 168 40% 15%;
+  --sidebar: 210 8% 4%;
+  --sidebar-foreground: 43 28% 95%;
+  --sidebar-border: 214 12% 13%;
+  --sidebar-primary: 163 79% 37%;
+  --sidebar-primary-foreground: 210 8% 5%;
+  --sidebar-accent: 214 12% 15%;
+  --sidebar-accent-foreground: 43 28% 95%;
+  --sidebar-ring: 163 79% 37%;
 
-  /* Gold */
-  --primary: 43 49% 57%;
-  --primary-foreground: 206 17% 8%;
+  --popover: 216 10% 10%;
+  --popover-foreground: 43 28% 95%;
+  --popover-border: 214 12% 15%;
 
-  /* Subtle green */
-  --secondary: 168 40% 20%;
-  --secondary-foreground: 46 31% 93%;
+  /* Jade accent — use sparingly */
+  --primary: 163 79% 37%;
+  --primary-foreground: 210 8% 5%;
+
+  /* Graphite */
+  --secondary: 214 12% 15%;
+  --secondary-foreground: 43 28% 95%;
 
   /* Gray */
-  --muted: 220 9% 25%;
-  --muted-foreground: 220 9% 65%;
+  --muted: 214 12% 15%;
+  --muted-foreground: 210 6% 63%;
 
-  --accent: 168 40% 20%;
-  --accent-foreground: 46 31% 93%;
+  --accent: 214 12% 15%;
+  --accent-foreground: 43 28% 95%;
 
-  --destructive: 0 62% 30%;
-  --destructive-foreground: 46 31% 93%;
+  --destructive: 0 48% 45%;
+  --destructive-foreground: 43 28% 95%;
 
-  --input: 168 40% 20%;
-  --ring: 43 49% 57%;
-  
-  --chart-1: 43 49% 57%; /* Gold */
-  --chart-2: 168 40% 40%; /* Lighter green */
-  --chart-3: 220 9% 46%; /* Gray */
-  --chart-4: 46 31% 80%; /* Ivoryish */
-  --chart-5: 206 17% 20%; /* Dark blueish */
+  --input: 214 12% 17%;
+  --ring: 163 79% 37%;
+
+  --chart-1: 163 79% 37%; /* Jade */
+  --chart-2: 210 6% 63%;  /* Gray */
+  --chart-3: 37 55% 51%;  /* Caution amber */
+  --chart-4: 163 40% 24%; /* Deep jade */
+  --chart-5: 0 48% 53%;   /* Negative */
 
   --app-font-sans: 'Inter', sans-serif;
   --app-font-serif: Georgia, serif;

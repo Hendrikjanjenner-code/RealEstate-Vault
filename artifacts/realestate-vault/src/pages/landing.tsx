@@ -1,251 +1,298 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Shield, Lock, Users, TrendingUp, ArrowRight, CheckCircle2 } from "lucide-react";
-import { VaultLogo } from "@/components/logo";
+import { brand } from "@workspace/brand";
+import { BrandMark, BrandLogo } from "@/components/logo";
+import { useListDeals } from "@workspace/api-client-react";
+import {
+  ArrowRight,
+  ShieldCheck,
+  Lock,
+  Users,
+  FileText,
+  BadgeCheck,
+  LineChart,
+  Handshake,
+  Store,
+  Star,
+  FolderLock,
+  Network,
+} from "lucide-react";
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-[11px] font-bold uppercase tracking-[0.25em] text-primary mb-3">{children}</div>
+  );
+}
+
+function formatPrice(deal: { askingPrice?: number | null; priceMax?: number | null; currency: string }) {
+  const fmt = (n: number) => (n >= 1_000_000 ? `€${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M` : `€${(n / 1000).toFixed(0)}K`);
+  if (deal.askingPrice && deal.priceMax && deal.priceMax !== deal.askingPrice) return `${fmt(deal.askingPrice)} – ${fmt(deal.priceMax)}`;
+  if (deal.askingPrice) return fmt(deal.askingPrice);
+  return "On request";
+}
+
+function LiveOpportunities() {
+  const { data: deals } = useListDeals();
+  const preview = (deals ?? []).slice(0, 3);
+
+  return (
+    <section id="opportunities" className="py-20 px-6 md:px-12 border-t border-border">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-end justify-between gap-6 flex-wrap mb-10">
+          <div>
+            <SectionLabel>Live on the platform</SectionLabel>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold">Private opportunities, previewed</h2>
+            <p className="text-muted-foreground mt-2 max-w-xl">
+              Full details stay behind NDA. What you see before access is granted is deliberately limited.
+            </p>
+          </div>
+          <Button variant="outline" asChild className="border-border">
+            <Link href="/demo/deals">View all opportunities <ArrowRight className="ml-2 w-4 h-4" /></Link>
+          </Button>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-4">
+          {preview.length > 0
+            ? preview.map((deal) => (
+                <Link key={deal.id} href={`/demo/deals/${deal.id}`} className="group block border border-border rounded-md bg-card p-5 hover:border-primary/40 transition-colors" data-testid={`card-opportunity-${deal.id}`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-1.5">
+                      <Lock className="w-3 h-3" /> {deal.confidential ? "Confidential" : "Off-market"}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground uppercase tracking-wider">{deal.assetClass}</span>
+                  </div>
+                  <h3 className="font-heading font-semibold text-lg leading-snug group-hover:text-primary transition-colors">{deal.title}</h3>
+                  <dl className="mt-4 space-y-1.5 text-sm [font-feature-settings:'tnum'_1]">
+                    <div className="flex justify-between"><dt className="text-muted-foreground">Location</dt><dd>{deal.region || deal.country}</dd></div>
+                    <div className="flex justify-between"><dt className="text-muted-foreground">Value</dt><dd>{formatPrice(deal)}</dd></div>
+                    {deal.grossYield != null && (
+                      <div className="flex justify-between"><dt className="text-muted-foreground">Gross yield</dt><dd>{deal.grossYield.toFixed(1)}%</dd></div>
+                    )}
+                  </dl>
+                </Link>
+              ))
+            : [
+                { title: "Core logistics portfolio", meta: "Netherlands · Logistics", value: "€40M+" },
+                { title: "Prime city-centre hotel", meta: "Amsterdam region · Hospitality", value: "€20–25M" },
+                { title: "Grade-A office asset", meta: "Western Europe · Office", value: "On request" },
+              ].map((d) => (
+                <div key={d.title} className="border border-border rounded-md bg-card p-5">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-1.5 mb-4">
+                    <Lock className="w-3 h-3" /> Confidential
+                  </div>
+                  <h3 className="font-heading font-semibold text-lg leading-snug">{d.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-2">{d.meta}</p>
+                  <p className="text-sm mt-1 [font-feature-settings:'tnum'_1]">{d.value}</p>
+                  <p className="text-xs text-muted-foreground mt-4">Sign in to request access.</p>
+                </div>
+              ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const capabilities = [
+  {
+    icon: LineChart,
+    title: "Deal intelligence",
+    body: "Every listing carries structured fundamentals — yield, occupancy, area, tenancy — so counterparties evaluate on numbers, not brochures.",
+  },
+  {
+    icon: FolderLock,
+    title: "Secure data rooms",
+    body: "Documents live in permissioned data rooms behind executed NDAs, with granular access control per counterparty.",
+  },
+  {
+    icon: Handshake,
+    title: "Deal teams",
+    body: "Brokers, principals and advisors work a transaction together — messaging, requests and documents in one thread of record.",
+  },
+  {
+    icon: Store,
+    title: "Professional marketplace",
+    body: "Owners find mandated brokers; investors publish acquisition mandates and get matched to qualifying assets automatically.",
+  },
+  {
+    icon: Star,
+    title: "Verified reputation",
+    body: "Track records, closed transactions and response behaviour build a reputation that follows every professional on the network.",
+  },
+  {
+    icon: Network,
+    title: "Trusted network",
+    body: "Every participant is verified before they can transact. No anonymous browsing of sensitive material — ever.",
+  },
+];
+
+const steps = [
+  { n: "01", title: "Discover", body: "Browse redacted teasers of off-market opportunities matched to your mandate." },
+  { n: "02", title: "Request access", body: "Request access; the listing broker reviews who you are before anything is shared." },
+  { n: "03", title: "Execute the NDA", body: "Sign digitally on-platform. The signed terms are preserved with the deal record." },
+  { n: "04", title: "Transact", body: "Enter the data room, run diligence with your deal team, and take the transaction to close." },
+];
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground dark selection:bg-primary/30 font-sans">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 h-24 bg-background/80 backdrop-blur-md border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <VaultLogo className="h-10 w-10" />
-          <div className="flex flex-col">
-            <span className="font-heading font-semibold tracking-[0.2em] leading-none text-base uppercase text-foreground">RealEstate</span>
-            <span className="font-heading font-bold text-primary tracking-[0.3em] leading-none text-sm uppercase mt-1">Vault</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-6">
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground mr-6">
-            <a href="#promises" className="hover:text-foreground transition-colors">Our Promise</a>
-            <a href="#platform" className="hover:text-foreground transition-colors">Platform</a>
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 h-16 bg-background/85 backdrop-blur-md border-b border-border">
+        <BrandLogo markClassName="h-6 w-6" textClassName="text-sm" />
+        <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground mr-4">
+            <a href="#opportunities" className="hover:text-foreground transition-colors">Opportunities</a>
+            <a href="#network" className="hover:text-foreground transition-colors">Network</a>
+            <a href="#how" className="hover:text-foreground transition-colors">How it works</a>
           </div>
           <Button variant="ghost" className="hidden md:flex" asChild>
             <Link href="/demo">Sign In</Link>
           </Button>
-          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-6">
-            <Link href="/demo">Explore the Demo</Link>
+          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5" data-testid="button-nav-explore">
+            <Link href="/demo">Explore Opportunities</Link>
           </Button>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6 md:px-12 overflow-hidden flex flex-col items-center justify-center min-h-[90vh]">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="/hero.jpg" 
-            alt="Premium glass office tower at dusk" 
-            className="w-full h-full object-cover opacity-30 mix-blend-luminosity"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/50 to-transparent" />
-        </div>
-        
-        <div className="relative z-10 max-w-4xl text-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-bold tracking-widest uppercase mb-4">
-            <Shield className="w-3.5 h-3.5" />
-            Invitation Only
-          </div>
-          <h1 className="font-heading text-5xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
-            Private Deals.<br />
-            <span className="text-primary italic font-serif font-medium">Trusted Access.</span>
+      {/* Hero */}
+      <section className="relative pt-36 pb-20 md:pt-44 md:pb-28 px-6 md:px-12 overflow-hidden">
+        <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,rgba(20,168,125,0.08),transparent_55%)]" />
+        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-7">
+          <BrandMark className="w-14 h-14 mx-auto" />
+          <div className="text-sm font-bold uppercase tracking-[0.35em] text-foreground/80">{brand.shortName}</div>
+          <h1 className="font-heading text-4xl md:text-6xl font-bold tracking-tight leading-[1.08]">
+            Where private opportunities<br className="hidden md:block" /> become transactions.
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-light">
-            The private marketplace for commercial real estate. Connect with verified institutional investors and trade off-market assets confidentially.
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            {brand.name} is one trusted network of verified professionals — private deal flow, secure data rooms, and execution from first look to close.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-            <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-8 h-14 text-lg w-full sm:w-auto">
-              <Link href="/demo">
-                Enter the Vault <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+            <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8 h-12 w-full sm:w-auto" data-testid="button-hero-explore">
+              <Link href="/demo">Explore Opportunities <ArrowRight className="ml-2 w-4 h-4" /></Link>
             </Button>
-            <Button size="lg" variant="outline" className="border-border hover:bg-accent/50 px-8 h-14 text-lg w-full sm:w-auto">
-              Request Access
+            <Button size="lg" variant="outline" asChild className="border-border px-8 h-12 w-full sm:w-auto" data-testid="button-hero-join">
+              <Link href="/demo">Join the Network</Link>
             </Button>
           </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-20 border-t border-white/10 mt-20">
-            <div className="flex flex-col items-center gap-2">
-              <h3 className="font-heading text-3xl font-bold text-foreground">€4.2B+</h3>
-              <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Pipeline Value</p>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <h3 className="font-heading text-3xl font-bold text-foreground">850+</h3>
-              <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Verified Brokers</p>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <h3 className="font-heading text-3xl font-bold text-foreground">100%</h3>
-              <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Off-Market</p>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <h3 className="font-heading text-3xl font-bold text-foreground">24/7</h3>
-              <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Secure Access</p>
-            </div>
+          <div className="flex items-center justify-center gap-6 pt-6 text-xs text-muted-foreground uppercase tracking-wider flex-wrap">
+            <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-primary" /> Off-market only</span>
+            <span className="flex items-center gap-1.5"><BadgeCheck className="w-3.5 h-3.5 text-primary" /> Verified participants</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-primary" /> NDA-gated data rooms</span>
           </div>
         </div>
       </section>
 
-      {/* Brand Promises Section */}
-      <section id="promises" className="py-24 px-6 md:px-12 bg-card relative z-10 border-y border-white/5">
+      {/* Live opportunity preview */}
+      <LiveOpportunities />
+
+      {/* Trusted professional network */}
+      <section id="network" className="py-20 px-6 md:px-12 border-t border-border bg-card/40">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <SectionLabel>The network</SectionLabel>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold leading-tight">A network you can trust with your deal.</h2>
+            <p className="text-muted-foreground mt-4 leading-relaxed">
+              Every broker, investor and owner on {brand.name} is verified before they can see a single sensitive document.
+              Mandates are real, counterparties are accountable, and reputation is earned on closed transactions.
+            </p>
+            <div className="mt-8">
+              <Button variant="outline" asChild className="border-border">
+                <Link href="/demo/brokers">Meet the professionals <ArrowRight className="ml-2 w-4 h-4" /></Link>
+              </Button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { icon: BadgeCheck, label: "KYC-verified participants" },
+              { icon: FileText, label: "Mandated buy-side capital" },
+              { icon: Users, label: "Accountable counterparties" },
+              { icon: Star, label: "Track-record based reputation" },
+            ].map((f) => (
+              <div key={f.label} className="border border-border rounded-md bg-card p-5 flex flex-col gap-3">
+                <f.icon className="w-5 h-5 text-primary" />
+                <span className="text-sm font-medium leading-snug">{f.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How transactions work */}
+      <section id="how" className="py-20 px-6 md:px-12 border-t border-border">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">Our Promise</h2>
-            <div className="h-1 w-12 bg-primary mx-auto"></div>
-          </div>
-          
-          <div className="grid md:grid-cols-4 gap-12">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-background border border-primary/20 flex items-center justify-center text-primary mb-2 shadow-[0_0_30px_rgba(200,169,90,0.1)]">
-                <Lock className="w-8 h-8" />
+          <SectionLabel>How it works</SectionLabel>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12">From first look to close, in four steps.</h2>
+          <div className="grid md:grid-cols-4 gap-px bg-border border border-border rounded-md overflow-hidden">
+            {steps.map((s) => (
+              <div key={s.n} className="bg-card p-6">
+                <div className="text-primary font-heading font-bold text-sm [font-feature-settings:'tnum'_1]">{s.n}</div>
+                <h3 className="font-heading font-semibold text-lg mt-3">{s.title}</h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{s.body}</p>
               </div>
-              <h3 className="font-heading text-xl font-semibold">Private</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Confidential off-market opportunities, carefully curated for institutional players.</p>
-            </div>
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-background border border-primary/20 flex items-center justify-center text-primary mb-2 shadow-[0_0_30px_rgba(200,169,90,0.1)]">
-                <Shield className="w-8 h-8" />
-              </div>
-              <h3 className="font-heading text-xl font-semibold">Protected</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Secure NDAs, protected introductions & integrated data rooms ensure absolute safety.</p>
-            </div>
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-background border border-primary/20 flex items-center justify-center text-primary mb-2 shadow-[0_0_30px_rgba(200,169,90,0.1)]">
-                <Users className="w-8 h-8" />
-              </div>
-              <h3 className="font-heading text-xl font-semibold">Connected</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Direct access to verified brokers, qualified investors, and mandated capital.</p>
-            </div>
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-background border border-primary/20 flex items-center justify-center text-primary mb-2 shadow-[0_0_30px_rgba(200,169,90,0.1)]">
-                <TrendingUp className="w-8 h-8" />
-              </div>
-              <h3 className="font-heading text-xl font-semibold">Results</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Faster execution, better deals, and stronger outcomes through direct matching.</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Feature Showcase 1 */}
-      <section className="py-24 px-6 md:px-12 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16">
-          <div className="flex-1 space-y-8">
-            <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight">
-              Exclusive deals, <br/><span className="text-primary font-serif italic">uncompromised privacy.</span>
-            </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              Every asset on RealEstate Vault is strictly off-market. We protect your deals with mandatory digital NDAs and granular access controls before any sensitive information is revealed.
-            </p>
-            <ul className="space-y-4">
-              {[
-                "Location obfuscation until NDA is signed",
-                "Automated digital NDA execution",
-                "Watermarked secure data rooms",
-                "Granular document permissions"
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-foreground">
-                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                  <span className="font-medium">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="flex-1 relative">
-            <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full" />
-            <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl aspect-[4/3]">
-               <img src="/hotel.jpg" alt="Luxury resort" className="w-full h-full object-cover" />
-               <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent flex flex-col justify-end p-8">
-                  <div className="backdrop-blur-md bg-background/60 border border-white/10 p-6 rounded-xl">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <div className="text-xs text-primary uppercase font-bold tracking-widest mb-1">Confidential</div>
-                        <h4 className="font-heading text-xl font-semibold">Prime Hotel Opportunity</h4>
-                      </div>
-                      <Shield className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="space-y-2 mb-6">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Region</span>
-                        <span className="font-medium">Amsterdam Region, Netherlands</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Value</span>
-                        <span className="font-medium">€20M - €25M</span>
-                      </div>
-                    </div>
-                    <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">Request Access</Button>
-                  </div>
-               </div>
-            </div>
+      {/* Capabilities: intelligence, data rooms, teams, marketplace, reputation, network */}
+      <section className="py-20 px-6 md:px-12 border-t border-border bg-card/40">
+        <div className="max-w-6xl mx-auto">
+          <SectionLabel>The platform</SectionLabel>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12">Everything a private transaction needs.</h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            {capabilities.map((c) => (
+              <div key={c.title} className="border border-border rounded-md bg-card p-6">
+                <c.icon className="w-5 h-5 text-primary mb-4" />
+                <h3 className="font-heading font-semibold text-lg">{c.title}</h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{c.body}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Feature Showcase 2 */}
-      <section className="py-24 px-6 md:px-12 bg-card relative border-y border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-center gap-16">
-          <div className="flex-1 relative">
-            <div className="absolute -inset-4 bg-primary/10 blur-3xl rounded-full" />
-            <div className="relative grid grid-cols-2 gap-4">
-              <img src="/logistics.jpg" alt="Logistics" className="w-full h-64 object-cover rounded-xl border border-white/10 shadow-lg mt-8" />
-              <img src="/office.jpg" alt="Office lobby" className="w-full h-64 object-cover rounded-xl border border-white/10 shadow-lg" />
+      {/* Platform statistics */}
+      <section className="py-16 px-6 md:px-12 border-t border-border">
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center [font-feature-settings:'tnum'_1]">
+          {[
+            { value: "€4.2B+", label: "Pipeline value" },
+            { value: "850+", label: "Verified professionals" },
+            { value: "100%", label: "Off-market" },
+            { value: "24/7", label: "Secure access" },
+          ].map((s) => (
+            <div key={s.label}>
+              <div className="font-heading text-3xl md:text-4xl font-bold">{s.value}</div>
+              <div className="text-xs text-muted-foreground uppercase tracking-wider mt-2">{s.label}</div>
             </div>
-          </div>
-          <div className="flex-1 space-y-8">
-            <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight">
-              A curated network of <br/><span className="text-primary font-serif italic">verified capital.</span>
-            </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              We rigorously vet every participant. Connect directly with mandated buyers and top-tier brokers with proven track records. Our reputation engine ensures you only deal with serious counterparts.
-            </p>
-            <ul className="space-y-4">
-              {[
-                "KYC/AML verified participants",
-                "Direct investor acquisition mandates",
-                "Broker performance rankings & transaction history",
-                "End-to-end encrypted messaging"
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-foreground">
-                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                  <span className="font-medium">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-32 px-6 md:px-12 relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-background" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(200,169,90,0.15),transparent_50%)]" />
-        </div>
-        <div className="relative z-10 max-w-3xl mx-auto text-center space-y-8">
-          <VaultLogo className="w-20 h-20 mx-auto mb-6" />
-          <h2 className="font-heading text-4xl md:text-6xl font-bold">Ready to enter the vault?</h2>
-          <p className="text-xl text-muted-foreground font-light">
-            Experience the future of commercial real estate transactions. Access the demo environment to explore the platform.
+      {/* Final CTA */}
+      <section className="py-24 px-6 md:px-12 border-t border-border relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(20,168,125,0.1),transparent_55%)]" />
+        <div className="relative z-10 max-w-2xl mx-auto text-center space-y-6">
+          <BrandMark className="w-12 h-12 mx-auto" />
+          <h2 className="font-heading text-3xl md:text-5xl font-bold">{brand.tagline}</h2>
+          <p className="text-lg text-muted-foreground">
+            Join the network where serious professionals take private opportunities to close.
           </p>
-          <div className="pt-8">
-            <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-12 h-16 text-xl">
-              <Link href="/demo">
-                Explore the Demo <ArrowRight className="ml-2 w-6 h-6" />
-              </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+            <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8 h-12" data-testid="button-cta-explore">
+              <Link href="/demo">Explore Opportunities <ArrowRight className="ml-2 w-4 h-4" /></Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild className="border-border px-8 h-12" data-testid="button-cta-join">
+              <Link href="/demo">Join the Network</Link>
             </Button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-card py-12 px-6 md:px-12 border-t border-white/10 text-center md:text-left">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <VaultLogo className="h-6 w-6" />
-            <span className="font-heading font-semibold tracking-widest text-sm uppercase">RealEstate Vault</span>
-          </div>
+      <footer className="py-10 px-6 md:px-12 border-t border-border">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
+          <BrandLogo markClassName="h-5 w-5" textClassName="text-xs" />
           <div className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} RealEstate Vault. The Private Marketplace for Commercial Real Estate.
+            &copy; {new Date().getFullYear()} {brand.name}. {brand.taglineSecondary}
           </div>
           <div className="flex gap-6 text-sm text-muted-foreground">
             <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>

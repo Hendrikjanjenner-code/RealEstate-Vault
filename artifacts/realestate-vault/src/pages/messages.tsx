@@ -95,7 +95,7 @@ export default function Messages() {
               <Send className="w-8 h-8 opacity-20" />
             </div>
             <h3 className="font-heading text-xl font-medium text-foreground mb-2">Secure Messaging</h3>
-            <p className="max-w-sm">Select a conversation to view encrypted messages. All communications on RealEstate Vault are confidential.</p>
+            <p className="max-w-sm">Select a conversation to view encrypted messages. All communications on Closa are confidential.</p>
           </div>
         )}
       </div>

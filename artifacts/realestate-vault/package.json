@@ -81,6 +81,7 @@
     "zod": "catalog:"
   },
   "dependencies": {
-    "@workspace/replit-auth-web": "workspace:*"
+    "@workspace/replit-auth-web": "workspace:*",
+    "@workspace/brand": "workspace:*"
   }
 }

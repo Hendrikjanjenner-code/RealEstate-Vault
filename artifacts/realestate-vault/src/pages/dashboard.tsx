@@ -2,8 +2,15 @@ import { useGetDashboardStats, useListActivity } from "@workspace/api-client-rea
 import { useAuth } from "@workspace/replit-auth-web";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Briefcase, Key, ScrollText, Users, FileText, Activity } from "lucide-react";
+import { Briefcase, Key, ScrollText, FileText, Activity } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
+
+const CHART = {
+  accent: "#14A87D",
+  muted: "#9AA0A6",
+  deep: "#22262B",
+  surface: "#17191C",
+};
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -12,14 +19,14 @@ export default function Dashboard() {
 
   if (statsLoading) {
     return (
-      <div className="p-8 space-y-8 animate-pulse">
-        <Skeleton className="h-10 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
+      <div className="p-6 space-y-6 animate-pulse">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-2 lg:grid-cols-6 gap-px">
+          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Skeleton className="h-96 col-span-2" />
-          <Skeleton className="h-96" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Skeleton className="h-80 col-span-2" />
+          <Skeleton className="h-80" />
         </div>
       </div>
     );
@@ -27,72 +34,86 @@ export default function Dashboard() {
 
   if (!stats) return null;
 
+  const metrics: { label: string; value: string | number; icon: React.ReactNode }[] = [
+    { label: "Active Deals", value: stats.activeDeals, icon: <Briefcase className="w-3.5 h-3.5" /> },
+    { label: "Access Requests", value: stats.accessRequests, icon: <Key className="w-3.5 h-3.5" /> },
+    { label: "NDAs Signed", value: stats.ndasSigned, icon: <ScrollText className="w-3.5 h-3.5" /> },
+    { label: "Pipeline Value", value: `€${(stats.pipelineValue / 1000000).toFixed(1)}M`, icon: <Activity className="w-3.5 h-3.5" /> },
+    { label: "Active Mandates", value: stats.activeMandates, icon: <FileText className="w-3.5 h-3.5" /> },
+    { label: "Unread Messages", value: stats.unreadMessages, icon: <Activity className="w-3.5 h-3.5" /> },
+  ];
+
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="flex items-baseline justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-foreground">{user?.firstName ? `Welcome back, ${user.firstName}` : user?.email ? `Welcome back, ${user.email}` : "Welcome back"}</h1>
-          <p className="text-muted-foreground mt-1">Here's what's happening in your vault today.</p>
-        </div>
-        <div className="flex gap-4">
-          {/* Quick actions could go here */}
+          <h1 className="text-2xl font-heading font-bold text-foreground">
+            {user?.firstName ? `Welcome back, ${user.firstName}` : user?.email ? `Welcome back, ${user.email}` : "Welcome back"}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Your pipeline, requests and activity at a glance.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard title="Active Deals" value={stats.activeDeals} icon={<Briefcase className="w-5 h-5 text-primary" />} />
-        <StatsCard title="Access Requests" value={stats.accessRequests} icon={<Key className="w-5 h-5 text-primary" />} />
-        <StatsCard title="NDAs Signed" value={stats.ndasSigned} icon={<ScrollText className="w-5 h-5 text-primary" />} />
-        <StatsCard title="Pipeline Value" value={`€${(stats.pipelineValue / 1000000).toFixed(1)}M`} icon={<Activity className="w-5 h-5 text-primary" />} />
+      {/* Metric strip: dense, single bordered row */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 border border-border rounded-md overflow-hidden bg-card divide-x divide-y lg:divide-y-0 divide-border">
+        {metrics.map((m) => (
+          <div key={m.label} className="px-4 py-3.5" data-testid={`metric-${m.label.toLowerCase().replace(/\s+/g, "-")}`}>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              {m.icon}
+              <span className="text-[11px] font-medium uppercase tracking-wider">{m.label}</span>
+            </div>
+            <div className="mt-1 text-xl font-heading font-bold text-foreground [font-feature-settings:'tnum'_1,'lnum'_1]">{m.value}</div>
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="col-span-2 bg-card/50 backdrop-blur border-white/5">
-          <CardHeader>
-            <CardTitle className="font-heading">Deal Activity</CardTitle>
-            <CardDescription>Views and requests over the last 30 days</CardDescription>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card className="col-span-2 bg-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="font-heading text-base">Deal Activity</CardTitle>
+            <CardDescription className="text-xs">Views and requests over the last 30 days</CardDescription>
           </CardHeader>
-          <CardContent className="h-80">
+          <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={stats.dealActivity}>
-                <XAxis dataKey="date" stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#111518', borderColor: '#C8A95A', borderRadius: '8px' }}
-                  itemStyle={{ color: '#F3F0E6' }}
+                <XAxis dataKey="date" stroke={CHART.muted} fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke={CHART.muted} fontSize={11} tickLine={false} axisLine={false} width={32} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: CHART.surface, borderColor: CHART.deep, borderRadius: '6px' }}
+                  itemStyle={{ color: '#F6F4EF' }}
                 />
-                <Line type="monotone" dataKey="views" stroke="#C8A95A" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="requests" stroke="#0B2D26" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="views" stroke={CHART.accent} strokeWidth={1.75} dot={false} />
+                <Line type="monotone" dataKey="requests" stroke={CHART.muted} strokeWidth={1.75} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card className="bg-card/50 backdrop-blur border-white/5 flex flex-col">
-          <CardHeader>
-            <CardTitle className="font-heading flex items-center justify-between">
+        <Card className="bg-card flex flex-col">
+          <CardHeader className="pb-2">
+            <CardTitle className="font-heading text-base flex items-center justify-between">
               Recent Activity
               <span className="text-xs font-normal text-muted-foreground cursor-pointer hover:text-primary transition-colors">View all</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-auto">
             {activityLoading ? (
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="divide-y divide-border/60">
                 {activity?.map((item) => (
-                  <div key={item.id} className="flex items-start gap-4">
-                    <div className="mt-0.5 p-2 rounded-full bg-primary/10 text-primary">
-                      {item.type === 'nda_signed' ? <ScrollText className="w-4 h-4" /> :
-                       item.type === 'access_request' ? <Key className="w-4 h-4" /> :
-                       item.type === 'document_viewed' ? <FileText className="w-4 h-4" /> :
-                       <Activity className="w-4 h-4" />}
+                  <div key={item.id} className="flex items-start gap-3 py-2.5 first:pt-0">
+                    <div className="mt-0.5 text-muted-foreground">
+                      {item.type === 'nda_signed' ? <ScrollText className="w-3.5 h-3.5" /> :
+                       item.type === 'access_request' ? <Key className="w-3.5 h-3.5" /> :
+                       item.type === 'document_viewed' ? <FileText className="w-3.5 h-3.5" /> :
+                       <Activity className="w-3.5 h-3.5" />}
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{item.description}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                    <div className="min-w-0">
+                      <p className="text-sm text-foreground leading-snug">{item.description}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 [font-feature-settings:'tnum'_1]">
                         {new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
@@ -104,61 +125,25 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="col-span-1 bg-card/50 backdrop-blur border-white/5">
-          <CardHeader>
-            <CardTitle className="font-heading">Asset Class Breakdown</CardTitle>
-          </CardHeader>
-          <CardContent className="h-64">
-             <ResponsiveContainer width="100%" height="100%">
-               <BarChart data={stats.assetClassBreakdown} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                 <XAxis type="number" hide />
-                 <YAxis dataKey="assetClass" type="category" stroke="#F3F0E6" fontSize={12} tickLine={false} axisLine={false} width={80} />
-                 <Tooltip cursor={{fill: '#ffffff10'}} contentStyle={{ backgroundColor: '#111518', borderColor: '#164033', borderRadius: '8px' }} />
-                 <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={20}>
-                   {stats.assetClassBreakdown.map((entry, index) => (
-                     <Cell key={`cell-${index}`} fill={index === 0 ? '#C8A95A' : '#164033'} />
-                   ))}
-                 </Bar>
-               </BarChart>
-             </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        
-        <div className="col-span-2 grid grid-cols-2 gap-6">
-           <Card className="bg-card/50 backdrop-blur border-white/5 flex flex-col justify-center items-center text-center p-6">
-             <div className="p-4 rounded-full bg-primary/10 text-primary mb-4">
-               <FileText className="w-8 h-8" />
-             </div>
-             <h3 className="text-3xl font-heading font-bold">{stats.activeMandates}</h3>
-             <p className="text-muted-foreground text-sm uppercase tracking-wider font-medium mt-2">Active Mandates</p>
-           </Card>
-           <Card className="bg-card/50 backdrop-blur border-white/5 flex flex-col justify-center items-center text-center p-6">
-             <div className="p-4 rounded-full bg-primary/10 text-primary mb-4">
-               <Users className="w-8 h-8" />
-             </div>
-             <h3 className="text-3xl font-heading font-bold">{stats.unreadMessages}</h3>
-             <p className="text-muted-foreground text-sm uppercase tracking-wider font-medium mt-2">Unread Messages</p>
-           </Card>
-        </div>
-      </div>
+      <Card className="bg-card">
+        <CardHeader className="pb-2">
+          <CardTitle className="font-heading text-base">Asset Class Breakdown</CardTitle>
+        </CardHeader>
+        <CardContent className="h-56">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={stats.assetClassBreakdown} layout="vertical" margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
+              <XAxis type="number" hide />
+              <YAxis dataKey="assetClass" type="category" stroke="#F6F4EF" fontSize={11} tickLine={false} axisLine={false} width={90} />
+              <Tooltip cursor={{ fill: '#ffffff08' }} contentStyle={{ backgroundColor: CHART.surface, borderColor: CHART.deep, borderRadius: '6px' }} />
+              <Bar dataKey="count" radius={[0, 3, 3, 0]} barSize={16}>
+                {stats.assetClassBreakdown.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={index === 0 ? CHART.accent : CHART.deep} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
     </div>
-  );
-}
-
-function StatsCard({ title, value, icon }: { title: string, value: string | number, icon: React.ReactNode }) {
-  return (
-    <Card className="bg-card/50 backdrop-blur border-white/5 overflow-hidden relative group">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      <CardContent className="p-6 flex items-center justify-between relative z-10">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-          <h3 className="text-3xl font-heading font-bold text-foreground">{value}</h3>
-        </div>
-        <div className="p-3 bg-background rounded-xl border border-white/5 shadow-inner">
-          {icon}
-        </div>
-      </CardContent>
-    </Card>
   );
 }

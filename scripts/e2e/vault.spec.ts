@@ -52,9 +52,9 @@ async function findConfidentialDeal(request: APIRequestContext) {
   return { deals, confidential: confidential!, searchTarget };
 }
 
-test('landing page renders and Enter the Vault leads to the demo dashboard', async ({ page }) => {
+test('landing page renders and Explore Opportunities leads to the demo dashboard', async ({ page }) => {
   await page.goto('/');
-  const enter = page.getByRole('link', { name: /enter the vault/i }).first();
+  const enter = page.getByRole('link', { name: /explore opportunities/i }).first();
   await expect(enter).toBeVisible();
   await enter.click();
   await expect(page).toHaveURL(/\/demo$/);

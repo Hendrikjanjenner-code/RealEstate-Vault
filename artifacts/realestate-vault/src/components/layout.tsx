@@ -15,7 +15,8 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Shield, LayoutDashboard, Briefcase, Users, FileText, Send, Handshake, LogOut, UserRound, Building2 } from "lucide-react";
-import { VaultLogo } from "@/components/logo";
+import { BrandLogo } from "@/components/logo";
+import { brand } from "@workspace/brand";
 import { NotificationsBell } from "@/components/notifications-bell";
 import { useAuth } from "@workspace/replit-auth-web";
 
@@ -65,12 +66,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <div className="flex min-h-[100dvh] w-full bg-background dark text-foreground selection:bg-primary/30">
         <Sidebar className="border-r border-border bg-sidebar">
           <SidebarHeader className="h-16 flex items-center px-4 border-b border-sidebar-border">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <VaultLogo className="h-8 w-8" />
-              <div className="flex flex-col">
-                <span className="font-heading font-semibold text-sidebar-foreground tracking-wide leading-none text-sm uppercase">RealEstate</span>
-                <span className="font-heading font-bold text-primary tracking-widest leading-none text-xs uppercase">Vault</span>
-              </div>
+            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+              <BrandLogo markClassName="h-7 w-7" textClassName="text-base" />
             </Link>
           </SidebarHeader>
           <SidebarContent className="px-2 py-4">
@@ -124,7 +121,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-4">
               <SidebarTrigger className="-ml-2" />
               <h1 className="text-lg font-heading font-semibold capitalize tracking-wide text-foreground/90">
-                {navItems.find((item) => location === item.href || (item.href !== "/demo" && location.startsWith(item.href)))?.label || "RealEstate Vault"}
+                {navItems.find((item) => location === item.href || (item.href !== "/demo" && location.startsWith(item.href)))?.label || brand.name}
               </h1>
             </div>
             <div className="flex items-center gap-4">

@@ -420,6 +420,9 @@ importers:
 
   artifacts/realestate-vault:
     dependencies:
+      '@workspace/brand':
+        specifier: workspace:*
+        version: link:../../lib/brand
       '@workspace/replit-auth-web':
         specifier: workspace:*
         version: link:../../lib/replit-auth-web

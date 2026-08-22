@@ -3,7 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from '@workspace/replit-auth-web';
 import { useSetMyRole } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
-import { VaultLogo } from '@/components/logo';
+import { BrandMark } from '@/components/logo';
+import { brand } from '@workspace/brand';
 import { Briefcase, Search, Building2 } from 'lucide-react';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -40,7 +41,7 @@ const queryClient = new QueryClient({
 function AuthScreen({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-[100dvh] w-full bg-background dark text-foreground flex flex-col items-center justify-center gap-6 p-8">
-      <VaultLogo className="h-12 w-12" />
+      <BrandMark className="h-12 w-12" />
       {children}
     </div>
   );
@@ -58,7 +59,7 @@ function RolePicker() {
 
   return (
     <AuthScreen>
-      <h1 className="text-2xl font-heading font-bold">How will you use RealEstate Vault?</h1>
+      <h1 className="text-2xl font-heading font-bold">How will you use {brand.name}?</h1>
       <p className="text-muted-foreground max-w-md text-center">
         Choose your role to continue. Brokers list deals and manage data room access; investors request access to confidential opportunities; property owners find brokers for their assets.
       </p>
@@ -84,7 +85,7 @@ function SignInPrompt() {
   const { login } = useAuth();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-background p-8 text-center">
-      <VaultLogo />
+      <BrandMark className="h-12 w-12" />
       <div>
         <h1 className="text-2xl font-heading font-bold text-foreground">Sign in to continue</h1>
         <p className="text-muted-foreground mt-2">You need an account to browse deals, mandates, and your data rooms.</p>
