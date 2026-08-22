@@ -5,12 +5,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Briefcase, Key, ScrollText, FileText, Activity } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
 import { Link } from "wouter";
+import { brand } from "@workspace/brand";
 
 const CHART = {
-  accent: "#14A87D",
-  muted: "#9AA0A6",
-  deep: "#22262B",
-  surface: "#17191C",
+  accent: brand.colors.accent,
+  muted: brand.colors.mutedOnDark,
+  deep: brand.colors.graphite,
+  surface: brand.colors.charcoal,
 };
 
 export default function Dashboard() {

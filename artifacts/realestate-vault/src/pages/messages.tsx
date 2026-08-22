@@ -1,6 +1,5 @@
 import { Link } from "wouter";
 import { useState } from "react";
-import { useSearch } from "wouter";
 import { useListThreads, useListThreadMessages, useSendMessage, getListThreadMessagesQueryKey, getListThreadsQueryKey } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -8,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send, Building2, ChevronRight, Lock } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSearch } from "wouter";
 
 export default function Messages() {
   const { data: threads, isLoading: threadsLoading } = useListThreads();

@@ -85,52 +85,52 @@
   --foreground: 43 28% 95%;
 
   /* Graphite border */
-  --border: 214 12% 15%;
+  --border: 213 12% 15%;
 
   /* Deep charcoal surfaces */
   --card: 216 10% 10%;
   --card-foreground: 43 28% 95%;
-  --card-border: 214 12% 15%;
+  --card-border: 213 12% 15%;
 
   --sidebar: 210 8% 4%;
   --sidebar-foreground: 43 28% 95%;
-  --sidebar-border: 214 12% 13%;
+  --sidebar-border: 213 12% 13%;
   --sidebar-primary: 163 79% 37%;
   --sidebar-primary-foreground: 210 8% 5%;
-  --sidebar-accent: 214 12% 15%;
+  --sidebar-accent: 213 12% 15%;
   --sidebar-accent-foreground: 43 28% 95%;
   --sidebar-ring: 163 79% 37%;
 
   --popover: 216 10% 10%;
   --popover-foreground: 43 28% 95%;
-  --popover-border: 214 12% 15%;
+  --popover-border: 213 12% 15%;
 
   /* Jade accent — use sparingly */
   --primary: 163 79% 37%;
   --primary-foreground: 210 8% 5%;
 
   /* Graphite */
-  --secondary: 214 12% 15%;
+  --secondary: 213 12% 15%;
   --secondary-foreground: 43 28% 95%;
 
   /* Gray */
-  --muted: 214 12% 15%;
+  --muted: 213 12% 15%;
   --muted-foreground: 210 6% 63%;
 
-  --accent: 214 12% 15%;
+  --accent: 213 12% 15%;
   --accent-foreground: 43 28% 95%;
 
   --destructive: 0 48% 45%;
   --destructive-foreground: 43 28% 95%;
 
-  --input: 214 12% 17%;
+  --input: 213 12% 17%;
   --ring: 163 79% 37%;
 
   --chart-1: 163 79% 37%; /* Jade */
   --chart-2: 210 6% 63%;  /* Gray */
   --chart-3: 37 55% 51%;  /* Caution amber */
   --chart-4: 163 40% 24%; /* Deep jade */
-  --chart-5: 0 48% 53%;   /* Negative */
+  --chart-5: 0 49% 53%;   /* Negative */
 
   --app-font-sans: 'Inter', sans-serif;
   --app-font-serif: Georgia, serif;

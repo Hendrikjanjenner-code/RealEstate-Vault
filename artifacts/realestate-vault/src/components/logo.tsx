@@ -15,8 +15,8 @@ export function BrandMark({ className = "w-8 h-8" }: { className?: string }) {
       aria-label={`${brand.name} mark`}
       role="img"
     >
-      <path d="M 48.09 45.5 A 21 21 0 1 1 48.09 18.5" stroke="#14A87D" strokeWidth="9" />
-      <rect x="35" y="27.5" width="25" height="9" fill="#14A87D" />
+      <path d="M 48.09 45.5 A 21 21 0 1 1 48.09 18.5" stroke={brand.colors.accent} strokeWidth="9" />
+      <rect x="35" y="27.5" width="25" height="9" fill={brand.colors.accent} />
     </svg>
   );
 }

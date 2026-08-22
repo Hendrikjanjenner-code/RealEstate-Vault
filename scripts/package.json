@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "hello": "tsx ./src/hello.ts",
+    "check:brand": "tsx ./src/check-brand-sync.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:e2e": "playwright test"
   },
