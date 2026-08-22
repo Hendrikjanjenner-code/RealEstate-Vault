@@ -19,6 +19,16 @@ import { useColors } from '@/hooks/useColors';
 import { Badge, Card, EmptyState, ErrorState, LoadingState, ScreenHeader } from '@/components/VaultUI';
 import { formatMillions, resolveImageUrl } from '@/lib/format';
 
+type YieldFit = 'meets' | 'below' | 'unknown';
+
+function getYieldFit(
+  grossYield: number | null | undefined,
+  yieldTarget: number | null | undefined,
+): YieldFit {
+  if (yieldTarget == null || grossYield == null) return 'unknown';
+  return grossYield >= yieldTarget ? 'meets' : 'below';
+}
+
 export default function MandateMatchesScreen() {
   const c = useColors();
   const { id: idParam } = useLocalSearchParams<{ id: string }>();
@@ -45,6 +55,9 @@ export default function MandateMatchesScreen() {
             {mandate.countries.map((country) => (
               <Badge key={country} label={country} />
             ))}
+            {mandate.yieldTarget != null && (
+              <Badge label={`${mandate.yieldTarget}%+ yield`} gold />
+            )}
           </View>
           <Text style={{ color: c.mutedForeground, fontSize: 13, fontFamily: 'Inter_400Regular' }}>
             Ticket size {formatMillions(mandate.minSize)} – {formatMillions(mandate.maxSize)}
@@ -152,6 +165,24 @@ export default function MandateMatchesScreen() {
                           <Text style={{ color: c.primary, fontSize: 15, fontFamily: 'Inter_600SemiBold', marginTop: 2 }}>
                             {deal.grossYield}%
                           </Text>
+                          {(() => {
+                            const fit = getYieldFit(deal.grossYield, mandate?.yieldTarget);
+                            if (fit === 'unknown') return null;
+                            const meets = fit === 'meets';
+                            return (
+                              <Text
+                                testID={`yield-fit-${deal.id}`}
+                                style={{
+                                  color: meets ? '#34d399' : '#fbbf24',
+                                  fontSize: 11,
+                                  fontFamily: 'Inter_600SemiBold',
+                                  marginTop: 2,
+                                }}
+                              >
+                                {meets ? 'Meets target' : 'Below target'}
+                              </Text>
+                            );
+                          })()}
                         </View>
                       )}
                     </View>

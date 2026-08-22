@@ -1,5 +1,5 @@
 import { toJson } from "../lib/serialize";
-import { dealMatchesMandate } from "../lib/mandateMatching";
+import { dealMatchesMandate, sortByYieldFit } from "../lib/mandateMatching";
 import {
   getAccessStatuses,
   getSavedDealIds,
@@ -83,7 +83,10 @@ router.get("/mandates/:id/matches", async (req, res): Promise<void> => {
     .select()
     .from(dealsTable)
     .orderBy(desc(dealsTable.createdAt));
-  const matching = allDeals.filter((deal) => dealMatchesMandate(deal, mandate));
+  const matching = sortByYieldFit(
+    allDeals.filter((deal) => dealMatchesMandate(deal, mandate)),
+    mandate,
+  );
 
   const [statuses, savedIds, withProfiles] = await Promise.all([
     getAccessStatuses(matching, req.user.id),

@@ -9,7 +9,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Building2, MapPin, Target } from "lucide-react";
+import { ArrowLeft, Building2, MapPin, Target, TrendingUp } from "lucide-react";
+
+type YieldFit = "meets" | "below" | "unknown";
+
+function getYieldFit(grossYield: number | null | undefined, yieldTarget: number | null | undefined): YieldFit {
+  if (yieldTarget == null || grossYield == null) return "unknown";
+  return grossYield >= yieldTarget ? "meets" : "below";
+}
 
 export default function MandateMatches() {
   const params = useParams<{ id: string }>();
@@ -48,6 +55,11 @@ export default function MandateMatches() {
                   <MapPin className="w-3 h-3 mr-1" /> {c}
                 </Badge>
               ))}
+              {mandate.yieldTarget != null && (
+                <Badge variant="secondary" className="bg-background border-white/5 text-xs font-normal" data-testid="badge-yield-target">
+                  <TrendingUp className="w-3 h-3 mr-1" /> {mandate.yieldTarget}%+ yield target
+                </Badge>
+              )}
             </div>
           </div>
         ) : (
@@ -102,7 +114,27 @@ export default function MandateMatches() {
                   {deal.grossYield != null && (
                     <div>
                       <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider font-medium">Yield</p>
-                      <p className="font-semibold text-foreground">{deal.grossYield}%</p>
+                      <p className="font-semibold text-foreground">
+                        {deal.grossYield}%
+                        {(() => {
+                          const fit = getYieldFit(deal.grossYield, mandate?.yieldTarget);
+                          if (fit === "meets") {
+                            return (
+                              <span className="ml-2 text-xs font-medium text-emerald-400" data-testid={`yield-fit-${deal.id}`}>
+                                Meets target
+                              </span>
+                            );
+                          }
+                          if (fit === "below") {
+                            return (
+                              <span className="ml-2 text-xs font-medium text-amber-400" data-testid={`yield-fit-${deal.id}`}>
+                                Below target
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </p>
                     </div>
                   )}
                 </div>

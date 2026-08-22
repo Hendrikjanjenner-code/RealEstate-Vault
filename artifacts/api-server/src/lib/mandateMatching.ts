@@ -29,3 +29,39 @@ export function dealMatchesMandate(
 
   return dealMin <= mandate.maxSize && dealMax >= mandate.minSize;
 }
+
+/**
+ * Yield fit of a deal against a mandate's optional yield target.
+ * - "meets": deal grossYield >= yieldTarget
+ * - "below": deal grossYield < yieldTarget
+ * - "unknown": mandate has no target or deal has no yield
+ */
+export type YieldFit = "meets" | "below" | "unknown";
+
+export function yieldFit(
+  deal: Pick<Deal, "grossYield">,
+  mandate: Pick<Mandate, "yieldTarget">,
+): YieldFit {
+  if (mandate.yieldTarget == null || deal.grossYield == null) return "unknown";
+  return deal.grossYield >= mandate.yieldTarget ? "meets" : "below";
+}
+
+const fitRank: Record<YieldFit, number> = { meets: 0, unknown: 1, below: 2 };
+
+/**
+ * Stable sort of matched deals by yield fit: deals meeting the mandate's
+ * yield target first, then deals with unknown yield, then deals below
+ * target. Within the "meets" group, higher yield sorts first. Deals are
+ * never excluded based on yield.
+ */
+export function sortByYieldFit<D extends Pick<Deal, "grossYield">>(
+  deals: D[],
+  mandate: Pick<Mandate, "yieldTarget">,
+): D[] {
+  if (mandate.yieldTarget == null) return deals;
+  return [...deals].sort((a, b) => {
+    const rankDiff = fitRank[yieldFit(a, mandate)] - fitRank[yieldFit(b, mandate)];
+    if (rankDiff !== 0) return rankDiff;
+    return (b.grossYield ?? 0) - (a.grossYield ?? 0);
+  });
+}
