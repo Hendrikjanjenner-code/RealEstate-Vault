@@ -167,6 +167,17 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
       type: "nda_signed",
       description: `${request.requesterName} signed the NDA for ${request.dealTitle}`,
     });
+    // Alert the listing broker that the NDA was signed (unless they signed
+    // it themselves on the investor's behalf).
+    if (deal?.brokerUserId && deal.brokerUserId !== (req.isAuthenticated() ? req.user.id : null)) {
+      await db.insert(notificationsTable).values({
+        userId: deal.brokerUserId,
+        type: "nda_signed",
+        message: `${request.requesterName} signed the NDA for ${request.dealTitle}.`,
+        dealId: request.dealId,
+        accessRequestId: request.id,
+      });
+    }
   }
 
   // Notify the requesting investor when their request status changes.
@@ -259,6 +270,21 @@ router.post("/access-requests/:id/sign", async (req, res): Promise<void> => {
     type: "nda_signed",
     description: `${request.signerName} signed the NDA for ${request.dealTitle}`,
   });
+
+  // Alert the listing broker that the NDA was signed.
+  const [deal] = await db
+    .select()
+    .from(dealsTable)
+    .where(eq(dealsTable.id, request.dealId));
+  if (deal?.brokerUserId) {
+    await db.insert(notificationsTable).values({
+      userId: deal.brokerUserId,
+      type: "nda_signed",
+      message: `${request.signerName} signed the NDA for ${request.dealTitle}.`,
+      dealId: request.dealId,
+      accessRequestId: request.id,
+    });
+  }
 
   res.json(SignAccessRequestNdaResponse.parse(toJson(request)));
 });

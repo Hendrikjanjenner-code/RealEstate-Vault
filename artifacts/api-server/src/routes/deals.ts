@@ -10,6 +10,7 @@ import {
   dealDocumentsTable,
   accessRequestsTable,
   activityTable,
+  notificationsTable,
   savedDealsTable,
   type Deal,
 } from "@workspace/db";
@@ -535,6 +536,17 @@ router.post("/deals/:id/access-requests", async (req, res): Promise<void> => {
     type: "access_request",
     description: `${body.data.requesterName} (${body.data.requesterCompany}) requested access to ${deal.title}`,
   });
+
+  // Alert the listing broker that a new access request arrived.
+  if (deal.brokerUserId) {
+    await db.insert(notificationsTable).values({
+      userId: deal.brokerUserId,
+      type: "access_request_received",
+      message: `${body.data.requesterName} (${body.data.requesterCompany}) requested access to ${deal.title}.`,
+      dealId: deal.id,
+      accessRequestId: request.id,
+    });
+  }
 
   // Don't echo the confidential title back to a requester who isn't granted.
   const presented = deal.confidential
