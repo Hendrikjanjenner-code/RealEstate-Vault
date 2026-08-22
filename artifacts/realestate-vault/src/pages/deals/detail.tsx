@@ -11,7 +11,6 @@ import {
   useUpdateDealDocument,
   useDeleteDealDocument,
   useRequestUploadUrl,
-  useGetSession,
   getGetDealQueryKey,
   getListDealDocumentsQueryKey,
   getListAccessRequestsQueryKey,
@@ -60,7 +59,6 @@ export default function DealDetail() {
   const updateDoc = useUpdateDealDocument();
   const deleteDoc = useDeleteDealDocument();
   const requestUploadUrl = useRequestUploadUrl();
-  const { data: session } = useGetSession();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [form, setForm] = useState({ requesterName: "", requesterCompany: "", message: "" });
@@ -108,9 +106,9 @@ export default function DealDetail() {
     );
   };
 
-  // Broker via Replit Auth role OR legacy broker-passcode session.
+  // Broker status comes exclusively from the authenticated account's role.
   const { user } = useAuth();
-  const isBroker = user?.role === "broker" || !!session?.broker;
+  const isBroker = user?.role === "broker";
 
   // Find this investor's own request for the deal so they can sign it.
   const { data: myRequests } = useListAccessRequests();

@@ -108,7 +108,7 @@ router.put("/brokers/me", async (req, res): Promise<void> => {
 });
 
 router.get("/brokers/:id", async (req, res): Promise<void> => {
-  const params = GetBrokerParams.safeParse(req.params);
+  const params = UpdateMandateStatusParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
@@ -132,7 +132,7 @@ router.get("/brokers/:id/deals", async (req, res): Promise<void> => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-  const params = ListBrokerDealsParams.safeParse(req.params);
+  const params = UpdateMandateStatusParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
@@ -166,7 +166,7 @@ router.get("/brokers/:id/deals", async (req, res): Promise<void> => {
   const [statuses, savedIds, withProfiles] = await Promise.all([
     getAccessStatuses(deals, req.user.id),
     getSavedDealIds(
-      deals.map((deal) => deal.id),
+      deals.map((d) => d.id),
       req.user.id,
     ),
     overlayBrokerProfiles(deals),
@@ -204,7 +204,7 @@ router.get("/mandates/:id/matches", async (req, res): Promise<void> => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-  const params = ListMandateMatchesParams.safeParse(req.params);
+  const params = UpdateMandateStatusParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;

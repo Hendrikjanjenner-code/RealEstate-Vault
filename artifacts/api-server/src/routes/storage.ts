@@ -11,9 +11,23 @@ import {
   ObjectStorageService,
 } from '../lib/objectStorage';
 
-import { requireBroker } from '../lib/brokerAuth';
+import type { NextFunction } from 'express';
 
 const router: IRouter = Router();
+
+// Broker-only gate: requires an authenticated account with the broker role.
+// (The legacy shared broker passcode has been retired.)
+function requireBroker(req: Request, res: Response, next: NextFunction): void {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: 'Broker sign-in required' });
+    return;
+  }
+  if (req.user.role !== 'broker') {
+    res.status(403).json({ error: 'Broker role required' });
+    return;
+  }
+  next();
+}
 const objectStorageService = new ObjectStorageService();
 
 /**

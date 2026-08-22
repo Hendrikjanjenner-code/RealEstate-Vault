@@ -20,7 +20,6 @@ export * from './authUser';
 export * from './authUserEnvelope';
 export * from './beginBrowserLoginParams';
 export * from './broker';
-export * from './brokerLoginRequest';
 export * from './brokerProfileEnvelope';
 export * from './brokerProfileInput';
 export * from './dashboardStats';

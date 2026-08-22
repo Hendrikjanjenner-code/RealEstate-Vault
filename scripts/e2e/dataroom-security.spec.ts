@@ -7,18 +7,28 @@
  *  3. Investor lifecycle: only the requester's secret key yields a download
  *     token; downloads require the token; bad/missing tokens are denied.
  */
-import { test, expect, type APIRequestContext } from '@playwright/test';
+import crypto from 'node:crypto';
+import { test, expect } from '@playwright/test';
+import { eq } from 'drizzle-orm';
+import { db, usersTable, sessionsTable, dealsTable } from '@workspace/db';
 
 const unique = () => `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 
 /**
- * Return headers that authenticate subsequent API calls as a broker.
- * Standalone APIRequestContexts don't reliably forward cookies across requests,
- * so we use the X-Broker-Passcode header instead (accepted by isBroker() on the server).
+ * Seed a real broker account with a DB-backed session and return headers
+ * that authenticate subsequent API calls as that broker.
+ * The legacy shared broker passcode has been retired.
  */
-function brokerHeaders(): Record<string, string> {
-  const passcode = process.env.BROKER_PASSCODE ?? '';
-  return passcode ? { 'X-Broker-Passcode': passcode } : {};
+async function brokerHeaders(): Promise<{ headers: Record<string, string>; userId: string }> {
+  const id = `e2e-broker-${crypto.randomUUID()}`;
+  await db.insert(usersTable).values({ id, email: `${id}@example.com`, firstName: 'E2E', lastName: 'Broker', role: 'broker' });
+  const sid = crypto.randomBytes(32).toString('hex');
+  await db.insert(sessionsTable).values({
+    sid,
+    sess: { user: { id, email: `${id}@example.com`, firstName: 'E2E', lastName: 'Broker', profileImageUrl: null, role: 'broker' }, access_token: 'e2e-test' },
+    expire: new Date(Date.now() + 60 * 60 * 1000),
+  });
+  return { headers: { Authorization: `Bearer ${sid}` }, userId: id };
 }
 
 test('outsiders cannot upload, list, or advance access requests', async ({ playwright }) => {
@@ -41,8 +51,17 @@ test('broker uploads an NDA-gated document; only the signed requester can downlo
   const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:80';
   const broker = await playwright.request.newContext({ baseURL });
   const investor = await playwright.request.newContext({ baseURL });
-  const bh = brokerHeaders();
+  const { headers: bh, userId: brokerId } = await brokerHeaders();
 
+  // Request lifecycle management requires deal ownership: make our test
+  // broker the listing broker for deal 2 for the duration of this test.
+  const [prevOwner] = await db
+    .select({ brokerUserId: dealsTable.brokerUserId })
+    .from(dealsTable)
+    .where(eq(dealsTable.id, 2));
+  await db.update(dealsTable).set({ brokerUserId: brokerId }).where(eq(dealsTable.id, 2));
+
+  try {
   // Broker: non-PDF is refused, PDF is minted and uploaded
   expect((await broker.post('/api/storage/uploads/request-url', { data: { name: 'x.exe', size: 10, contentType: 'application/x-msdownload' }, headers: bh })).status()).toBe(400);
   const mint = await (await broker.post('/api/storage/uploads/request-url', { data: { name: 'e2e.pdf', size: 16, contentType: 'application/pdf' }, headers: bh })).json();
@@ -65,6 +84,15 @@ test('broker uploads an NDA-gated document; only the signed requester can downlo
   // Investor requests access; broker approves and sends the NDA
   const reqCreated = await (await investor.post('/api/deals/2/access-requests', { data: { requesterName: `E2E Inv ${unique()}`, requesterCompany: 'E2E Cap' } })).json();
   expect(typeof reqCreated.requestKey).toBe('string');
+
+  // A different broker (not the listing broker) cannot advance the request.
+  const { headers: otherBh } = await brokerHeaders();
+  expect((await broker.patch(`/api/access-requests/${reqCreated.id}`, { data: { status: 'approved' }, headers: otherBh })).status()).toBe(403);
+
+  // Requests on unowned (demo) deals cannot be managed by any broker.
+  const unownedReq = await (await investor.post('/api/deals/1/access-requests', { data: { requesterName: `E2E Unowned ${unique()}`, requesterCompany: 'E2E Cap' } })).json();
+  expect((await broker.patch(`/api/access-requests/${unownedReq.id}`, { data: { status: 'approved' }, headers: bh })).status()).toBe(403);
+
   expect((await broker.patch(`/api/access-requests/${reqCreated.id}`, { data: { status: 'approved' }, headers: bh })).status()).toBe(200);
   expect((await broker.patch(`/api/access-requests/${reqCreated.id}`, { data: { status: 'nda_sent' }, headers: bh })).status()).toBe(200);
 
@@ -81,7 +109,9 @@ test('broker uploads an NDA-gated document; only the signed requester can downlo
   const dl = await investor.get(`/api/deals/2/documents/${doc.id}/download?token=${signed.downloadToken}`);
   expect(dl.status()).toBe(200);
   expect((await dl.body()).toString()).toBe('E2E-PDF-CONTENT!');
-
-  await broker.dispose();
-  await investor.dispose();
+  } finally {
+    await db.update(dealsTable).set({ brokerUserId: prevOwner?.brokerUserId ?? null }).where(eq(dealsTable.id, 2));
+    await broker.dispose();
+    await investor.dispose();
+  }
 });

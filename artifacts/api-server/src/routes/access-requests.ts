@@ -9,7 +9,6 @@ import {
   dealsTable,
   notificationsTable,
 } from "@workspace/db";
-import { isBroker } from "../lib/brokerAuth";
 import {
   ListAccessRequestsResponse,
   UpdateAccessRequestParams,
@@ -33,20 +32,13 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
 };
 
 router.get("/access-requests", async (req, res): Promise<void> => {
-  const passcodeBroker = isBroker(req);
-  if (!req.isAuthenticated() && !passcodeBroker) {
+  if (!req.isAuthenticated()) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
+
   let requests;
-  if (!req.isAuthenticated()) {
-    // Passcode/cookie broker session (no user account): sees all requests,
-    // consistent with the broker credential used elsewhere in this router.
-    requests = await db
-      .select()
-      .from(accessRequestsTable)
-      .orderBy(desc(accessRequestsTable.createdAt));
-  } else if (req.user.role === "broker") {
+  if (req.user.role === "broker") {
     // Brokers only see requests on deals they own.
     const ownedDeals = await db
       .select({ id: dealsTable.id })
@@ -117,11 +109,13 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
     .where(eq(dealsTable.id, existing.dealId));
 
   const signing = body.data.status === "nda_signed";
+  // Only the deal's owning broker may advance the lifecycle. Deals without an
+  // identified owning broker (legacy/demo rows) cannot have their requests
+  // managed by anyone — brokers only manage their own deals' requests.
   const brokerAuthed =
-    isBroker(req) ||
-    (req.isAuthenticated() &&
-      req.user.role === "broker" &&
-      deal?.brokerUserId === req.user.id);
+    req.isAuthenticated() &&
+    req.user.role === "broker" &&
+    deal?.brokerUserId === req.user.id;
 
   // Investors self-sign using their requestKey — no session required.
   const isRequester =
@@ -132,7 +126,7 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
   if (signing && !brokerAuthed && !isRequester) {
     // A wrong requestKey is a 403 (credential present but invalid).
     // No credential at all is a 401.
-    const hasCredential = !!body.data.requestKey || isBroker(req) || req.isAuthenticated();
+    const hasCredential = !!body.data.requestKey || req.isAuthenticated();
     res.status(hasCredential ? 403 : 401).json({
       error: body.data.requestKey
         ? "Invalid request key"
@@ -143,7 +137,7 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
 
   if (!signing && !brokerAuthed) {
     // Unauthenticated attempt → 401; authenticated but wrong role → 403.
-    const hasCredential = isBroker(req) || req.isAuthenticated();
+    const hasCredential = req.isAuthenticated();
     res.status(hasCredential ? 403 : 401).json({
       error: hasCredential ? "Broker authentication required" : "Unauthorized",
     });

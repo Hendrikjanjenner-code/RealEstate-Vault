@@ -73,27 +73,6 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/SessionResponse" }
-  /auth/broker-login:
-    post:
-      tags: [Auth]
-      operationId: brokerLogin
-      summary: Sign in as the broker using the shared passcode
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/BrokerLoginRequest" }
-      responses:
-        "200":
-          description: Broker session established
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/SessionResponse" }
-        "401":
-          description: Wrong passcode
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ApiMessage" }
   /login:
     get:
       tags: [Auth]
@@ -1133,11 +1112,6 @@ components:
       required: [broker]
       properties:
         broker: { type: boolean }
-    BrokerLoginRequest:
-      type: object
-      required: [passcode]
-      properties:
-        passcode: { type: string }
     SignNdaInput:
       type: object
       required: [signerName, agreed]

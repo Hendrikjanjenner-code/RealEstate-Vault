@@ -381,24 +381,15 @@ router.post('/mobile-auth/logout', async (req: Request, res: Response) => {
   res.json(LogoutMobileSessionResponse.parse({ success: true }));
 });
 
-// ── Broker passcode session endpoints ──────────────────────────────────────
+// ── Session info ────────────────────────────────────────────────────────────
 
 // Returns whether the current request carries broker credentials.
+// The legacy shared-passcode session has been retired: broker status now
+// comes exclusively from an authenticated account with the broker role.
 router.get('/auth/session', (req: Request, res: Response) => {
-  const { isBroker } = require('../lib/brokerAuth') as typeof import('../lib/brokerAuth');
-  res.json({ broker: isBroker(req) });
-});
-
-// Validates the broker passcode and issues a signed cookie.
-router.post('/auth/broker-login', (req: Request, res: Response) => {
-  const { verifyBrokerPasscode, mintBrokerCookie } = require('../lib/brokerAuth') as typeof import('../lib/brokerAuth');
-  const { passcode } = req.body as { passcode?: string };
-  if (!passcode || !verifyBrokerPasscode(passcode)) {
-    res.status(401).json({ error: 'Invalid passcode' });
-    return;
-  }
-  mintBrokerCookie(res);
-  res.json({ broker: true });
+  res.json({
+    broker: req.isAuthenticated() && req.user.role === 'broker',
+  });
 });
 
 export default router;

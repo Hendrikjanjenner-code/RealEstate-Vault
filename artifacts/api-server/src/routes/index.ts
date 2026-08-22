@@ -8,7 +8,6 @@ import messagesRouter from "./messages";
 import dashboardRouter from "./dashboard";
 import notificationsRouter from "./notifications";
 import storageRouter from "./storage";
-import { isBroker } from "../lib/brokerAuth";
 
 const router: IRouter = Router();
 
@@ -25,9 +24,9 @@ router.use(storageRouter);
 router.use(dealsRouter);
 router.use(accessRequestsRouter);
 
-// Everything below requires an authenticated user or a broker passcode.
+// Everything below requires an authenticated user.
 function requireAuth(req: Request, res: Response, next: NextFunction): void {
-  if (!req.isAuthenticated() && !isBroker(req)) {
+  if (!req.isAuthenticated()) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }

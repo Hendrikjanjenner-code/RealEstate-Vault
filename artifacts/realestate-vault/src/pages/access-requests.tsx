@@ -7,52 +7,28 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@workspace/replit-auth-web";
 import { Link } from "wouter";
-import { useListAccessRequests, useUpdateAccessRequest, useGetSession, useBrokerLogin, getListAccessRequestsQueryKey, getGetSessionQueryKey } from "@workspace/api-client-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useListAccessRequests, useUpdateAccessRequest, getListAccessRequestsQueryKey } from "@workspace/api-client-react";
 
 export default function AccessRequests() {
-  const { data: session, isLoading: sessionLoading } = useGetSession();
-  const { user } = useAuth();
-  // Broker via Replit Auth role OR legacy broker-passcode session.
-  const isBroker = user?.role === "broker" || !!session?.broker;
-  const brokerLogin = useBrokerLogin();
-  const [passcode, setPasscode] = useState("");
-  const { data: requests, isLoading } = useListAccessRequests({ query: { queryKey: getListAccessRequestsQueryKey(), enabled: isBroker } });
+  const { user, isLoading: authLoading, isAuthenticated, login } = useAuth();
+  // Broker status comes exclusively from the authenticated account's role.
+  const isBroker = user?.role === "broker";
+  const { data: requests, isLoading } = useListAccessRequests({ query: { queryKey: getListAccessRequestsQueryKey(), enabled: isAuthenticated } });
   const updateRequest = useUpdateAccessRequest();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const handleLogin = () => {
-    brokerLogin.mutate(
-      { data: { passcode } },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getGetSessionQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getListAccessRequestsQueryKey() });
-          toast({ title: "Signed in", description: "Broker access unlocked." });
-        },
-        onError: () => {
-          toast({ title: "Sign-in failed", description: "Invalid broker passcode.", variant: "destructive" });
-        },
-      },
-    );
-  };
-
-  if (!sessionLoading && !isBroker) {
+  if (!authLoading && !isAuthenticated) {
     return (
       <div className="p-8 max-w-md mx-auto space-y-6 mt-16">
         <div className="text-center space-y-2">
           <KeyRound className="w-10 h-10 text-primary mx-auto" />
-          <h1 className="text-2xl font-heading font-bold">Broker Sign-In</h1>
-          <p className="text-muted-foreground text-sm">Managing access requests and uploading data room documents requires the broker passcode.</p>
+          <h1 className="text-2xl font-heading font-bold">Sign In Required</h1>
+          <p className="text-muted-foreground text-sm">
+            Sign in to track your access requests. Brokers manage their own deals' requests and NDAs here.
+          </p>
         </div>
-        <div className="space-y-3">
-          <Label htmlFor="broker-passcode">Broker passcode</Label>
-          <Input id="broker-passcode" type="password" value={passcode} onChange={(e) => setPasscode(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleLogin()} placeholder="Enter passcode" className="bg-background/50 border-white/10" />
-          <Button onClick={handleLogin} disabled={brokerLogin.isPending || !passcode} className="w-full">Sign In</Button>
-        </div>
+        <Button onClick={login} className="w-full" data-testid="button-sign-in">Sign In</Button>
       </div>
     );
   }

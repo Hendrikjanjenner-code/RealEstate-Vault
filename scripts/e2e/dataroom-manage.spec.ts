@@ -1,10 +1,10 @@
 /**
  * Broker document management (edit/delete) and its ownership rules:
  *  1. Anonymous callers cannot PATCH or DELETE data room documents.
- *  2. A shared-passcode broker session can edit and delete documents only on
- *     unowned (seeded/demo) deals.
- *  3. Documents on a deal owned by an identified broker are off-limits to the
- *     passcode session (403) — only the owning authenticated broker may
+ *  2. An authenticated broker can edit and delete documents on unowned
+ *     (seeded/demo) deals.
+ *  3. Documents on a deal owned by an identified broker are off-limits to
+ *     other brokers (403) — only the owning authenticated broker may
  *     mutate them.
  */
 import crypto from 'node:crypto';
@@ -13,16 +13,24 @@ import { db, usersTable, sessionsTable } from '@workspace/db';
 
 const unique = () => `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 
-function brokerHeaders(): Record<string, string> {
-  const passcode = process.env.BROKER_PASSCODE ?? '';
-  return passcode ? { 'X-Broker-Passcode': passcode } : {};
+/** Seed a real broker account + session; the shared passcode is retired. */
+async function brokerHeaders(): Promise<Record<string, string>> {
+  const id = `e2e-broker-${crypto.randomUUID()}`;
+  await db.insert(usersTable).values({ id, email: `${id}@example.com`, firstName: 'E2E', lastName: 'Broker', role: 'broker' });
+  const sid = crypto.randomBytes(32).toString('hex');
+  await db.insert(sessionsTable).values({
+    sid,
+    sess: { user: { id, email: `${id}@example.com`, firstName: 'E2E', lastName: 'Broker', profileImageUrl: null, role: 'broker' }, access_token: 'e2e-test' },
+    expire: new Date(Date.now() + 60 * 60 * 1000),
+  });
+  return { Authorization: `Bearer ${sid}` };
 }
 
 test('broker can edit and delete documents on an unowned deal; outsiders cannot', async ({ playwright }) => {
   const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:80';
   const broker = await playwright.request.newContext({ baseURL });
   const anon = await playwright.request.newContext({ baseURL });
-  const bh = brokerHeaders();
+  const bh = await brokerHeaders();
 
   // Register a metadata-only document on unowned demo deal 1.
   const created = await broker.post('/api/deals/1/documents', {
@@ -78,7 +86,7 @@ test('broker can edit and delete documents on an unowned deal; outsiders cannot'
   await anon.dispose();
 });
 
-test('an authenticated broker-role user (no passcode) can manage documents on unowned demo deals', async () => {
+test('an authenticated broker-role user can manage documents on unowned demo deals', async () => {
   const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:80';
   const id = `e2e-authed-broker-${crypto.randomUUID()}`;
   await db.insert(usersTable).values({ id, email: `${id}@example.com`, firstName: 'E2E', lastName: 'Authed', role: 'broker' });
@@ -140,7 +148,7 @@ test('the authenticated owning broker can upload, edit, and delete documents on 
   await owner.dispose();
 });
 
-test('passcode session cannot mutate documents on a deal owned by an identified broker', async ({ playwright }) => {
+test('a non-owning broker cannot mutate documents on a deal owned by an identified broker', async ({ playwright }) => {
   test.skip(!process.env.DATABASE_URL, 'DATABASE_URL not available for seeding');
   const { execSync } = await import('node:child_process');
   const psql = (sql: string) =>
@@ -148,7 +156,7 @@ test('passcode session cannot mutate documents on a deal owned by an identified 
 
   const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:80';
   const broker = await playwright.request.newContext({ baseURL });
-  const bh = brokerHeaders();
+  const bh = await brokerHeaders(); // a different broker, not the deal owner
 
   // Seed a deal owned by an identified broker user, with one document.
   const owner = `e2e-owner-${unique()}`;

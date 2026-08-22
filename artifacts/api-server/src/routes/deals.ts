@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { Readable } from "stream";
 import { toJson } from "../lib/serialize";
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request } from "express";
 import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import {
   db,
@@ -38,7 +38,6 @@ import {
   DeleteDealDocumentResponse,
   DownloadDealDocumentParams,
 } from "@workspace/api-zod";
-import { isBroker } from "../lib/brokerAuth";
 import {
   ObjectStorageService,
   ObjectNotFoundError,
@@ -71,22 +70,18 @@ function toPublicDocument<
   return { ...rest, hasFile: !!objectPath };
 }
 
-/** Any broker credential: passcode session OR authenticated user with the broker role. */
-function hasBrokerCredential(req: Parameters<typeof isBroker>[0]): boolean {
-  return isBroker(req) || (req.isAuthenticated() && req.user.role === "broker");
+/** Broker credential: an authenticated user with the broker role. */
+function hasBrokerCredential(req: Request): boolean {
+  return req.isAuthenticated() && req.user.role === "broker";
 }
 
 /**
  * Ownership gate for broker mutations on a deal's data room.
  * Deals owned by an identified broker may only be mutated by that
  * authenticated broker. Unowned (seeded/demo) deals may be managed by any
- * broker session, including the shared-passcode session which carries no
- * user identity.
+ * authenticated broker.
  */
-function canManageDealDocuments(
-  req: Parameters<typeof isBroker>[0],
-  deal: Deal,
-): boolean {
+function canManageDealDocuments(req: Request, deal: Deal): boolean {
   if (deal.brokerUserId != null) {
     return req.isAuthenticated() && req.user.id === deal.brokerUserId;
   }

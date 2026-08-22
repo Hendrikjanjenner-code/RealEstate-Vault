@@ -1,4 +1,26 @@
+import crypto from 'node:crypto';
+import { eq } from 'drizzle-orm';
 import { test, expect, type APIRequestContext, type Page } from '@playwright/test';
+import { db, usersTable, sessionsTable, dealsTable, accessRequestsTable } from '@workspace/db';
+
+/** Seed a user account with a DB-backed session (bearer sid / `sid` cookie). */
+async function seedUser(role: 'broker' | 'investor') {
+  const id = `e2e-${role}-${crypto.randomUUID()}`;
+  const user = { id, email: `${id}@example.com`, firstName: 'E2E', lastName: role === 'broker' ? 'Broker' : 'Investor', profileImageUrl: null, role };
+  await db.insert(usersTable).values({ id, email: user.email, firstName: user.firstName, lastName: user.lastName, role });
+  const sid = crypto.randomBytes(32).toString('hex');
+  await db.insert(sessionsTable).values({
+    sid,
+    sess: { user, access_token: 'e2e-test' },
+    expire: new Date(Date.now() + 60 * 60 * 1000),
+  });
+  return { id, sid };
+}
+
+async function cleanupUser(u: { id: string; sid: string }) {
+  await db.delete(sessionsTable).where(eq(sessionsTable.sid, u.sid));
+  await db.delete(usersTable).where(eq(usersTable.id, u.id));
+}
 
 /**
  * End-to-end coverage for the RealEstate Vault core flows:
@@ -87,56 +109,97 @@ test('deals can be searched and filtered by asset class', async ({ page, request
 });
 
 test('confidential deal access request lifecycle: request → approve → NDA sent → NDA signed', async ({
-  page,
-  request,
+  browser,
+  baseURL,
 }) => {
-  const { confidential } = await findConfidentialDeal(request);
+  // The shared broker passcode is retired: the lifecycle now runs as a real
+  // broker account that owns the deal, plus a signed-in investor requester.
+  const broker = await seedUser('broker');
+  const investor = await seedUser('investor');
   const requesterName = `E2E Tester ${unique()}`;
 
-  // Request access from the deal detail page
-  await page.goto(`/demo/deals/${confidential.id}`);
-  await page.locator('#req-name').fill(requesterName);
-  await page.locator('#req-company').fill('E2E Capital Partners');
-  await page.locator('#req-message').fill('Automated end-to-end verification');
-  await page.getByRole('button', { name: /request access/i }).click();
-  await expect(page.getByText('Request Pending')).toBeVisible();
+  const [deal] = await db
+    .insert(dealsTable)
+    .values({
+      title: `E2E Confidential Deal ${unique()}`,
+      dealType: 'asset_deal',
+      assetClass: 'Offices',
+      country: 'DE',
+      city: 'Berlin',
+      askingPrice: 25000000,
+      confidential: true,
+      brokerName: 'E2E Broker',
+      brokerUserId: broker.id,
+    })
+    .returning();
 
-  // Broker sign-in (access request listing/administration is broker-only)
-  await page.goto('/demo/access-requests');
-  await page.locator('#broker-passcode').fill(process.env.BROKER_PASSCODE ?? '');
-  await page.getByRole('button', { name: /sign in/i }).click();
-  await expect(page.getByText('Manage data room access and NDAs for your deals.')).toBeVisible();
+  const cookieFor = (sid: string) => [{ name: 'sid', value: sid, url: baseURL ?? 'http://localhost:80' }];
 
-  // Backend recorded the request as pending.
-  // Use X-Broker-Passcode header — page.request doesn't reliably share cookies
-  // across navigation boundaries in Playwright.
-  const bh = { 'X-Broker-Passcode': process.env.BROKER_PASSCODE ?? '' };
-  const listRes = await page.request.get('/api/access-requests', { headers: bh });
-  const requests = (await listRes.json()) as Array<{
-    id: number;
-    requesterName: string;
-    status: string;
-  }>;
-  const created = requests.find((r) => r.requesterName === requesterName);
-  expect(created).toBeTruthy();
-  expect(created!.status).toBe('pending');
+  try {
+    // Investor requests access from the deal detail page.
+    const investorCtx = await browser.newContext({ baseURL });
+    await investorCtx.addCookies(cookieFor(investor.sid));
+    const invPage = await investorCtx.newPage();
+    await invPage.goto(`/demo/deals/${deal.id}`);
+    await invPage.locator('#req-name').fill(requesterName);
+    await invPage.locator('#req-company').fill('E2E Capital Partners');
+    await invPage.locator('#req-message').fill('Automated end-to-end verification');
+    await invPage.getByRole('button', { name: /request access/i }).click();
+    await expect(invPage.getByText('Request Pending')).toBeVisible();
+    await investorCtx.close();
 
-  // Advance the lifecycle through the broker UI
-  const requestCard = page
-    .getByText(requesterName)
-    .locator('xpath=ancestor::*[contains(@class, "overflow-hidden")][1]')
-    .first();
+    // Broker signs in with their own account; they only see their own deals' requests.
+    const brokerCtx = await browser.newContext({ baseURL });
+    await brokerCtx.addCookies(cookieFor(broker.sid));
+    const page = await brokerCtx.newPage();
+    await page.goto('/demo/access-requests');
+    await expect(page.getByText('Manage data room access and NDAs for your deals.')).toBeVisible();
 
-  await requestCard.getByRole('button', { name: /approve request/i }).click();
-  await requestCard.getByRole('button', { name: /send digital nda/i }).click();
-  await requestCard.getByRole('button', { name: /mark as signed/i }).click();
-  await expect(requestCard.getByText('Access Granted')).toBeVisible();
+    // Backend recorded the request as pending (bearer session auth).
+    const bh = { Authorization: `Bearer ${broker.sid}` };
+    const listRes = await page.request.get('/api/access-requests', { headers: bh });
+    const requests = (await listRes.json()) as Array<{
+      id: number;
+      requesterName: string;
+      status: string;
+    }>;
+    const created = requests.find((r) => r.requesterName === requesterName);
+    expect(created).toBeTruthy();
+    expect(created!.status).toBe('pending');
 
-  // Backend reflects the final status
-  const finalRes = await page.request.get('/api/access-requests', { headers: bh });
-  const finalRequests = (await finalRes.json()) as Array<{ id: number; status: string }>;
-  const finalReq = finalRequests.find((r) => r.id === created!.id);
-  expect(finalReq?.status).toBe('nda_signed');
+    // Advance the lifecycle through the broker UI
+    const requestCard = page
+      .getByText(requesterName)
+      .locator('xpath=ancestor::*[contains(@class, "overflow-hidden")][1]')
+      .first();
+
+    await requestCard.getByRole('button', { name: /approve request/i }).click();
+    await requestCard.getByRole('button', { name: /send digital nda/i }).click();
+    await expect(requestCard.getByText(/waiting for the investor to sign/i)).toBeVisible();
+
+    // The investor signs the NDA on their own request (authenticated session).
+    const signRes = await page.request.post(`/api/access-requests/${created!.id}/sign`, {
+      headers: { Authorization: `Bearer ${investor.sid}`, 'Content-Type': 'application/json' },
+      data: { signerName: requesterName, agreed: true },
+    });
+    expect(signRes.ok()).toBeTruthy();
+
+    // Broker sees the granted state after refresh.
+    await page.reload();
+    await expect(requestCard.getByText('Access Granted')).toBeVisible();
+
+    // Backend reflects the final status
+    const finalRes = await page.request.get('/api/access-requests', { headers: bh });
+    const finalRequests = (await finalRes.json()) as Array<{ id: number; status: string }>;
+    const finalReq = finalRequests.find((r) => r.id === created!.id);
+    expect(finalReq?.status).toBe('nda_signed');
+    await brokerCtx.close();
+  } finally {
+    await db.delete(accessRequestsTable).where(eq(accessRequestsTable.dealId, deal.id));
+    await db.delete(dealsTable).where(eq(dealsTable.id, deal.id));
+    await cleanupUser(broker);
+    await cleanupUser(investor);
+  }
 });
 
 test('a new acquisition mandate can be created from the mandates page', async ({ page }) => {
