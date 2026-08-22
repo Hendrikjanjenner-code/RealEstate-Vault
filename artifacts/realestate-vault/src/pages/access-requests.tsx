@@ -83,7 +83,11 @@ export default function AccessRequests() {
                       {new Date(req.createdAt).toLocaleDateString()}
                     </span>
                   </div>
-                  <h3 className="font-heading font-semibold text-lg mb-1">{req.dealTitle}</h3>
+                  <h3 className="font-heading font-semibold text-lg mb-1">
+                    <Link href={`/demo/deals/${req.dealId}`} className="hover:text-primary transition-colors" data-testid={`link-request-deal-${req.id}`}>
+                      {req.dealTitle}
+                    </Link>
+                  </h3>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span className="font-medium text-foreground/80">{req.requesterName}</span> • {req.requesterCompany}
                   </div>

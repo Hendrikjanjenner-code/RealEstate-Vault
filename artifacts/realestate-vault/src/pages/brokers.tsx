@@ -75,9 +75,9 @@ function ConnectDialog({ brokerId, brokerName }: { brokerId: number; brokerName:
         <div className="grid gap-4">
           {openAssignments.length > 0 && (
             <div className="grid gap-2">
-              <Label>About an assignment (optional)</Label>
+              <Label htmlFor="connect-assignment">About an assignment (optional)</Label>
               <Select value={assignmentId} onValueChange={setAssignmentId}>
-                <SelectTrigger data-testid="select-connect-assignment"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="connect-assignment" data-testid="select-connect-assignment"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">General introduction</SelectItem>
                   {openAssignments.map((a) => (
@@ -88,8 +88,9 @@ function ConnectDialog({ brokerId, brokerName }: { brokerId: number; brokerName:
             </div>
           )}
           <div className="grid gap-2">
-            <Label>Message</Label>
+            <Label htmlFor="connect-message">Message</Label>
             <Textarea
+              id="connect-message"
               rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -144,7 +145,13 @@ export default function Brokers() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {brokers?.map((broker) => (
-            <Card key={broker.id} className="bg-card/30 backdrop-blur border-white/5 overflow-hidden group hover:border-primary/30 transition-colors">
+            <Card key={broker.id} className="relative bg-card/30 backdrop-blur border-white/5 overflow-hidden group hover:border-primary/30 transition-colors h-full">
+              <Link
+                href={`/demo/brokers/${broker.id}`}
+                className="absolute inset-0 z-[1] outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-xl"
+                aria-label={`View profile of ${broker.name}`}
+                data-testid={`link-broker-card-${broker.id}`}
+              />
               <CardContent className="p-0 flex flex-col md:flex-row h-full">
                 <div className="p-6 md:w-2/3 border-b md:border-b-0 md:border-r border-white/5 flex flex-col">
                   <div className="flex justify-between items-start mb-4">
@@ -213,10 +220,10 @@ export default function Brokers() {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-6 space-y-2">
-                    <Button asChild className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20" data-testid={`button-view-profile-${broker.id}`}>
-                      <Link href={`/demo/brokers/${broker.id}`}>View Profile</Link>
-                    </Button>
+                  <div className="mt-6 space-y-2 relative z-10">
+                    <span aria-hidden="true" className="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md text-sm w-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground border border-primary/20 font-semibold pointer-events-none" data-testid={`button-view-profile-${broker.id}`}>
+                      View Profile
+                    </span>
                     {isOwner && <ConnectDialog brokerId={broker.id} brokerName={broker.name} />}
                   </div>
                 </div>

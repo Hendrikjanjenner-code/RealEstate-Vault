@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import { useState } from "react";
 import { useSearch } from "wouter";
 import { useListThreads, useListThreadMessages, useSendMessage, getListThreadMessagesQueryKey, getListThreadsQueryKey } from "@workspace/api-client-react";
@@ -36,8 +37,18 @@ export default function Messages() {
               {threads?.map(thread => (
                 <div 
                   key={thread.id} 
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={activeThreadId === thread.id}
                   onClick={() => setActiveThreadId(thread.id)}
-                  className={`p-4 cursor-pointer transition-colors ${activeThreadId === thread.id ? 'bg-primary/10 border-l-2 border-l-primary' : 'hover:bg-white/[0.02] border-l-2 border-l-transparent'}`}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveThreadId(thread.id);
+                    }
+                  }}
+                  data-testid={`thread-item-${thread.id}`}
+                  className={`p-4 cursor-pointer transition-colors outline-none focus-visible:bg-white/[0.05] ${activeThreadId === thread.id ? 'bg-primary/10 border-l-2 border-l-primary' : 'hover:bg-white/[0.02] border-l-2 border-l-transparent'}`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-semibold text-sm line-clamp-1">{thread.counterpartName}</span>
@@ -78,9 +89,13 @@ export default function Messages() {
                 </div>
               </div>
               {activeThread?.dealId && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
+                <Link
+                  href={`/demo/deals/${activeThread.dealId}`}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+                  data-testid="link-thread-deal"
+                >
                   <Lock className="w-3 h-3" /> Linked to Deal
-                </div>
+                </Link>
               )}
             </div>
             

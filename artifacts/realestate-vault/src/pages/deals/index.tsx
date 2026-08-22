@@ -126,7 +126,13 @@ export default function DealsList() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {deals?.map((deal) => (
-            <Card key={deal.id} className="overflow-hidden bg-card/30 backdrop-blur border-white/5 group hover:border-primary/30 transition-colors flex flex-col h-full">
+            <Card key={deal.id} className="relative overflow-hidden bg-card/30 backdrop-blur border-white/5 group hover:border-primary/30 transition-colors flex flex-col h-full">
+              <Link
+                href={`/demo/deals/${deal.id}`}
+                className="absolute inset-0 z-[1] outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-xl"
+                aria-label={`View details for ${deal.confidential && deal.status !== 'nda_signed' ? 'confidential opportunity' : deal.title}`}
+                data-testid={`link-deal-card-${deal.id}`}
+              />
               <div className="relative h-48 bg-muted/20 overflow-hidden">
                 {deal.imageUrl ? (
                   <img src={deal.imageUrl} alt={deal.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
@@ -149,7 +155,8 @@ export default function DealsList() {
                 </div>
                 <button 
                   onClick={(e) => { e.preventDefault(); handleToggleSave(deal.id, deal.saved); }}
-                  className="absolute top-4 left-4 p-2 rounded-full bg-background/80 backdrop-blur hover:bg-background transition-colors text-primary border border-white/10"
+                  aria-label={deal.saved ? "Remove from saved deals" : "Save deal"}
+                  className="absolute top-4 left-4 z-10 p-2 rounded-full bg-background/80 backdrop-blur hover:bg-background transition-colors text-primary border border-white/10"
                 >
                   {deal.saved ? <BookmarkCheck className="w-4 h-4 fill-primary" /> : <Bookmark className="w-4 h-4" />}
                 </button>
@@ -188,9 +195,9 @@ export default function DealsList() {
                     </div>
                   )}
                 </div>
-                <Button asChild className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20 transition-all font-semibold">
-                  <Link href={`/demo/deals/${deal.id}`}>View Details</Link>
-                </Button>
+                <span aria-hidden="true" className="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md text-sm w-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground border border-primary/20 transition-all font-semibold">
+                  View Details
+                </span>
               </CardContent>
             </Card>
           ))}

@@ -46,7 +46,13 @@ export default function Mandates() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {mandates?.map((mandate) => (
-            <Card key={mandate.id} className={`bg-card/30 backdrop-blur border-white/5 flex flex-col h-full hover:border-primary/30 transition-colors ${mandate.status !== 'active' ? 'opacity-60' : ''}`}>
+            <Card key={mandate.id} className={`relative group bg-card/30 backdrop-blur border-white/5 flex flex-col h-full hover:border-primary/30 transition-colors ${mandate.status !== 'active' ? 'opacity-60' : ''}`}>
+              <Link
+                href={`/demo/mandates/${mandate.id}/matches`}
+                className="absolute inset-0 z-[1] outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-xl"
+                aria-label={`Find matches for ${mandate.title}`}
+                data-testid={`link-mandate-card-${mandate.id}`}
+              />
               <CardContent className="p-6 flex-1 flex flex-col">
                 <div className="flex justify-between items-start mb-4">
                   <Badge variant="outline" className={`
@@ -103,12 +109,10 @@ export default function Mandates() {
                   </div>
                 </div>
 
-                <div className="mt-auto pt-4 border-t border-white/5 flex gap-3">
-                  <Button asChild className="flex-1 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20">
-                    <Link href={`/demo/mandates/${mandate.id}/matches`}>
-                      <Search className="w-4 h-4 mr-2" /> Find Matches
-                    </Link>
-                  </Button>
+                <div className="mt-auto pt-4 border-t border-white/5 flex gap-3 relative z-10">
+                  <span aria-hidden="true" className="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md text-sm flex-1 bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground border border-primary/20 font-semibold pointer-events-none">
+                    <Search className="w-4 h-4 mr-2" /> Find Matches
+                  </span>
                   {mandate.isOwn && <OwnerActions mandateId={mandate.id} status={mandate.status} />}
                 </div>
               </CardContent>
@@ -259,18 +263,18 @@ function CreateMandateForm({ onSuccess }: { onSuccess: () => void }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 pt-4">
       <div className="space-y-2">
-        <Label>Mandate Title</Label>
-        <Input required value={formData.title} onChange={e => setFormData(f => ({ ...f, title: e.target.value }))} className="bg-background/50 border-white/10" placeholder="e.g. Core European Office Acquisition" />
+        <Label htmlFor="mandate-title">Mandate Title</Label>
+        <Input id="mandate-title" required value={formData.title} onChange={e => setFormData(f => ({ ...f, title: e.target.value }))} className="bg-background/50 border-white/10" placeholder="e.g. Core European Office Acquisition" />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Investor Name (Confidential)</Label>
-          <Input required value={formData.investorName} onChange={e => setFormData(f => ({ ...f, investorName: e.target.value }))} className="bg-background/50 border-white/10" />
+          <Label htmlFor="mandate-investor">Investor Name (Confidential)</Label>
+          <Input id="mandate-investor" required value={formData.investorName} onChange={e => setFormData(f => ({ ...f, investorName: e.target.value }))} className="bg-background/50 border-white/10" />
         </div>
         <div className="space-y-2">
-          <Label>Investor Type</Label>
+          <Label htmlFor="mandate-investor-type">Investor Type</Label>
           <Select value={formData.investorType} onValueChange={(v) => setFormData(f => ({ ...f, investorType: v }))}>
-            <SelectTrigger className="bg-background/50 border-white/10">
+            <SelectTrigger id="mandate-investor-type" className="bg-background/50 border-white/10">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -284,12 +288,12 @@ function CreateMandateForm({ onSuccess }: { onSuccess: () => void }) {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Min Size (€M)</Label>
-          <Input required type="number" value={formData.minSize} onChange={e => setFormData(f => ({ ...f, minSize: e.target.value }))} className="bg-background/50 border-white/10" />
+          <Label htmlFor="mandate-min-size">Min Size (€M)</Label>
+          <Input id="mandate-min-size" required type="number" value={formData.minSize} onChange={e => setFormData(f => ({ ...f, minSize: e.target.value }))} className="bg-background/50 border-white/10" />
         </div>
         <div className="space-y-2">
-          <Label>Max Size (€M)</Label>
-          <Input required type="number" value={formData.maxSize} onChange={e => setFormData(f => ({ ...f, maxSize: e.target.value }))} className="bg-background/50 border-white/10" />
+          <Label htmlFor="mandate-max-size">Max Size (€M)</Label>
+          <Input id="mandate-max-size" required type="number" value={formData.maxSize} onChange={e => setFormData(f => ({ ...f, maxSize: e.target.value }))} className="bg-background/50 border-white/10" />
         </div>
       </div>
       <div className="space-y-2">
@@ -303,13 +307,13 @@ function CreateMandateForm({ onSuccess }: { onSuccess: () => void }) {
       {selectionError && <p className="text-sm text-destructive">{selectionError}</p>}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Yield Target % (Optional)</Label>
-          <Input type="number" step="0.1" min="0" value={formData.yieldTarget} onChange={e => setFormData(f => ({ ...f, yieldTarget: e.target.value }))} className="bg-background/50 border-white/10" placeholder="e.g. 5.0" />
+          <Label htmlFor="mandate-yield">Yield Target % (Optional)</Label>
+          <Input id="mandate-yield" type="number" step="0.1" min="0" value={formData.yieldTarget} onChange={e => setFormData(f => ({ ...f, yieldTarget: e.target.value }))} className="bg-background/50 border-white/10" placeholder="e.g. 5.0" />
         </div>
         <div className="space-y-2">
-          <Label>Risk Strategy</Label>
+          <Label htmlFor="mandate-strategy">Risk Strategy</Label>
         <Select value={formData.strategy} onValueChange={(v) => setFormData(f => ({ ...f, strategy: v }))}>
-          <SelectTrigger className="bg-background/50 border-white/10">
+          <SelectTrigger id="mandate-strategy" className="bg-background/50 border-white/10">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

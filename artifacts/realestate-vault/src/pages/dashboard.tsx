@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Briefcase, Key, ScrollText, FileText, Activity } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
+import { Link } from "wouter";
 
 const CHART = {
   accent: "#14A87D",
@@ -34,13 +35,13 @@ export default function Dashboard() {
 
   if (!stats) return null;
 
-  const metrics: { label: string; value: string | number; icon: React.ReactNode }[] = [
-    { label: "Active Deals", value: stats.activeDeals, icon: <Briefcase className="w-3.5 h-3.5" /> },
-    { label: "Access Requests", value: stats.accessRequests, icon: <Key className="w-3.5 h-3.5" /> },
-    { label: "NDAs Signed", value: stats.ndasSigned, icon: <ScrollText className="w-3.5 h-3.5" /> },
-    { label: "Pipeline Value", value: `€${(stats.pipelineValue / 1000000).toFixed(1)}M`, icon: <Activity className="w-3.5 h-3.5" /> },
-    { label: "Active Mandates", value: stats.activeMandates, icon: <FileText className="w-3.5 h-3.5" /> },
-    { label: "Unread Messages", value: stats.unreadMessages, icon: <Activity className="w-3.5 h-3.5" /> },
+  const metrics: { label: string; value: string | number; icon: React.ReactNode; href: string }[] = [
+    { label: "Active Deals", value: stats.activeDeals, icon: <Briefcase className="w-3.5 h-3.5" />, href: "/demo/deals" },
+    { label: "Access Requests", value: stats.accessRequests, icon: <Key className="w-3.5 h-3.5" />, href: "/demo/access-requests" },
+    { label: "NDAs Signed", value: stats.ndasSigned, icon: <ScrollText className="w-3.5 h-3.5" />, href: "/demo/access-requests" },
+    { label: "Pipeline Value", value: `€${(stats.pipelineValue / 1000000).toFixed(1)}M`, icon: <Activity className="w-3.5 h-3.5" />, href: "/demo/deals" },
+    { label: "Active Mandates", value: stats.activeMandates, icon: <FileText className="w-3.5 h-3.5" />, href: "/demo/mandates" },
+    { label: "Unread Messages", value: stats.unreadMessages, icon: <Activity className="w-3.5 h-3.5" />, href: "/demo/messages" },
   ];
 
   return (
@@ -57,13 +58,13 @@ export default function Dashboard() {
       {/* Metric strip: dense, single bordered row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 border border-border rounded-md overflow-hidden bg-card divide-x divide-y lg:divide-y-0 divide-border">
         {metrics.map((m) => (
-          <div key={m.label} className="px-4 py-3.5" data-testid={`metric-${m.label.toLowerCase().replace(/\s+/g, "-")}`}>
+          <Link key={m.label} href={m.href} className="px-4 py-3.5 block hover:bg-white/[0.03] focus-visible:bg-white/[0.03] outline-none transition-colors" data-testid={`metric-${m.label.toLowerCase().replace(/\s+/g, "-")}`}>
             <div className="flex items-center gap-1.5 text-muted-foreground">
               {m.icon}
               <span className="text-[11px] font-medium uppercase tracking-wider">{m.label}</span>
             </div>
             <div className="mt-1 text-xl font-heading font-bold text-foreground [font-feature-settings:'tnum'_1,'lnum'_1]">{m.value}</div>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -93,7 +94,7 @@ export default function Dashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="font-heading text-base flex items-center justify-between">
               Recent Activity
-              <span className="text-xs font-normal text-muted-foreground cursor-pointer hover:text-primary transition-colors">View all</span>
+              <Link href="/demo/deals" className="text-xs font-normal text-muted-foreground hover:text-primary transition-colors">View all</Link>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-auto">

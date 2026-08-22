@@ -154,14 +154,14 @@ function NewAssignmentDialog() {
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label>Title</Label>
-            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Boutique Hotel De Domtoren" data-testid="input-assignment-title" />
+            <Label htmlFor="assignment-title">Title</Label>
+            <Input id="assignment-title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Boutique Hotel De Domtoren" data-testid="input-assignment-title" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label>Property type</Label>
+              <Label htmlFor="assignment-type">Property type</Label>
               <Select value={form.propertyType} onValueChange={(v) => setForm({ ...form, propertyType: v })}>
-                <SelectTrigger data-testid="select-assignment-type"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="assignment-type" data-testid="select-assignment-type"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {["Hotels", "Offices", "Retail", "Residential", "Logistics", "Mixed-Use"].map((t) => (
                     <SelectItem key={t} value={t}>{t}</SelectItem>
@@ -170,9 +170,9 @@ function NewAssignmentDialog() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label>Goal</Label>
+              <Label htmlFor="assignment-goal">Goal</Label>
               <Select value={form.goal} onValueChange={(v) => setForm({ ...form, goal: v })}>
-                <SelectTrigger data-testid="select-assignment-goal"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="assignment-goal" data-testid="select-assignment-goal"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="sell">Sell</SelectItem>
                   <SelectItem value="lease">Lease</SelectItem>
@@ -183,27 +183,27 @@ function NewAssignmentDialog() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label>Country</Label>
-              <Input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} placeholder="Netherlands" data-testid="input-assignment-country" />
+              <Label htmlFor="assignment-country">Country</Label>
+              <Input id="assignment-country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} placeholder="Netherlands" data-testid="input-assignment-country" />
             </div>
             <div className="grid gap-2">
-              <Label>City</Label>
-              <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Utrecht" data-testid="input-assignment-city" />
+              <Label htmlFor="assignment-city">City</Label>
+              <Input id="assignment-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Utrecht" data-testid="input-assignment-city" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label>Area (sqm, optional)</Label>
-              <Input type="number" min={0} value={form.areaSqm} onChange={(e) => setForm({ ...form, areaSqm: e.target.value })} />
+              <Label htmlFor="assignment-area">Area (sqm, optional)</Label>
+              <Input id="assignment-area" type="number" min={0} value={form.areaSqm} onChange={(e) => setForm({ ...form, areaSqm: e.target.value })} />
             </div>
             <div className="grid gap-2">
-              <Label>Indicative value (EUR, optional)</Label>
-              <Input type="number" min={0} value={form.indicativeValue} onChange={(e) => setForm({ ...form, indicativeValue: e.target.value })} />
+              <Label htmlFor="assignment-value">Indicative value (EUR, optional)</Label>
+              <Input id="assignment-value" type="number" min={0} value={form.indicativeValue} onChange={(e) => setForm({ ...form, indicativeValue: e.target.value })} />
             </div>
           </div>
           <div className="grid gap-2">
-            <Label>Description (optional)</Label>
-            <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="What should brokers know about this property?" />
+            <Label htmlFor="assignment-description">Description (optional)</Label>
+            <Textarea id="assignment-description" rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="What should brokers know about this property?" />
           </div>
         </div>
         <DialogFooter>

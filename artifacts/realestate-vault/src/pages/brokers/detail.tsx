@@ -144,7 +144,8 @@ export default function BrokerDetail() {
         ) : deals && deals.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {deals.map((deal) => (
-              <Card key={deal.id} className="overflow-hidden bg-card/30 backdrop-blur border-white/5 group hover:border-primary/30 transition-colors flex flex-col h-full">
+              <Link key={deal.id} href={`/demo/deals/${deal.id}`} className="block h-full outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-xl" data-testid={`link-listing-card-${deal.id}`}>
+              <Card className="overflow-hidden bg-card/30 backdrop-blur border-white/5 group hover:border-primary/30 transition-colors flex flex-col h-full cursor-pointer">
                 <div className="relative h-40 bg-muted/20 overflow-hidden">
                   {deal.imageUrl ? (
                     <img src={deal.imageUrl} alt={deal.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
@@ -179,11 +180,12 @@ export default function BrokerDetail() {
                       </div>
                     )}
                   </div>
-                  <Button asChild className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20 transition-all font-semibold">
-                    <Link href={`/demo/deals/${deal.id}`}>View Details</Link>
-                  </Button>
+                  <span aria-hidden="true" className="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md text-sm w-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground border border-primary/20 transition-all font-semibold">
+                    View Details
+                  </span>
                 </CardContent>
               </Card>
+              </Link>
             ))}
           </div>
         ) : (

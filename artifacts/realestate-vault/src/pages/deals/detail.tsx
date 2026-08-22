@@ -20,7 +20,7 @@ import { useAuth } from "@workspace/replit-auth-web";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Building2, Lock, FileText, Download, CheckCircle2, AlertCircle, Clock, Info, Key, Shield, FileSignature, Upload, Pencil, Trash2, X } from "lucide-react";
+import { MapPin, Building2, Lock, FileText, Download, CheckCircle2, AlertCircle, Clock, Info, Key, Shield, FileSignature, Upload, Pencil, Trash2, X, ArrowLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -186,6 +186,13 @@ export default function DealDetail() {
     <div className="p-0 pb-20">
       {/* Hero Header */}
       <div className="relative h-[40vh] min-h-[300px] w-full bg-muted/20">
+        <Link
+          href="/demo/deals"
+          className="absolute top-6 left-6 z-20 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/70 backdrop-blur border border-white/10 text-sm font-medium text-foreground hover:text-primary hover:border-primary/30 transition-colors"
+          data-testid="link-back-to-deals"
+        >
+          <ArrowLeft className="w-4 h-4" /> All Deals
+        </Link>
         {deal.imageUrl ? (
            <img src={deal.imageUrl} alt={deal.title} className={`w-full h-full object-cover ${isRestricted ? 'blur-md scale-105' : ''}`} />
         ) : (
