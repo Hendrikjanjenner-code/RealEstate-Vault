@@ -119,6 +119,34 @@ export default function Mandates() {
   );
 }
 
+const ASSET_CLASS_OPTIONS = ["Hotels", "Offices", "Logistics", "Residential", "Retail", "Mixed-use"];
+const COUNTRY_OPTIONS = ["Germany", "Austria", "Switzerland", "Netherlands", "France", "Italy", "Spain", "Portugal", "Sweden"];
+
+function MultiSelectChips({ options, selected, onToggle }: { options: string[]; selected: string[]; onToggle: (value: string) => void }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((option) => {
+        const isSelected = selected.includes(option);
+        return (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={isSelected}
+            onClick={() => onToggle(option)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+              isSelected
+                ? "bg-primary/15 text-primary border-primary/40"
+                : "bg-background/50 text-muted-foreground border-white/10 hover:border-white/25 hover:text-foreground"
+            }`}
+          >
+            {option}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function CreateMandateForm({ onSuccess }: { onSuccess: () => void }) {
   const createMandate = useCreateMandate();
   const queryClient = useQueryClient();
@@ -129,17 +157,32 @@ function CreateMandateForm({ onSuccess }: { onSuccess: () => void }) {
     minSize: "",
     maxSize: "",
     strategy: "core",
+    yieldTarget: "",
   });
+  const [assetClasses, setAssetClasses] = useState<string[]>([]);
+  const [countries, setCountries] = useState<string[]>([]);
+  const [selectionError, setSelectionError] = useState<string | null>(null);
+
+  const toggle = (setter: React.Dispatch<React.SetStateAction<string[]>>) => (value: string) => {
+    setSelectionError(null);
+    setter((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (assetClasses.length === 0 || countries.length === 0) {
+      setSelectionError("Select at least one asset class and one country.");
+      return;
+    }
+    const { yieldTarget, ...rest } = formData;
     createMandate.mutate({
       data: {
-        ...formData,
+        ...rest,
         minSize: Number(formData.minSize) * 1_000_000,
         maxSize: Number(formData.maxSize) * 1_000_000,
-        assetClasses: ["Offices", "Hotels"], // Simplified for demo
-        countries: ["Germany", "Austria", "Switzerland"], // Simplified for demo
+        assetClasses,
+        countries,
+        ...(yieldTarget !== "" ? { yieldTarget: Number(yieldTarget) } : {}),
       } as any
     }, {
       onSuccess: () => {
@@ -186,7 +229,21 @@ function CreateMandateForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
       </div>
       <div className="space-y-2">
-        <Label>Risk Strategy</Label>
+        <Label>Asset Classes</Label>
+        <MultiSelectChips options={ASSET_CLASS_OPTIONS} selected={assetClasses} onToggle={toggle(setAssetClasses)} />
+      </div>
+      <div className="space-y-2">
+        <Label>Countries</Label>
+        <MultiSelectChips options={COUNTRY_OPTIONS} selected={countries} onToggle={toggle(setCountries)} />
+      </div>
+      {selectionError && <p className="text-sm text-destructive">{selectionError}</p>}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Yield Target % (Optional)</Label>
+          <Input type="number" step="0.1" min="0" value={formData.yieldTarget} onChange={e => setFormData(f => ({ ...f, yieldTarget: e.target.value }))} className="bg-background/50 border-white/10" placeholder="e.g. 5.0" />
+        </div>
+        <div className="space-y-2">
+          <Label>Risk Strategy</Label>
         <Select value={formData.strategy} onValueChange={(v) => setFormData(f => ({ ...f, strategy: v }))}>
           <SelectTrigger className="bg-background/50 border-white/10">
             <SelectValue />
@@ -198,6 +255,7 @@ function CreateMandateForm({ onSuccess }: { onSuccess: () => void }) {
             <SelectItem value="opportunistic">Opportunistic</SelectItem>
           </SelectContent>
         </Select>
+        </div>
       </div>
       <div className="pt-4 flex justify-end gap-3 border-t border-white/5">
         <Button type="button" variant="ghost" onClick={onSuccess}>Cancel</Button>
