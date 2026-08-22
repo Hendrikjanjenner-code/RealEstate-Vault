@@ -45,6 +45,26 @@ export const SetMyRoleResponse = zod.object({
 
 
 /**
+ * @summary Current session info
+ */
+export const GetSessionResponse = zod.object({
+  "broker": zod.boolean()
+})
+
+
+/**
+ * @summary Sign in as the broker using the shared passcode
+ */
+export const BrokerLoginBody = zod.object({
+  "passcode": zod.string()
+})
+
+export const BrokerLoginResponse = zod.object({
+  "broker": zod.boolean()
+})
+
+
+/**
  * @summary Start the browser OIDC login flow
  */
 export const BeginBrowserLoginQueryParams = zod.object({
@@ -85,11 +105,6 @@ export const LogoutBrowserSessionResponse = zod.void()
 /**
  * @summary Exchange a mobile OIDC code for a session token
  */
-
-
-
-
-
 
 
 export const ExchangeMobileAuthorizationCodeBody = zod.object({
@@ -175,7 +190,6 @@ export const ListDealsResponse = zod.array(ListDealsResponseItem)
 /**
  * @summary Create a deal
  */
-
 
 
 export const CreateDealBody = zod.object({
@@ -348,10 +362,7 @@ export const CreateDealDocumentParams = zod.object({
 })
 
 
-
 export const createDealDocumentBodySizeKbMin = 0;
-
-
 
 
 export const CreateDealDocumentBody = zod.object({
@@ -382,9 +393,6 @@ export const UpdateDealDocumentParams = zod.object({
   "id": zod.coerce.number().int(),
   "docId": zod.coerce.number().int()
 })
-
-
-
 
 
 export const UpdateDealDocumentBody = zod.object({
@@ -438,18 +446,11 @@ export const DownloadDealDocumentResponse = zod.unknown()
  */
 
 
-
-
-
 export const RequestUploadUrlBody = zod.object({
   "name": zod.string().min(1),
   "size": zod.int().min(1),
   "contentType": zod.string().min(1)
 })
-
-
-
-
 
 
 export const RequestUploadUrlResponse = zod.object({
@@ -489,9 +490,6 @@ export const GetStorageObjectResponse = zod.unknown()
 export const RequestDealAccessParams = zod.object({
   "id": zod.coerce.number().int()
 })
-
-
-
 
 
 export const RequestDealAccessBody = zod.object({
@@ -570,8 +568,6 @@ export const SignAccessRequestNdaParams = zod.object({
 })
 
 
-
-
 export const SignAccessRequestNdaBody = zod.object({
   "signerName": zod.string().min(1),
   "agreed": zod.boolean()
@@ -645,11 +641,7 @@ export const GetMyBrokerProfileResponse = zod.object({
  */
 
 
-
-
-
 export const upsertMyBrokerProfileBodyYearsExperienceMin = 0;
-
 
 
 export const UpsertMyBrokerProfileBody = zod.object({
@@ -712,6 +704,49 @@ export const GetBrokerResponse = zod.object({
 
 
 /**
+ * @summary Active listings owned by a broker profile (non-active deals are excluded)
+ */
+export const ListBrokerDealsParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const ListBrokerDealsResponseItem = zod.object({
+  "id": zod.int(),
+  "title": zod.string(),
+  "dealType": zod.string(),
+  "assetClass": zod.string(),
+  "country": zod.string(),
+  "city": zod.string(),
+  "region": zod.string().nullish(),
+  "locationPrivacy": zod.string().nullish(),
+  "askingPrice": zod.number().nullish(),
+  "priceMax": zod.number().nullish(),
+  "currency": zod.string(),
+  "grossYield": zod.number().nullish(),
+  "netYield": zod.number().nullish(),
+  "areaSqm": zod.number().nullish(),
+  "keys": zod.int().nullish(),
+  "constructionYear": zod.int().nullish(),
+  "occupancyPct": zod.number().nullish(),
+  "status": zod.string(),
+  "confidential": zod.boolean(),
+  "saved": zod.boolean(),
+  "teaser": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "brokerId": zod.int().nullish(),
+  "brokerName": zod.string().nullish(),
+  "brokerCompany": zod.string().nullish(),
+  "brokerProfileId": zod.int().nullish().describe('Directory profile id of the owning broker\'s real account, if they created one.'),
+  "views": zod.int(),
+  "accessRequests": zod.int(),
+  "createdAt": zod.string(),
+  "accessStatus": zod.string().nullish().describe('Current viewer\'s access to confidential details: granted | pending | approved | nda_sent | rejected | none')
+})
+export const ListBrokerDealsResponse = zod.array(ListBrokerDealsResponseItem)
+
+
+/**
  * @summary List investor mandates
  */
 export const ListMandatesResponseItem = zod.object({
@@ -736,8 +771,6 @@ export const ListMandatesResponse = zod.array(ListMandatesResponseItem)
 /**
  * @summary Create an acquisition mandate
  */
-
-
 
 
 export const CreateMandateBody = zod.object({
@@ -903,8 +936,6 @@ export const SendMessageParams = zod.object({
 })
 
 
-
-
 export const SendMessageBody = zod.object({
   "body": zod.string().min(1)
 })
@@ -976,5 +1007,3 @@ export const ListActivityResponseItem = zod.object({
   "createdAt": zod.string()
 })
 export const ListActivityResponse = zod.array(ListActivityResponseItem)
-
-

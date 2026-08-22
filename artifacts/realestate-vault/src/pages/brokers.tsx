@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ShieldCheck, MapPin, Handshake, Star, Building2, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Link } from "wouter";
 
 export default function Brokers() {
   const { data: brokers, isLoading } = useListBrokers();
@@ -99,9 +100,14 @@ export default function Brokers() {
                       </div>
                     </div>
                   </div>
-                  <Button className="w-full mt-6 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20">
-                    <Send className="w-4 h-4 mr-2" /> Message
-                  </Button>
+                  <div className="mt-6 space-y-2">
+                    <Button asChild className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20" data-testid={`button-view-profile-${broker.id}`}>
+                      <Link href={`/demo/brokers/${broker.id}`}>View Profile</Link>
+                    </Button>
+                    <Button variant="outline" className="w-full border-white/10">
+                      <Send className="w-4 h-4 mr-2" /> Message
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

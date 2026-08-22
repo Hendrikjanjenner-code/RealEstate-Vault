@@ -62,6 +62,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+  /auth/session:
+    get:
+      tags: [Auth]
+      operationId: getSession
+      summary: Current session info
+      responses:
+        "200":
+          description: Session state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SessionResponse" }
+  /auth/broker-login:
+    post:
+      tags: [Auth]
+      operationId: brokerLogin
+      summary: Sign in as the broker using the shared passcode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BrokerLoginRequest" }
+      responses:
+        "200":
+          description: Broker session established
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SessionResponse" }
+        "401":
+          description: Wrong passcode
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /login:
     get:
       tags: [Auth]
@@ -623,6 +655,34 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ApiMessage" }
+  /brokers/{id}/deals:
+    get:
+      operationId: listBrokerDeals
+      tags: [brokers]
+      summary: Active listings owned by a broker profile (non-active deals are excluded)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: The broker's deals
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Deal" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /mandates:
     get:
       operationId: listMandates
@@ -1068,6 +1128,16 @@ components:
         requestKey:
           type: string
           description: "Secret issued to the requester at creation; required to transition to nda_signed."
+    SessionResponse:
+      type: object
+      required: [broker]
+      properties:
+        broker: { type: boolean }
+    BrokerLoginRequest:
+      type: object
+      required: [passcode]
+      properties:
+        passcode: { type: string }
     SignNdaInput:
       type: object
       required: [signerName, agreed]

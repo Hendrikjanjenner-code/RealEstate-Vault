@@ -32,7 +32,12 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   rejected: [],
 };
 
+router.get("/access-requests", async (req, res): Promise<void> => {
   const passcodeBroker = isBroker(req);
+  if (!req.isAuthenticated() && !passcodeBroker) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   let requests;
   if (!req.isAuthenticated()) {
     // Passcode/cookie broker session (no user account): sees all requests,
@@ -86,16 +91,14 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
 });
 
 router.patch("/access-requests/:id", async (req, res): Promise<void> => {
-  const params = SignAccessRequestNdaParams.safeParse(req.params);
+  const params = UpdateAccessRequestParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const body = SignAccessRequestNdaBody.safeParse(req.body);
-  if (!body.success || !body.data.signerName.trim() || !body.data.agreed) {
-    res
-      .status(400)
-      .json({ error: "Signer name and agreement are required" });
+  const body = UpdateAccessRequestBody.safeParse(req.body);
+  if (!body.success || !(body.data.status in ALLOWED_TRANSITIONS)) {
+    res.status(400).json({ error: "Invalid status" });
     return;
   }
 
@@ -108,10 +111,10 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
     return;
   }
 
-    const [deal] = await db
-      .select()
-      .from(dealsTable)
-      .where(eq(dealsTable.id, request.dealId));
+  const [deal] = await db
+    .select()
+    .from(dealsTable)
+    .where(eq(dealsTable.id, existing.dealId));
 
   const signing = body.data.status === "nda_signed";
   const brokerAuthed =
@@ -121,12 +124,15 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
       deal?.brokerUserId === req.user.id);
 
   // Investors self-sign using their requestKey — no session required.
-    const isRequester = request.requesterUserId === req.user.id;
+  const isRequester =
+    signing &&
+    !!existing.requestKey &&
+    body.data.requestKey === existing.requestKey;
 
   if (signing && !brokerAuthed && !isRequester) {
     // A wrong requestKey is a 403 (credential present but invalid).
     // No credential at all is a 401.
-    const hasCredential = isBroker(req) || req.isAuthenticated();
+    const hasCredential = !!body.data.requestKey || isBroker(req) || req.isAuthenticated();
     res.status(hasCredential ? 403 : 401).json({
       error: body.data.requestKey
         ? "Invalid request key"
@@ -154,10 +160,14 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
 
   const downloadToken = signing ? randomUUID() : undefined;
 
-    const [request] = await db
-      .select()
-      .from(accessRequestsTable)
-      .where(eq(accessRequestsTable.id, id));
+  const [request] = await db
+    .update(accessRequestsTable)
+    .set({
+      status: body.data.status,
+      ...(signing ? { downloadToken, ndaSignedAt: new Date() } : {}),
+    })
+    .where(eq(accessRequestsTable.id, params.data.id))
+    .returning();
 
   if (signing) {
     await db.insert(activityTable).values({
@@ -253,10 +263,15 @@ router.post("/access-requests/:id/sign", async (req, res): Promise<void> => {
   }
 
   const signedAt = new Date();
-    const [request] = await db
-      .select()
-      .from(accessRequestsTable)
-      .where(eq(accessRequestsTable.id, id));
+  const [request] = await db
+    .update(accessRequestsTable)
+    .set({
+      status: "nda_signed",
+      signerName: body.data.signerName.trim(),
+      signedAt,
+    })
+    .where(eq(accessRequestsTable.id, params.data.id))
+    .returning();
 
   await db.insert(activityTable).values({
     type: "nda_signed",

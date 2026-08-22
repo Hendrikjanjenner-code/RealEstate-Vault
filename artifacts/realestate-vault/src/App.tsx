@@ -21,6 +21,7 @@ import AccessRequests from '@/pages/access-requests';
 import Mandates from '@/pages/mandates';
 import MandateMatches from '@/pages/mandates/matches';
 import Brokers from '@/pages/brokers';
+import BrokerDetail from '@/pages/brokers/detail';
 import Messages from '@/pages/messages';
 import Transactions from '@/pages/transactions';
 import NotFound from '@/pages/not-found';
@@ -125,6 +126,7 @@ function AppShellRouter() {
         <Route path="/demo/mandates" component={Mandates} />
         <Route path="/demo/mandates/:id/matches" component={MandateMatches} />
         <Route path="/demo/brokers" component={Brokers} />
+        <Route path="/demo/brokers/:id" component={BrokerDetail} />
         <Route path="/demo/messages" component={Messages} />
         <Route path="/demo/transactions" component={Transactions} />
         <Route path="/demo/profile" component={BrokerProfile} />

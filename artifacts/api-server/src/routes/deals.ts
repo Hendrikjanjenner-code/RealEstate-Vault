@@ -327,16 +327,16 @@ router.get("/deals/:id", async (req, res): Promise<void> => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-    const params = DownloadDealDocumentParams.safeParse(req.params);
-    if (!params.success) {
-      res.status(400).json({ error: params.error.message });
-      return;
-    }
+  const params = RequestDealAccessParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
 
-    const [deal] = await db
-      .select()
-      .from(dealsTable)
-      .where(eq(dealsTable.id, params.data.id));
+  const [deal] = await db
+    .select()
+    .from(dealsTable)
+    .where(eq(dealsTable.id, params.data.id));
 
   if (!deal) {
     res.status(404).json({ error: "Deal not found" });
@@ -366,16 +366,16 @@ router.patch("/deals/:id/save", async (req, res): Promise<void> => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-    const params = DownloadDealDocumentParams.safeParse(req.params);
-    if (!params.success) {
-      res.status(400).json({ error: params.error.message });
-      return;
-    }
+  const params = RequestDealAccessParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
 
-    const [deal] = await db
-      .select()
-      .from(dealsTable)
-      .where(eq(dealsTable.id, params.data.id));
+  const [deal] = await db
+    .select()
+    .from(dealsTable)
+    .where(eq(dealsTable.id, params.data.id));
 
   if (!deal) {
     res.status(404).json({ error: "Deal not found" });
@@ -432,16 +432,16 @@ router.get("/deals/:id/documents", async (req, res): Promise<void> => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-    const params = DownloadDealDocumentParams.safeParse(req.params);
-    if (!params.success) {
-      res.status(400).json({ error: params.error.message });
-      return;
-    }
+  const params = RequestDealAccessParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
 
-    const [deal] = await db
-      .select()
-      .from(dealsTable)
-      .where(eq(dealsTable.id, params.data.id));
+  const [deal] = await db
+    .select()
+    .from(dealsTable)
+    .where(eq(dealsTable.id, params.data.id));
   if (!deal) {
     res.status(404).json({ error: "Deal not found" });
     return;
@@ -464,21 +464,21 @@ router.get("/deals/:id/documents", async (req, res): Promise<void> => {
 
 router.post("/deals/:id/access-requests", async (req, res): Promise<void> => {
   // Anonymous investors may request access; no session required.
-    const params = RequestDealAccessParams.safeParse(req.params);
-    if (!params.success) {
-      res.status(400).json({ error: params.error.message });
-      return;
-    }
-    const body = RequestDealAccessBody.safeParse(req.body);
-    if (!body.success) {
-      res.status(400).json({ error: body.error.message });
-      return;
-    }
+  const params = RequestDealAccessParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const body = RequestDealAccessBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
 
-    const [deal] = await db
-      .select()
-      .from(dealsTable)
-      .where(eq(dealsTable.id, params.data.id));
+  const [deal] = await db
+    .select()
+    .from(dealsTable)
+    .where(eq(dealsTable.id, params.data.id));
 
   if (!deal) {
     res.status(404).json({ error: "Deal not found" });
@@ -564,58 +564,59 @@ router.post("/deals/:id/documents", async (req, res): Promise<void> => {
     return;
   }
 
-    const params = DownloadDealDocumentParams.safeParse(req.params);
-    if (!params.success) {
-      res.status(400).json({ error: params.error.message });
-      return;
-    }
-    const body = UpdateDealDocumentBody.safeParse(req.body);
-    if (!body.success) {
-      res.status(400).json({ error: body.error.message });
-      return;
-    }
+  const params = CreateDealDocumentParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const body = CreateDealDocumentBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
 
-    const [deal] = await db
-      .select()
-      .from(dealsTable)
-      .where(eq(dealsTable.id, params.data.id));
-    if (!deal) {
-      res.status(404).json({ error: "Deal not found" });
-      return;
-    }
+  const [deal] = await db
+    .select()
+    .from(dealsTable)
+    .where(eq(dealsTable.id, params.data.id));
+  if (!deal) {
+    res.status(404).json({ error: "Deal not found" });
+    return;
+  }
 
-    if (!canManageDealDocuments(req, deal)) {
-      res
-        .status(403)
-        .json({ error: "You are not the listing broker for this deal" });
-      return;
-    }
+  if (!canManageDealDocuments(req, deal)) {
+    res.status(403).json({ error: "You are not the listing broker for this deal" });
+    return;
+  }
 
-    const [doc] = await db
-      .select()
-      .from(dealDocumentsTable)
-      .where(
-        and(
-          eq(dealDocumentsTable.id, params.data.docId),
-          eq(dealDocumentsTable.dealId, params.data.id),
-        ),
-      );
-    if (!doc) {
-      res.status(404).json({ error: "Document not found" });
-      return;
-    }
+  const [doc] = await db
+    .insert(dealDocumentsTable)
+    .values({
+      dealId: params.data.id,
+      name: body.data.name,
+      category: body.data.category ?? null,
+      sizeKb: body.data.sizeKb ?? null,
+      ndaRequired: body.data.ndaRequired ?? false,
+      objectPath: body.data.objectPath ?? null,
+      contentType: body.data.contentType ?? null,
+    })
+    .returning();
 
-    res.json(
-      DeleteDealDocumentResponse.parse({ error: `Deleted ${doc.name}` }),
-    );
-  },
-);
+  res
+    .status(201)
+    .json(CreateDealDocumentResponse.parse(toJson(toPublicDocument(doc))));
+});
 
-// ── Investor / broker: download a data-room document ─────────────────────────
-router.get(
-  "/deals/:id/documents/:docId/download",
+// ── Broker: update a document's metadata (name, category, NDA flag) ──────────
+router.patch(
+  "/deals/:id/documents/:docId",
   async (req, res): Promise<void> => {
-    const params = DownloadDealDocumentParams.safeParse(req.params);
+    if (!hasBrokerCredential(req)) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const params = UpdateDealDocumentParams.safeParse(req.params);
     if (!params.success) {
       res.status(400).json({ error: params.error.message });
       return;
@@ -657,30 +658,34 @@ router.get(
     }
 
     const [doc] = await db
-      .select()
-      .from(dealDocumentsTable)
+      .update(dealDocumentsTable)
+      .set(updates)
       .where(
         and(
           eq(dealDocumentsTable.id, params.data.docId),
           eq(dealDocumentsTable.dealId, params.data.id),
         ),
-      );
+      )
+      .returning();
     if (!doc) {
       res.status(404).json({ error: "Document not found" });
       return;
     }
 
-    res.json(
-      DeleteDealDocumentResponse.parse({ error: `Deleted ${doc.name}` }),
-    );
+    res.json(UpdateDealDocumentResponse.parse(toJson(toPublicDocument(doc))));
   },
 );
 
-// ── Investor / broker: download a data-room document ─────────────────────────
-router.get(
-  "/deals/:id/documents/:docId/download",
+// ── Broker: delete a document from the data room ─────────────────────────────
+router.delete(
+  "/deals/:id/documents/:docId",
   async (req, res): Promise<void> => {
-    const params = DownloadDealDocumentParams.safeParse(req.params);
+    if (!hasBrokerCredential(req)) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const params = DeleteDealDocumentParams.safeParse(req.params);
     if (!params.success) {
       res.status(400).json({ error: params.error.message });
       return;
@@ -703,14 +708,14 @@ router.get(
     }
 
     const [doc] = await db
-      .select()
-      .from(dealDocumentsTable)
+      .delete(dealDocumentsTable)
       .where(
         and(
           eq(dealDocumentsTable.id, params.data.docId),
           eq(dealDocumentsTable.dealId, params.data.id),
         ),
-      );
+      )
+      .returning();
     if (!doc) {
       res.status(404).json({ error: "Document not found" });
       return;

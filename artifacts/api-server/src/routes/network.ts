@@ -8,7 +8,7 @@ import {
   presentDeal,
 } from "./deals";
 import { Router, type IRouter } from "express";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import {
   db,
   brokersTable,
@@ -24,6 +24,8 @@ import {
   GetMyBrokerProfileResponse,
   UpsertMyBrokerProfileBody,
   UpsertMyBrokerProfileResponse,
+  ListBrokerDealsParams,
+  ListBrokerDealsResponse,
   ListMandatesResponse,
   ListMandateMatchesParams,
   ListMandateMatchesResponse,
@@ -43,6 +45,141 @@ router.get("/brokers", async (_req, res): Promise<void> => {
     .from(brokersTable)
     .orderBy(desc(brokersTable.score));
   res.json(ListBrokersResponse.parse(toJson(brokers)));
+});
+
+router.get("/brokers/me", async (req, res): Promise<void> => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  if (req.user.role !== "broker") {
+    res.status(403).json({ error: "Only brokers have a directory profile" });
+    return;
+  }
+
+  const [profile] = await db
+    .insert(brokersTable)
+    .values(values)
+    .onConflictDoUpdate({
+      target: brokersTable.userId,
+      set: values,
+    })
+    .returning();
+
+  res.json(GetMyBrokerProfileResponse.parse({ profile: profile ? toJson(profile) : null }));
+});
+
+router.put("/brokers/me", async (req, res): Promise<void> => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  if (req.user.role !== "broker") {
+    res.status(403).json({ error: "Only brokers have a directory profile" });
+    return;
+  }
+
+  const parsed = CreateMandateBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const values = {
+    userId: req.user.id,
+    isDemo: false,
+    name: parsed.data.name,
+    company: parsed.data.company,
+    title: parsed.data.title,
+    city: parsed.data.city,
+    country: parsed.data.country,
+    yearsExperience: parsed.data.yearsExperience ?? 0,
+    specialisations: parsed.data.specialisations ?? [],
+    bio: parsed.data.bio ?? null,
+    avatarUrl: parsed.data.avatarUrl ?? null,
+  };
+
+  const [profile] = await db
+    .insert(brokersTable)
+    .values(values)
+    .onConflictDoUpdate({
+      target: brokersTable.userId,
+      set: values,
+    })
+    .returning();
+
+  res.json(UpsertMyBrokerProfileResponse.parse(toJson(profile)));
+});
+
+router.get("/brokers/:id", async (req, res): Promise<void> => {
+  const params = UpdateMandateStatusParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [broker] = await db
+    .select()
+    .from(brokersTable)
+    .where(eq(brokersTable.id, params.data.id));
+
+  if (!broker) {
+    res.status(404).json({ error: "Broker not found" });
+    return;
+  }
+
+  res.json(GetBrokerResponse.parse(toJson(broker)));
+});
+
+router.get("/brokers/:id/deals", async (req, res): Promise<void> => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const params = UpdateMandateStatusParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [broker] = await db
+    .select()
+    .from(brokersTable)
+    .where(eq(brokersTable.id, params.data.id));
+
+  if (!broker) {
+    res.status(404).json({ error: "Broker not found" });
+    return;
+  }
+
+  // A profile only owns deals when it is linked to a real account.
+  // Only live listings are shown on the public profile.
+  const deals = broker.userId
+    ? await db
+        .select()
+        .from(dealsTable)
+        .where(
+          and(
+            eq(dealsTable.brokerUserId, broker.userId),
+            eq(dealsTable.status, "active"),
+          ),
+        )
+        .orderBy(desc(dealsTable.createdAt))
+    : [];
+
+  const [statuses, savedIds, withProfiles] = await Promise.all([
+    getAccessStatuses(matching, req.user.id),
+    getSavedDealIds(
+      matching.map((d) => d.id),
+      req.user.id,
+    ),
+    overlayBrokerProfiles(matching),
+  ]);
+  const presented = withProfiles.map((deal) =>
+    presentDeal(deal, statuses.get(deal.id) ?? "none", savedIds.has(deal.id)),
+  );
+
+  res.json(ListBrokerDealsResponse.parse(toJson(presented)));
 });
 
 router.get("/mandates", async (req, res): Promise<void> => {
@@ -71,17 +208,21 @@ router.get("/mandates/:id/matches", async (req, res): Promise<void> => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-  const params = ListMandateMatchesParams.safeParse(req.params);
+  const params = UpdateMandateStatusParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
   const [mandate] = await db
-    .select()
-    .from(mandatesTable)
-    .where(eq(mandatesTable.id, params.data.id))
-    .then((rows) => rows);
+    .insert(mandatesTable)
+    .values({
+      ...parsed.data,
+      ownerUserId: req.user.id,
+      status: "active",
+      matches: 0,
+    })
+    .returning();
 
   if (!mandate) {
     res.status(404).json({ error: "Mandate not found" });

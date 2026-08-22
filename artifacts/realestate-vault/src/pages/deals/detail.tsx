@@ -569,9 +569,15 @@ export default function DealDetail() {
                 <p className="text-sm text-muted-foreground">{deal.brokerCompany}</p>
               </div>
             </div>
-            <Button asChild variant="outline" className="w-full border-white/10">
-              <Link href="/demo/brokers">View Broker Directory</Link>
-            </Button>
+            {deal.brokerProfileId != null ? (
+              <Button asChild variant="outline" className="w-full border-white/10" data-testid="button-view-broker-profile">
+                <Link href={`/demo/brokers/${deal.brokerProfileId}`}>View Broker Profile</Link>
+              </Button>
+            ) : (
+              <Button asChild variant="outline" className="w-full border-white/10">
+                <Link href="/demo/brokers">View Broker Directory</Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>

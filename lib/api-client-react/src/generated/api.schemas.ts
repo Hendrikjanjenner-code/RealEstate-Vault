@@ -246,6 +246,14 @@ export interface AccessRequestUpdate {
   requestKey?: string;
 }
 
+export interface SessionResponse {
+  broker: boolean;
+}
+
+export interface BrokerLoginRequest {
+  passcode: string;
+}
+
 export interface SignNdaInput {
   /** @minLength 1 */
   signerName: string;
