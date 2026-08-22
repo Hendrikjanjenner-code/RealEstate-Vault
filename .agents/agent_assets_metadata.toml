@@ -1,0 +1,30 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "rzXya1DLLi7XVlenfpAe7"
+uri = "file://docs/brand/naming-report.md"
+type = "text"
+title = "Brand Naming Report — CLOSA aanbevolen"
+description = "Volledig naamproces: 30 kandidaten met scores, shortlist van 10, 5 finalisten met mini-brandconcepten, verbale en architectuurtests, en de aanbevolen masterbrand CLOSA met identiteit."
+logical_id = "10f5e50a-8874-407c-a735-f86a36d6d7de"
+content_hash = "sha256:5c0f841edb4ab09c20e707f2a9be4e6d0244a469d0d6bb67d35964e99d1f92da"
+size = 11145
+mtime_ms = 1787428711532
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:cfaca115-a7e6-46db-9e34-34e2ba477ffb/10f5e50a-8874-407c-a735-f86a36d6d7de/7391919b-8c3d-442f-80fb-dbf3dc4c7d35"
+storage_version_token = "1787428806092423"
+content_type = "text/markdown"
+
+[[outputs]]
+id = "-mFajAJY855PZDfcUrKTo"
+uri = "file://docs/brand/lockup-check.png"
+type = "image"
+title = "Closa logo — donker en licht"
+description = "The Close Mark met woordmerk op donkere en lichte achtergrond."
+logical_id = "9aed793b-39f9-45ce-82be-db215a746e9d"
+content_hash = "sha256:931a88658bd975403e7e39137561d06fe58995ac7c82c6595ffc3a810bbcec4a"
+size = 100609
+mtime_ms = 1787428777588
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:cfaca115-a7e6-46db-9e34-34e2ba477ffb/9aed793b-39f9-45ce-82be-db215a746e9d/045c7666-05c8-48aa-966d-5e646d888241"
+storage_version_token = "1787428806526961"
+content_type = "image/png"

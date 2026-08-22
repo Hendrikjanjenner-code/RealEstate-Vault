@@ -1,0 +1,37 @@
+/**
+ * Closa design tokens.
+ * Import once per artifact: `@import "@workspace/brand/tokens.css";`
+ * Keep values in sync with lib/brand/src/index.ts (single source of truth
+ * for JS consumers; this file mirrors it for CSS consumers).
+ */
+:root {
+  /* Core palette */
+  --brand-ink: #0c0d0e;
+  --brand-charcoal: #17191c;
+  --brand-graphite: #22262b;
+  --brand-offwhite: #f6f4ef;
+  --brand-paper: #ece9e1;
+  --brand-accent: #14a87d;
+  --brand-accent-strong: #0e8a66;
+  --brand-muted-on-dark: #9aa0a6;
+  --brand-muted-on-light: #5d615e;
+
+  /* Semantic */
+  --brand-positive: #14a87d;
+  --brand-caution: #c7923e;
+  --brand-negative: #c24e4e;
+
+  /* Typography */
+  --brand-font-display: "Sora", "Inter", system-ui, sans-serif;
+  --brand-font-body: "Inter", system-ui, sans-serif;
+
+  /* Numeric data should always be tabular */
+  --brand-font-feature-data: "tnum" 1, "lnum" 1;
+
+  /* Shape & elevation: precise, minimal, no heavy gradients */
+  --brand-radius-sm: 4px;
+  --brand-radius-md: 8px;
+  --brand-radius-lg: 12px;
+  --brand-border-on-dark: rgba(246, 244, 239, 0.08);
+  --brand-border-on-light: rgba(12, 13, 14, 0.1);
+}

@@ -879,6 +879,8 @@ importers:
         specifier: 'catalog:'
         version: 3.25.76
 
+  lib/brand: {}
+
   lib/db:
     dependencies:
       drizzle-orm:
