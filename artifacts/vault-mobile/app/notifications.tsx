@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   useListNotifications,
@@ -20,6 +21,7 @@ function iconFor(message: string): keyof typeof Feather.glyphMap {
 
 export default function NotificationsScreen() {
   const c = useColors();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const notifications = useListNotifications();
   const markRead = useMarkNotificationsRead({
@@ -60,10 +62,17 @@ export default function NotificationsScreen() {
         ) : notifications.data && notifications.data.length > 0 ? (
           <Card>
             {notifications.data.map((n, i) => (
-              <View
+              <Pressable
                 key={n.id}
                 testID={`notification-item-${n.id}`}
-                style={{
+                disabled={n.dealId == null}
+                onPress={() => {
+                  if (n.dealId != null) {
+                    router.push(`/deal/${n.dealId}`);
+                  }
+                }}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.7 : 1,
                   flexDirection: 'row',
                   alignItems: 'flex-start',
                   gap: 12,
@@ -71,7 +80,7 @@ export default function NotificationsScreen() {
                   borderTopWidth: i === 0 ? 0 : StyleSheet.hairlineWidth,
                   borderTopColor: c.border,
                   backgroundColor: n.read ? 'transparent' : 'rgba(200,169,90,0.06)',
-                }}
+                })}
               >
                 <View
                   style={{
@@ -96,7 +105,7 @@ export default function NotificationsScreen() {
                 {!n.read ? (
                   <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.primary, marginTop: 5 }} />
                 ) : null}
-              </View>
+              </Pressable>
             ))}
           </Card>
         ) : (

@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useListNotifications,
@@ -21,6 +23,8 @@ function iconFor(message: string) {
 }
 
 export function NotificationsBell() {
+  const [open, setOpen] = useState(false);
+  const [, navigate] = useLocation();
   const queryClient = useQueryClient();
   const { data: notifications } = useListNotifications({
     query: { queryKey: getListNotificationsQueryKey(), refetchInterval: 30000 },
@@ -37,14 +41,27 @@ export function NotificationsBell() {
 
   const unreadCount = notifications?.filter((n) => !n.read).length ?? 0;
 
-  const handleOpenChange = (open: boolean) => {
-    if (open && unreadCount > 0) {
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (nextOpen && unreadCount > 0) {
       markRead.mutate();
     }
   };
 
+  const handleNotificationClick = (n: {
+    dealId?: number | null;
+    accessRequestId?: number | null;
+  }) => {
+    setOpen(false);
+    if (n.dealId != null) {
+      navigate(`/demo/deals/${n.dealId}`);
+    } else if (n.accessRequestId != null) {
+      navigate("/demo/access-requests");
+    }
+  };
+
   return (
-    <Popover onOpenChange={handleOpenChange}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
@@ -79,10 +96,13 @@ export function NotificationsBell() {
             </div>
           ) : (
             notifications.map((n) => (
-              <div
+              <button
                 key={n.id}
+                type="button"
                 data-testid={`notification-item-${n.id}`}
-                className={`flex items-start gap-3 px-4 py-3 border-b border-border last:border-b-0 ${
+                onClick={() => handleNotificationClick(n)}
+                disabled={n.dealId == null && n.accessRequestId == null}
+                className={`w-full text-left flex items-start gap-3 px-4 py-3 border-b border-border last:border-b-0 transition-colors enabled:cursor-pointer enabled:hover:bg-accent/50 disabled:cursor-default ${
                   n.read ? "" : "bg-primary/5"
                 }`}
               >
@@ -96,7 +116,7 @@ export function NotificationsBell() {
                 {!n.read && (
                   <span className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1.5" />
                 )}
-              </div>
+              </button>
             ))
           )}
         </div>
