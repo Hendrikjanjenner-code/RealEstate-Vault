@@ -181,3 +181,9 @@ Criteria (1–10 each): Brandability (BR), Memorability (ME), International pron
 | Implementation cost | Zero (already live) | One rebrand pass |
 
 The round-2 process produced one genuine peer to Closa, not a clear successor. **If the brand should feel more institutional and exclusive: choose SOVRA. If speed, verb-ability and the momentum of the existing identity matter more: keep CLOSA.** The final call is the founder's.
+
+---
+
+## 7. Final decision
+
+**The founder chose to keep CLOSA as the master brand** (decision recorded 23 August 2026, after reviewing all round-2 finalists). The existing Closa identity — Close Mark logo, ink/charcoal/off-white palette with jade accent, Sora + Inter typography — remains in force as implemented in the shared brand package (`lib/brand`). SOVRA is archived as the strongest challenger should a future repositioning toward a more institutional tone be desired.
