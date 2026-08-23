@@ -26,8 +26,12 @@ import type {
   AccessRequestUpdate,
   AccessRequestUpdateResult,
   ActivityItem,
+  AiAssistantMessage,
+  AiFinding,
+  AiReportResponse,
   ApiMessage,
   ApiOk,
+  AssistantQuestionBody,
   AuthUser,
   AuthUserEnvelope,
   BeginBrowserLoginParams,
@@ -44,6 +48,7 @@ import type {
   DashboardStats,
   Deal,
   DealAdvisoryResponse,
+  DealAssistantReply,
   DealDocument,
   DealDocumentInput,
   DealDocumentUpdate,
@@ -52,6 +57,7 @@ import type {
   DealRiskInput,
   DealRiskUpdate,
   DealTeamResponse,
+  DocumentAnalysisResponse,
   DocumentReadiness,
   Engagement,
   EngagementActionInput,
@@ -60,6 +66,8 @@ import type {
   FeeProposal,
   FeeProposalInput,
   FeeProposalStatusInput,
+  FindingReviewBody,
+  GenerateAiReportBody,
   HandleBrowserLoginCallbackParams,
   HealthStatus,
   ListDealTeamCandidatesParams,
@@ -4137,6 +4145,531 @@ export const useDeleteChecklistTemplate = <TError = ErrorType<ApiMessage>,
         TContext
       > => {
       return useMutation(getDeleteChecklistTemplateMutationOptions(options));
+    }
+
+export const getAnalyzeDealDocumentUrl = (id: number,
+    docId: number,) => {
+
+
+
+
+  return `/api/deals/${id}/documents/${docId}/analyze`
+}
+
+/**
+ * @summary Run AI analysis on a data-room document the caller is authorized to view. Stores an auditable analysis run with findings and source references.
+ */
+export const analyzeDealDocument = async (id: number,
+    docId: number, options?: Parameters<typeof customFetch>[1]): Promise<DocumentAnalysisResponse> => {
+
+  return customFetch<DocumentAnalysisResponse>(getAnalyzeDealDocumentUrl(id,docId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getAnalyzeDealDocumentMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeDealDocument>>, TError,{id: number;docId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof analyzeDealDocument>>, TError,{id: number;docId: number}, TContext> => {
+
+const mutationKey = ['analyzeDealDocument'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof analyzeDealDocument>>, {id: number;docId: number}> = (props) => {
+          const {id,docId} = props ?? {};
+
+          return  analyzeDealDocument(id,docId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AnalyzeDealDocumentMutationResult = NonNullable<Awaited<ReturnType<typeof analyzeDealDocument>>>
+
+    export type AnalyzeDealDocumentMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Run AI analysis on a data-room document the caller is authorized to view. Stores an auditable analysis run with findings and source references.
+ */
+export const useAnalyzeDealDocument = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeDealDocument>>, TError,{id: number;docId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof analyzeDealDocument>>,
+        TError,
+        {id: number;docId: number},
+        TContext
+      > => {
+      return useMutation(getAnalyzeDealDocumentMutationOptions(options));
+    }
+
+export const getGetDealDocumentAnalysisUrl = (id: number,
+    docId: number,) => {
+
+
+
+
+  return `/api/deals/${id}/documents/${docId}/analysis`
+}
+
+/**
+ * @summary Latest AI analysis for a document (if any), with findings and source references.
+ */
+export const getDealDocumentAnalysis = async (id: number,
+    docId: number, options?: Parameters<typeof customFetch>[1]): Promise<DocumentAnalysisResponse> => {
+
+  return customFetch<DocumentAnalysisResponse>(getGetDealDocumentAnalysisUrl(id,docId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDealDocumentAnalysisQueryKey = (id: number,
+    docId: number,) => {
+    return [
+    `/api/deals/${id}/documents/${docId}/analysis`
+    ] as const;
+    }
+
+
+export const getGetDealDocumentAnalysisQueryOptions = <TData = Awaited<ReturnType<typeof getDealDocumentAnalysis>>, TError = ErrorType<ApiMessage>>(id: number,
+    docId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealDocumentAnalysis>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDealDocumentAnalysisQueryKey(id,docId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDealDocumentAnalysis>>> = ({ signal }) => getDealDocumentAnalysis(id,docId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined && docId !== null && docId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDealDocumentAnalysis>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDealDocumentAnalysisQueryResult = NonNullable<Awaited<ReturnType<typeof getDealDocumentAnalysis>>>
+export type GetDealDocumentAnalysisQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Latest AI analysis for a document (if any), with findings and source references.
+ */
+
+export function useGetDealDocumentAnalysis<TData = Awaited<ReturnType<typeof getDealDocumentAnalysis>>, TError = ErrorType<ApiMessage>>(
+ id: number,
+    docId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealDocumentAnalysis>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDealDocumentAnalysisQueryOptions(id,docId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListDealAiFindingsUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/ai-findings`
+}
+
+/**
+ * @summary All AI findings across documents the caller is authorized to view, for the Legal Review / Tax & Structure sections and the risks center.
+ */
+export const listDealAiFindings = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<AiFinding[]> => {
+
+  return customFetch<AiFinding[]>(getListDealAiFindingsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDealAiFindingsQueryKey = (id: number,) => {
+    return [
+    `/api/deals/${id}/ai-findings`
+    ] as const;
+    }
+
+
+export const getListDealAiFindingsQueryOptions = <TData = Awaited<ReturnType<typeof listDealAiFindings>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDealAiFindings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDealAiFindingsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDealAiFindings>>> = ({ signal }) => listDealAiFindings(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDealAiFindings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDealAiFindingsQueryResult = NonNullable<Awaited<ReturnType<typeof listDealAiFindings>>>
+export type ListDealAiFindingsQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary All AI findings across documents the caller is authorized to view, for the Legal Review / Tax & Structure sections and the risks center.
+ */
+
+export function useListDealAiFindings<TData = Awaited<ReturnType<typeof listDealAiFindings>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDealAiFindings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDealAiFindingsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getReviewAiFindingUrl = (id: number,) => {
+
+
+
+
+  return `/api/ai-findings/${id}/review`
+}
+
+/**
+ * @summary Mark an AI finding as professionally reviewed or verified (deal manager only). Audited.
+ */
+export const reviewAiFinding = async (id: number,
+    findingReviewBody: FindingReviewBody, options?: Parameters<typeof customFetch>[1]): Promise<AiFinding> => {
+
+  return customFetch<AiFinding>(getReviewAiFindingUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(findingReviewBody)
+  }
+);}
+
+
+
+
+
+export const getReviewAiFindingMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reviewAiFinding>>, TError,{id: number;data: BodyType<FindingReviewBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof reviewAiFinding>>, TError,{id: number;data: BodyType<FindingReviewBody>}, TContext> => {
+
+const mutationKey = ['reviewAiFinding'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reviewAiFinding>>, {id: number;data: BodyType<FindingReviewBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  reviewAiFinding(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReviewAiFindingMutationResult = NonNullable<Awaited<ReturnType<typeof reviewAiFinding>>>
+    export type ReviewAiFindingMutationBody = BodyType<FindingReviewBody>
+    export type ReviewAiFindingMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Mark an AI finding as professionally reviewed or verified (deal manager only). Audited.
+ */
+export const useReviewAiFinding = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reviewAiFinding>>, TError,{id: number;data: BodyType<FindingReviewBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof reviewAiFinding>>,
+        TError,
+        {id: number;data: BodyType<FindingReviewBody>},
+        TContext
+      > => {
+      return useMutation(getReviewAiFindingMutationOptions(options));
+    }
+
+export const getGetDealAssistantHistoryUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/assistant`
+}
+
+/**
+ * @summary The caller's AI deal-assistant conversation for this deal.
+ */
+export const getDealAssistantHistory = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<AiAssistantMessage[]> => {
+
+  return customFetch<AiAssistantMessage[]>(getGetDealAssistantHistoryUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDealAssistantHistoryQueryKey = (id: number,) => {
+    return [
+    `/api/deals/${id}/assistant`
+    ] as const;
+    }
+
+
+export const getGetDealAssistantHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getDealAssistantHistory>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealAssistantHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDealAssistantHistoryQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDealAssistantHistory>>> = ({ signal }) => getDealAssistantHistory(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDealAssistantHistory>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDealAssistantHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getDealAssistantHistory>>>
+export type GetDealAssistantHistoryQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary The caller's AI deal-assistant conversation for this deal.
+ */
+
+export function useGetDealAssistantHistory<TData = Awaited<ReturnType<typeof getDealAssistantHistory>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealAssistantHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDealAssistantHistoryQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAskDealAssistantUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/assistant`
+}
+
+/**
+ * @summary Ask the AI deal assistant a question. The assistant only uses documents and analyses the caller is authorized to view (enforced server-side).
+ */
+export const askDealAssistant = async (id: number,
+    assistantQuestionBody: AssistantQuestionBody, options?: Parameters<typeof customFetch>[1]): Promise<DealAssistantReply> => {
+
+  return customFetch<DealAssistantReply>(getAskDealAssistantUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(assistantQuestionBody)
+  }
+);}
+
+
+
+
+
+export const getAskDealAssistantMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof askDealAssistant>>, TError,{id: number;data: BodyType<AssistantQuestionBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof askDealAssistant>>, TError,{id: number;data: BodyType<AssistantQuestionBody>}, TContext> => {
+
+const mutationKey = ['askDealAssistant'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof askDealAssistant>>, {id: number;data: BodyType<AssistantQuestionBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  askDealAssistant(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AskDealAssistantMutationResult = NonNullable<Awaited<ReturnType<typeof askDealAssistant>>>
+    export type AskDealAssistantMutationBody = BodyType<AssistantQuestionBody>
+    export type AskDealAssistantMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Ask the AI deal assistant a question. The assistant only uses documents and analyses the caller is authorized to view (enforced server-side).
+ */
+export const useAskDealAssistant = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof askDealAssistant>>, TError,{id: number;data: BodyType<AssistantQuestionBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof askDealAssistant>>,
+        TError,
+        {id: number;data: BodyType<AssistantQuestionBody>},
+        TContext
+      > => {
+      return useMutation(getAskDealAssistantMutationOptions(options));
+    }
+
+export const getGenerateDealAiReportUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/ai-report`
+}
+
+/**
+ * @summary Generate a provenance-labelled report (deal health, document readiness or review status) from data the caller is authorized to view. Audited.
+ */
+export const generateDealAiReport = async (id: number,
+    generateAiReportBody: GenerateAiReportBody, options?: Parameters<typeof customFetch>[1]): Promise<AiReportResponse> => {
+
+  return customFetch<AiReportResponse>(getGenerateDealAiReportUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(generateAiReportBody)
+  }
+);}
+
+
+
+
+
+export const getGenerateDealAiReportMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateDealAiReport>>, TError,{id: number;data: BodyType<GenerateAiReportBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateDealAiReport>>, TError,{id: number;data: BodyType<GenerateAiReportBody>}, TContext> => {
+
+const mutationKey = ['generateDealAiReport'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateDealAiReport>>, {id: number;data: BodyType<GenerateAiReportBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  generateDealAiReport(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateDealAiReportMutationResult = NonNullable<Awaited<ReturnType<typeof generateDealAiReport>>>
+    export type GenerateDealAiReportMutationBody = BodyType<GenerateAiReportBody>
+    export type GenerateDealAiReportMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Generate a provenance-labelled report (deal health, document readiness or review status) from data the caller is authorized to view. Audited.
+ */
+export const useGenerateDealAiReport = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateDealAiReport>>, TError,{id: number;data: BodyType<GenerateAiReportBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateDealAiReport>>,
+        TError,
+        {id: number;data: BodyType<GenerateAiReportBody>},
+        TContext
+      > => {
+      return useMutation(getGenerateDealAiReportMutationOptions(options));
     }
 
 export const getListMandatesUrl = () => {

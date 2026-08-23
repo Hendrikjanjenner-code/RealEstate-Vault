@@ -11,6 +11,10 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^8.0.1",
+    "@workspace/integrations-openai-ai-server": "workspace:*",
+    "mammoth": "^1.11.0",
+    "pdf-parse": "^2.4.5",
+    "xlsx": "^0.18.5",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/nda-terms": "workspace:*",
@@ -21,7 +25,8 @@
     "google-auth-library": "^11.0.2",
     "openid-client": "^6.8.7",
     "pino": "^9.14.0",
-    "pino-http": "^10.5.0"
+    "pino-http": "^10.5.0",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",

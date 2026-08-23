@@ -37,11 +37,15 @@ import {
   TimelineTab,
   PlaceholderTab,
 } from "@/components/deal-advisory";
+import { DocumentAiPanel, AiIntelligenceTab, AssistantTab } from "@/components/deal-ai";
+import { Sparkles } from "lucide-react";
 
 const DEAL_ROOM_TABS = [
   { id: "overview", label: "Overview" },
   { id: "financials", label: "Financials" },
   { id: "dataroom", label: "Data Room" },
+  { id: "ai", label: "AI Intelligence" },
+  { id: "assistant", label: "Assistant" },
   { id: "health", label: "Deal Health" },
   { id: "dd", label: "Due Diligence" },
   { id: "financing", label: "Financing" },
@@ -100,6 +104,7 @@ export default function DealDetail() {
   const [editingDocId, setEditingDocId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({ name: "", category: "", ndaRequired: false });
   const [activeTab, setActiveTab] = useState<DealRoomTab>("overview");
+  const [aiOpenDocId, setAiOpenDocId] = useState<number | null>(null);
 
   const handleSaveDocEdit = (docId: number) => {
     if (!editForm.name.trim() || !editForm.category.trim()) {
@@ -317,6 +322,10 @@ export default function DealDetail() {
           {activeTab === "financials" && (
             <PlaceholderTab title="Financials" description="In-depth financial analysis, scenarios and downloadable financing pack are coming to this tab." />
           )}
+          {activeTab === "ai" && (
+            <AiIntelligenceTab dealId={id} canManage={isBroker} transactionStructure={deal?.transactionStructure} />
+          )}
+          {activeTab === "assistant" && <AssistantTab dealId={id} />}
           {activeTab === "health" && <DealHealthTab dealId={id} />}
           {activeTab === "dd" && (
             <PlaceholderTab title="Due Diligence" description="The structured Due Diligence center with workstreams and findings is coming to this tab." />
@@ -401,7 +410,8 @@ export default function DealDetail() {
                       );
                     }
                     return (
-                      <div key={doc.id} className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
+                      <div key={doc.id}>
+                      <div className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
                         <div className="flex items-center gap-4">
                           <div className={`p-2 rounded-lg ${isDocLocked ? 'bg-background text-muted-foreground' : 'bg-primary/10 text-primary'}`}>
                             {isDocLocked ? <Lock className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
@@ -427,6 +437,17 @@ export default function DealDetail() {
                             </a>
                           ) : (
                             <span className="text-xs text-muted-foreground italic">No file yet</span>
+                          )}
+                          {!isDocLocked && doc.hasFile && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`h-8 text-xs ${aiOpenDocId === doc.id ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+                              onClick={() => setAiOpenDocId(aiOpenDocId === doc.id ? null : doc.id)}
+                              data-testid={`btn-ai-summary-${doc.id}`}
+                            >
+                              <Sparkles className="w-4 h-4 mr-1" /> AI Summary
+                            </Button>
                           )}
                           {isBroker && (
                             <>
@@ -455,6 +476,10 @@ export default function DealDetail() {
                             </>
                           )}
                         </div>
+                      </div>
+                      {aiOpenDocId === doc.id && !isDocLocked && doc.hasFile && (
+                        <DocumentAiPanel dealId={id} docId={doc.id} canManage={isBroker} />
+                      )}
                       </div>
                     );
                   })}

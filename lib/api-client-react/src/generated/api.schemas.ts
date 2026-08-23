@@ -980,6 +980,182 @@ export interface NextBestAction {
   tab: string;
 }
 
+export interface AiSourceReference {
+  id: number;
+  findingId: number;
+  documentId: number;
+  documentName?: string | null;
+  page?: number | null;
+  section?: string | null;
+  excerpt?: string | null;
+}
+
+export type AiFindingCategory = typeof AiFindingCategory[keyof typeof AiFindingCategory];
+
+
+export const AiFindingCategory = {
+  document_type: 'document_type',
+  date: 'date',
+  party: 'party',
+  expiration: 'expiration',
+  financial_value: 'financial_value',
+  clause: 'clause',
+  attention_point: 'attention_point',
+  missing_information: 'missing_information',
+  related_document: 'related_document',
+  legal: 'legal',
+  tax: 'tax',
+} as const;
+
+export type AiFindingSeverity = typeof AiFindingSeverity[keyof typeof AiFindingSeverity] | null;
+
+
+export const AiFindingSeverity = {
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+} as const;
+
+export type AiFindingConfidence = typeof AiFindingConfidence[keyof typeof AiFindingConfidence];
+
+
+export const AiFindingConfidence = {
+  high: 'high',
+  medium: 'medium',
+  low: 'low',
+} as const;
+
+export type AiFindingReviewStatus = typeof AiFindingReviewStatus[keyof typeof AiFindingReviewStatus];
+
+
+export const AiFindingReviewStatus = {
+  ai_generated: 'ai_generated',
+  professional_reviewed: 'professional_reviewed',
+  verified: 'verified',
+} as const;
+
+export interface AiFinding {
+  id: number;
+  runId: number;
+  dealId: number;
+  documentId?: number | null;
+  documentName?: string | null;
+  category: AiFindingCategory;
+  title: string;
+  detail?: string | null;
+  severity?: AiFindingSeverity;
+  confidence: AiFindingConfidence;
+  reviewStatus: AiFindingReviewStatus;
+  reviewedByName?: string | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+  sources: AiSourceReference[];
+}
+
+export type AiAnalysisRunStatus = typeof AiAnalysisRunStatus[keyof typeof AiAnalysisRunStatus];
+
+
+export const AiAnalysisRunStatus = {
+  running: 'running',
+  completed: 'completed',
+  failed: 'failed',
+} as const;
+
+export interface AiAnalysisRun {
+  id: number;
+  dealId: number;
+  documentId?: number | null;
+  kind: string;
+  status: AiAnalysisRunStatus;
+  model: string;
+  error?: string | null;
+  requestedByName?: string | null;
+  createdAt: string;
+  completedAt?: string | null;
+}
+
+export interface AiDocumentSummary {
+  whatIsThisDocument: string;
+  whyRelevantToTransaction: string;
+  keyCommercialPoints: string[];
+  importantDates: string[];
+  obligationsAndConditions: string[];
+  attentionPoints: string[];
+  professionalVerificationNeeded: string;
+}
+
+export interface DocumentAnalysisResponse {
+  run?: AiAnalysisRun | null;
+  summary?: AiDocumentSummary | null;
+  findings: AiFinding[];
+  disclaimer: string;
+}
+
+export type FindingReviewBodyReviewStatus = typeof FindingReviewBodyReviewStatus[keyof typeof FindingReviewBodyReviewStatus];
+
+
+export const FindingReviewBodyReviewStatus = {
+  ai_generated: 'ai_generated',
+  professional_reviewed: 'professional_reviewed',
+  verified: 'verified',
+} as const;
+
+export interface FindingReviewBody {
+  reviewStatus: FindingReviewBodyReviewStatus;
+}
+
+export type AiAssistantMessageRole = typeof AiAssistantMessageRole[keyof typeof AiAssistantMessageRole];
+
+
+export const AiAssistantMessageRole = {
+  user: 'user',
+  assistant: 'assistant',
+} as const;
+
+export interface AiAssistantMessage {
+  id: number;
+  dealId: number;
+  role: AiAssistantMessageRole;
+  content: string;
+  restricted: boolean;
+  createdAt: string;
+}
+
+export interface AssistantQuestionBody {
+  /**
+     * @minLength 1
+     * @maxLength 4000
+     */
+  question: string;
+}
+
+export interface DealAssistantReply {
+  message: AiAssistantMessage;
+  restricted: boolean;
+  disclaimer: string;
+}
+
+export type GenerateAiReportBodyKind = typeof GenerateAiReportBodyKind[keyof typeof GenerateAiReportBodyKind];
+
+
+export const GenerateAiReportBodyKind = {
+  deal_health: 'deal_health',
+  document_readiness: 'document_readiness',
+  review_status: 'review_status',
+} as const;
+
+export interface GenerateAiReportBody {
+  kind: GenerateAiReportBodyKind;
+}
+
+export interface AiReportResponse {
+  kind: string;
+  report: string;
+  provenance: string[];
+  generatedAt: string;
+  disclaimer: string;
+}
+
 export type DealAdvisoryResponseRiskSummary = {
   total: number;
   open: number;

@@ -14,6 +14,7 @@ tags:
   - name: professionals
   - name: deal-team
   - name: deal-advisory
+  - name: deal-ai
   - name: mandates
   - name: access
   - name: auth
@@ -1409,6 +1410,274 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/documents/{docId}/analyze:
+    post:
+      operationId: analyzeDealDocument
+      tags: [deal-ai]
+      summary: Run AI analysis on a data-room document the caller is authorized to view. Stores an auditable analysis run with findings and source references.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: docId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Completed analysis
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DocumentAnalysisResponse" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access to this document
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "409":
+          description: Document has no readable file attached
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "422":
+          description: Unsupported or unreadable file type
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "502":
+          description: AI service failure (rate limit, budget or transient error)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/documents/{docId}/analysis:
+    get:
+      operationId: getDealDocumentAnalysis
+      tags: [deal-ai]
+      summary: Latest AI analysis for a document (if any), with findings and source references.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: docId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Latest analysis, or null run when none exists
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DocumentAnalysisResponse" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access to this document
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/ai-findings:
+    get:
+      operationId: listDealAiFindings
+      tags: [deal-ai]
+      summary: All AI findings across documents the caller is authorized to view, for the Legal Review / Tax & Structure sections and the risks center.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Findings
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AiFinding" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access to this deal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /ai-findings/{id}/review:
+    post:
+      operationId: reviewAiFinding
+      tags: [deal-ai]
+      summary: Mark an AI finding as professionally reviewed or verified (deal manager only). Audited.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FindingReviewBody" }
+      responses:
+        "200":
+          description: Updated finding
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiFinding" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Only the deal manager can review findings
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/assistant:
+    get:
+      operationId: getDealAssistantHistory
+      tags: [deal-ai]
+      summary: The caller's AI deal-assistant conversation for this deal.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AiAssistantMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access to this deal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+    post:
+      operationId: askDealAssistant
+      tags: [deal-ai]
+      summary: Ask the AI deal assistant a question. The assistant only uses documents and analyses the caller is authorized to view (enforced server-side).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AssistantQuestionBody" }
+      responses:
+        "200":
+          description: Assistant answer
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DealAssistantReply" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access to this deal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "502":
+          description: AI service failure (rate limit, budget or transient error)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/ai-report:
+    post:
+      operationId: generateDealAiReport
+      tags: [deal-ai]
+      summary: Generate a provenance-labelled report (deal health, document readiness or review status) from data the caller is authorized to view. Audited.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/GenerateAiReportBody" }
+      responses:
+        "200":
+          description: Generated report
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiReportResponse" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access to this deal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "502":
+          description: AI service failure (rate limit, budget or transient error)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /mandates:
     get:
       operationId: listMandates
@@ -2524,6 +2793,138 @@ components:
         description: { type: string }
         # Deal Room tab where the action can be taken.
         tab: { type: string }
+    AiSourceReference:
+      type: object
+      required: [id, findingId, documentId]
+      properties:
+        id: { type: integer }
+        findingId: { type: integer }
+        documentId: { type: integer }
+        documentName: { type: string, nullable: true }
+        page: { type: integer, nullable: true }
+        section: { type: string, nullable: true }
+        excerpt: { type: string, nullable: true }
+    AiFinding:
+      type: object
+      required: [id, runId, dealId, category, title, confidence, reviewStatus, createdAt, sources]
+      properties:
+        id: { type: integer }
+        runId: { type: integer }
+        dealId: { type: integer }
+        documentId: { type: integer, nullable: true }
+        documentName: { type: string, nullable: true }
+        category:
+          type: string
+          enum: [document_type, date, party, expiration, financial_value, clause, attention_point, missing_information, related_document, legal, tax]
+        title: { type: string }
+        detail: { type: string, nullable: true }
+        severity: { type: string, nullable: true, enum: [low, medium, high, null] }
+        confidence: { type: string, enum: [high, medium, low] }
+        reviewStatus:
+          type: string
+          enum: [ai_generated, professional_reviewed, verified]
+        reviewedByName: { type: string, nullable: true }
+        reviewedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        sources:
+          type: array
+          items: { $ref: "#/components/schemas/AiSourceReference" }
+    AiAnalysisRun:
+      type: object
+      required: [id, dealId, kind, status, model, createdAt]
+      properties:
+        id: { type: integer }
+        dealId: { type: integer }
+        documentId: { type: integer, nullable: true }
+        kind: { type: string }
+        status: { type: string, enum: [running, completed, failed] }
+        model: { type: string }
+        error: { type: string, nullable: true }
+        requestedByName: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        completedAt: { type: string, format: date-time, nullable: true }
+    AiDocumentSummary:
+      type: object
+      required: [whatIsThisDocument, whyRelevantToTransaction, keyCommercialPoints, importantDates, obligationsAndConditions, attentionPoints, professionalVerificationNeeded]
+      properties:
+        whatIsThisDocument: { type: string }
+        whyRelevantToTransaction: { type: string }
+        keyCommercialPoints:
+          type: array
+          items: { type: string }
+        importantDates:
+          type: array
+          items: { type: string }
+        obligationsAndConditions:
+          type: array
+          items: { type: string }
+        attentionPoints:
+          type: array
+          items: { type: string }
+        professionalVerificationNeeded: { type: string }
+    DocumentAnalysisResponse:
+      type: object
+      required: [findings, disclaimer]
+      properties:
+        run:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AiAnalysisRun"
+        summary:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AiDocumentSummary"
+        findings:
+          type: array
+          items: { $ref: "#/components/schemas/AiFinding" }
+        disclaimer: { type: string }
+    FindingReviewBody:
+      type: object
+      required: [reviewStatus]
+      properties:
+        reviewStatus:
+          type: string
+          enum: [ai_generated, professional_reviewed, verified]
+    AiAssistantMessage:
+      type: object
+      required: [id, dealId, role, content, restricted, createdAt]
+      properties:
+        id: { type: integer }
+        dealId: { type: integer }
+        role: { type: string, enum: [user, assistant] }
+        content: { type: string }
+        restricted: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    AssistantQuestionBody:
+      type: object
+      required: [question]
+      properties:
+        question: { type: string, minLength: 1, maxLength: 4000 }
+    DealAssistantReply:
+      type: object
+      required: [message, restricted, disclaimer]
+      properties:
+        message: { $ref: "#/components/schemas/AiAssistantMessage" }
+        restricted: { type: boolean }
+        disclaimer: { type: string }
+    GenerateAiReportBody:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          enum: [deal_health, document_readiness, review_status]
+    AiReportResponse:
+      type: object
+      required: [kind, report, provenance, generatedAt, disclaimer]
+      properties:
+        kind: { type: string }
+        report: { type: string }
+        provenance:
+          type: array
+          items: { type: string }
+        generatedAt: { type: string, format: date-time }
+        disclaimer: { type: string }
     DealAdvisoryResponse:
       type: object
       required:

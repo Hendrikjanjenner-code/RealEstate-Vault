@@ -1636,6 +1636,264 @@ export const DeleteChecklistTemplateResponse = zod.object({
 
 
 /**
+ * @summary Run AI analysis on a data-room document the caller is authorized to view. Stores an auditable analysis run with findings and source references.
+ */
+export const AnalyzeDealDocumentParams = zod.object({
+  "id": zod.coerce.number().int(),
+  "docId": zod.coerce.number().int()
+})
+
+export const AnalyzeDealDocumentResponse = zod.object({
+  "run": zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "documentId": zod.int().nullish(),
+  "kind": zod.string(),
+  "status": zod.enum(['running', 'completed', 'failed']),
+  "model": zod.string(),
+  "error": zod.string().nullish(),
+  "requestedByName": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "completedAt": zod.coerce.date().nullish()
+}).nullish(),
+  "summary": zod.object({
+  "whatIsThisDocument": zod.string(),
+  "whyRelevantToTransaction": zod.string(),
+  "keyCommercialPoints": zod.array(zod.string()),
+  "importantDates": zod.array(zod.string()),
+  "obligationsAndConditions": zod.array(zod.string()),
+  "attentionPoints": zod.array(zod.string()),
+  "professionalVerificationNeeded": zod.string()
+}).nullish(),
+  "findings": zod.array(zod.object({
+  "id": zod.int(),
+  "runId": zod.int(),
+  "dealId": zod.int(),
+  "documentId": zod.int().nullish(),
+  "documentName": zod.string().nullish(),
+  "category": zod.enum(['document_type', 'date', 'party', 'expiration', 'financial_value', 'clause', 'attention_point', 'missing_information', 'related_document', 'legal', 'tax']),
+  "title": zod.string(),
+  "detail": zod.string().nullish(),
+  "severity": zod.union([zod.literal('low'),zod.literal('medium'),zod.literal('high'),zod.literal(null)]).nullish(),
+  "confidence": zod.enum(['high', 'medium', 'low']),
+  "reviewStatus": zod.enum(['ai_generated', 'professional_reviewed', 'verified']),
+  "reviewedByName": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "sources": zod.array(zod.object({
+  "id": zod.int(),
+  "findingId": zod.int(),
+  "documentId": zod.int(),
+  "documentName": zod.string().nullish(),
+  "page": zod.int().nullish(),
+  "section": zod.string().nullish(),
+  "excerpt": zod.string().nullish()
+}))
+})),
+  "disclaimer": zod.string()
+})
+
+
+/**
+ * @summary Latest AI analysis for a document (if any), with findings and source references.
+ */
+export const GetDealDocumentAnalysisParams = zod.object({
+  "id": zod.coerce.number().int(),
+  "docId": zod.coerce.number().int()
+})
+
+export const GetDealDocumentAnalysisResponse = zod.object({
+  "run": zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "documentId": zod.int().nullish(),
+  "kind": zod.string(),
+  "status": zod.enum(['running', 'completed', 'failed']),
+  "model": zod.string(),
+  "error": zod.string().nullish(),
+  "requestedByName": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "completedAt": zod.coerce.date().nullish()
+}).nullish(),
+  "summary": zod.object({
+  "whatIsThisDocument": zod.string(),
+  "whyRelevantToTransaction": zod.string(),
+  "keyCommercialPoints": zod.array(zod.string()),
+  "importantDates": zod.array(zod.string()),
+  "obligationsAndConditions": zod.array(zod.string()),
+  "attentionPoints": zod.array(zod.string()),
+  "professionalVerificationNeeded": zod.string()
+}).nullish(),
+  "findings": zod.array(zod.object({
+  "id": zod.int(),
+  "runId": zod.int(),
+  "dealId": zod.int(),
+  "documentId": zod.int().nullish(),
+  "documentName": zod.string().nullish(),
+  "category": zod.enum(['document_type', 'date', 'party', 'expiration', 'financial_value', 'clause', 'attention_point', 'missing_information', 'related_document', 'legal', 'tax']),
+  "title": zod.string(),
+  "detail": zod.string().nullish(),
+  "severity": zod.union([zod.literal('low'),zod.literal('medium'),zod.literal('high'),zod.literal(null)]).nullish(),
+  "confidence": zod.enum(['high', 'medium', 'low']),
+  "reviewStatus": zod.enum(['ai_generated', 'professional_reviewed', 'verified']),
+  "reviewedByName": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "sources": zod.array(zod.object({
+  "id": zod.int(),
+  "findingId": zod.int(),
+  "documentId": zod.int(),
+  "documentName": zod.string().nullish(),
+  "page": zod.int().nullish(),
+  "section": zod.string().nullish(),
+  "excerpt": zod.string().nullish()
+}))
+})),
+  "disclaimer": zod.string()
+})
+
+
+/**
+ * @summary All AI findings across documents the caller is authorized to view, for the Legal Review / Tax & Structure sections and the risks center.
+ */
+export const ListDealAiFindingsParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const ListDealAiFindingsResponseItem = zod.object({
+  "id": zod.int(),
+  "runId": zod.int(),
+  "dealId": zod.int(),
+  "documentId": zod.int().nullish(),
+  "documentName": zod.string().nullish(),
+  "category": zod.enum(['document_type', 'date', 'party', 'expiration', 'financial_value', 'clause', 'attention_point', 'missing_information', 'related_document', 'legal', 'tax']),
+  "title": zod.string(),
+  "detail": zod.string().nullish(),
+  "severity": zod.union([zod.literal('low'),zod.literal('medium'),zod.literal('high'),zod.literal(null)]).nullish(),
+  "confidence": zod.enum(['high', 'medium', 'low']),
+  "reviewStatus": zod.enum(['ai_generated', 'professional_reviewed', 'verified']),
+  "reviewedByName": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "sources": zod.array(zod.object({
+  "id": zod.int(),
+  "findingId": zod.int(),
+  "documentId": zod.int(),
+  "documentName": zod.string().nullish(),
+  "page": zod.int().nullish(),
+  "section": zod.string().nullish(),
+  "excerpt": zod.string().nullish()
+}))
+})
+export const ListDealAiFindingsResponse = zod.array(ListDealAiFindingsResponseItem)
+
+
+/**
+ * @summary Mark an AI finding as professionally reviewed or verified (deal manager only). Audited.
+ */
+export const ReviewAiFindingParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const ReviewAiFindingBody = zod.object({
+  "reviewStatus": zod.enum(['ai_generated', 'professional_reviewed', 'verified'])
+})
+
+export const ReviewAiFindingResponse = zod.object({
+  "id": zod.int(),
+  "runId": zod.int(),
+  "dealId": zod.int(),
+  "documentId": zod.int().nullish(),
+  "documentName": zod.string().nullish(),
+  "category": zod.enum(['document_type', 'date', 'party', 'expiration', 'financial_value', 'clause', 'attention_point', 'missing_information', 'related_document', 'legal', 'tax']),
+  "title": zod.string(),
+  "detail": zod.string().nullish(),
+  "severity": zod.union([zod.literal('low'),zod.literal('medium'),zod.literal('high'),zod.literal(null)]).nullish(),
+  "confidence": zod.enum(['high', 'medium', 'low']),
+  "reviewStatus": zod.enum(['ai_generated', 'professional_reviewed', 'verified']),
+  "reviewedByName": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "sources": zod.array(zod.object({
+  "id": zod.int(),
+  "findingId": zod.int(),
+  "documentId": zod.int(),
+  "documentName": zod.string().nullish(),
+  "page": zod.int().nullish(),
+  "section": zod.string().nullish(),
+  "excerpt": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary The caller's AI deal-assistant conversation for this deal.
+ */
+export const GetDealAssistantHistoryParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetDealAssistantHistoryResponseItem = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "role": zod.enum(['user', 'assistant']),
+  "content": zod.string(),
+  "restricted": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const GetDealAssistantHistoryResponse = zod.array(GetDealAssistantHistoryResponseItem)
+
+
+/**
+ * @summary Ask the AI deal assistant a question. The assistant only uses documents and analyses the caller is authorized to view (enforced server-side).
+ */
+export const AskDealAssistantParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const askDealAssistantBodyQuestionMax = 4000;
+
+
+
+export const AskDealAssistantBody = zod.object({
+  "question": zod.string().min(1).max(askDealAssistantBodyQuestionMax)
+})
+
+export const AskDealAssistantResponse = zod.object({
+  "message": zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "role": zod.enum(['user', 'assistant']),
+  "content": zod.string(),
+  "restricted": zod.boolean(),
+  "createdAt": zod.coerce.date()
+}),
+  "restricted": zod.boolean(),
+  "disclaimer": zod.string()
+})
+
+
+/**
+ * @summary Generate a provenance-labelled report (deal health, document readiness or review status) from data the caller is authorized to view. Audited.
+ */
+export const GenerateDealAiReportParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GenerateDealAiReportBody = zod.object({
+  "kind": zod.enum(['deal_health', 'document_readiness', 'review_status'])
+})
+
+export const GenerateDealAiReportResponse = zod.object({
+  "kind": zod.string(),
+  "report": zod.string(),
+  "provenance": zod.array(zod.string()),
+  "generatedAt": zod.coerce.date(),
+  "disclaimer": zod.string()
+})
+
+
+/**
  * @summary List investor mandates
  */
 export const ListMandatesResponseItem = zod.object({
