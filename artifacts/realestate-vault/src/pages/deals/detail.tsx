@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NDA_PARAGRAPHS, NDA_TITLE } from "@workspace/nda-terms";
+import { DealTeamSection } from "@/components/deal-team";
 
 type AccessState = "locked" | "requested" | "nda_sent" | "granted" | "rejected";
 
@@ -254,6 +255,8 @@ export default function DealDetail() {
               </div>
             )}
           </div>
+
+          <DealTeamSection dealId={id} />
 
           <div className="space-y-6">
             <h3 className="text-2xl font-heading font-bold flex items-center gap-2">

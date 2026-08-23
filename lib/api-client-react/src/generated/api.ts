@@ -36,15 +36,24 @@ import type {
   BrokerConnectionRespondInput,
   BrokerProfileEnvelope,
   BrokerProfileInput,
+  CandidateMatch,
   DashboardStats,
   Deal,
   DealDocument,
   DealDocumentInput,
   DealDocumentUpdate,
   DealInput,
+  DealTeamResponse,
+  Engagement,
+  EngagementActionInput,
+  EngagementWithProfessional,
   ErrorEnvelope,
+  FeeProposal,
+  FeeProposalInput,
+  FeeProposalStatusInput,
   HandleBrowserLoginCallbackParams,
   HealthStatus,
+  ListDealTeamCandidatesParams,
   ListDealsParams,
   ListProfessionalsParams,
   ListPublicDealTeasersParams,
@@ -59,6 +68,7 @@ import type {
   MessageThread,
   MobileTokenExchangeRequest,
   MobileTokenExchangeSuccess,
+  MyEngagement,
   Notification,
   OwnerAssignment,
   OwnerAssignmentInput,
@@ -71,6 +81,7 @@ import type {
   SessionResponse,
   SetRoleBody,
   SignNdaInput,
+  TeamInvitationInput,
   Transaction,
   UploadUrlRequest,
   UploadUrlResponse
@@ -2850,6 +2861,532 @@ export const useCreateProfessionalReview = <TError = ErrorType<ApiMessage>,
         TContext
       > => {
       return useMutation(getCreateProfessionalReviewMutationOptions(options));
+    }
+
+export const getGetDealTeamUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/team`
+}
+
+/**
+ * @summary Deal team roles and members. Managers see everything; engaged professionals see the appointed team only.
+ */
+export const getDealTeam = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<DealTeamResponse> => {
+
+  return customFetch<DealTeamResponse>(getGetDealTeamUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDealTeamQueryKey = (id: number,) => {
+    return [
+    `/api/deals/${id}/team`
+    ] as const;
+    }
+
+
+export const getGetDealTeamQueryOptions = <TData = Awaited<ReturnType<typeof getDealTeam>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealTeam>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDealTeamQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDealTeam>>> = ({ signal }) => getDealTeam(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDealTeam>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDealTeamQueryResult = NonNullable<Awaited<ReturnType<typeof getDealTeam>>>
+export type GetDealTeamQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Deal team roles and members. Managers see everything; engaged professionals see the appointed team only.
+ */
+
+export function useGetDealTeam<TData = Awaited<ReturnType<typeof getDealTeam>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealTeam>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDealTeamQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListDealTeamCandidatesUrl = (params: ListDealTeamCandidatesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/deal-team/candidates?${stringifiedParams}` : `/api/deal-team/candidates`
+}
+
+/**
+ * @summary Ranked professional candidates for a deal role, with reasoned match scores (never volume-based).
+ */
+export const listDealTeamCandidates = async (params: ListDealTeamCandidatesParams, options?: Parameters<typeof customFetch>[1]): Promise<CandidateMatch[]> => {
+
+  return customFetch<CandidateMatch[]>(getListDealTeamCandidatesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDealTeamCandidatesQueryKey = (params?: ListDealTeamCandidatesParams,) => {
+    return [
+    `/api/deal-team/candidates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListDealTeamCandidatesQueryOptions = <TData = Awaited<ReturnType<typeof listDealTeamCandidates>>, TError = ErrorType<ApiMessage>>(params: ListDealTeamCandidatesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDealTeamCandidates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDealTeamCandidatesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDealTeamCandidates>>> = ({ signal }) => listDealTeamCandidates(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDealTeamCandidates>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDealTeamCandidatesQueryResult = NonNullable<Awaited<ReturnType<typeof listDealTeamCandidates>>>
+export type ListDealTeamCandidatesQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Ranked professional candidates for a deal role, with reasoned match scores (never volume-based).
+ */
+
+export function useListDealTeamCandidates<TData = Awaited<ReturnType<typeof listDealTeamCandidates>>, TError = ErrorType<ApiMessage>>(
+ params: ListDealTeamCandidatesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDealTeamCandidates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDealTeamCandidatesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateTeamInvitationUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/team/invitations`
+}
+
+/**
+ * @summary Invite a professional to a deal role with scope, data-room permissions and an optional fee proposal.
+ */
+export const createTeamInvitation = async (id: number,
+    teamInvitationInput: TeamInvitationInput, options?: Parameters<typeof customFetch>[1]): Promise<EngagementWithProfessional> => {
+
+  return customFetch<EngagementWithProfessional>(getCreateTeamInvitationUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(teamInvitationInput)
+  }
+);}
+
+
+
+
+
+export const getCreateTeamInvitationMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTeamInvitation>>, TError,{id: number;data: BodyType<TeamInvitationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createTeamInvitation>>, TError,{id: number;data: BodyType<TeamInvitationInput>}, TContext> => {
+
+const mutationKey = ['createTeamInvitation'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTeamInvitation>>, {id: number;data: BodyType<TeamInvitationInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createTeamInvitation(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateTeamInvitationMutationResult = NonNullable<Awaited<ReturnType<typeof createTeamInvitation>>>
+    export type CreateTeamInvitationMutationBody = BodyType<TeamInvitationInput>
+    export type CreateTeamInvitationMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Invite a professional to a deal role with scope, data-room permissions and an optional fee proposal.
+ */
+export const useCreateTeamInvitation = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTeamInvitation>>, TError,{id: number;data: BodyType<TeamInvitationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createTeamInvitation>>,
+        TError,
+        {id: number;data: BodyType<TeamInvitationInput>},
+        TContext
+      > => {
+      return useMutation(getCreateTeamInvitationMutationOptions(options));
+    }
+
+export const getListMyEngagementsUrl = () => {
+
+
+
+
+  return `/api/engagements/mine`
+}
+
+/**
+ * @summary Engagements for the signed-in professional (their workspace).
+ */
+export const listMyEngagements = async ( options?: Parameters<typeof customFetch>[1]): Promise<MyEngagement[]> => {
+
+  return customFetch<MyEngagement[]>(getListMyEngagementsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMyEngagementsQueryKey = () => {
+    return [
+    `/api/engagements/mine`
+    ] as const;
+    }
+
+
+export const getListMyEngagementsQueryOptions = <TData = Awaited<ReturnType<typeof listMyEngagements>>, TError = ErrorType<ApiMessage>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMyEngagements>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMyEngagementsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyEngagements>>> = ({ signal }) => listMyEngagements({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMyEngagements>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMyEngagementsQueryResult = NonNullable<Awaited<ReturnType<typeof listMyEngagements>>>
+export type ListMyEngagementsQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Engagements for the signed-in professional (their workspace).
+ */
+
+export function useListMyEngagements<TData = Awaited<ReturnType<typeof listMyEngagements>>, TError = ErrorType<ApiMessage>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMyEngagements>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMyEngagementsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateEngagementUrl = (id: number,) => {
+
+
+
+
+  return `/api/engagements/${id}`
+}
+
+/**
+ * @summary Advance the engagement lifecycle. Professionals respond (interested / request info / decline); the deal manager appoints, activates, cancels or completes.
+ */
+export const updateEngagement = async (id: number,
+    engagementActionInput: EngagementActionInput, options?: Parameters<typeof customFetch>[1]): Promise<Engagement> => {
+
+  return customFetch<Engagement>(getUpdateEngagementUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(engagementActionInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateEngagementMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEngagement>>, TError,{id: number;data: BodyType<EngagementActionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateEngagement>>, TError,{id: number;data: BodyType<EngagementActionInput>}, TContext> => {
+
+const mutationKey = ['updateEngagement'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateEngagement>>, {id: number;data: BodyType<EngagementActionInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateEngagement(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateEngagementMutationResult = NonNullable<Awaited<ReturnType<typeof updateEngagement>>>
+    export type UpdateEngagementMutationBody = BodyType<EngagementActionInput>
+    export type UpdateEngagementMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Advance the engagement lifecycle. Professionals respond (interested / request info / decline); the deal manager appoints, activates, cancels or completes.
+ */
+export const useUpdateEngagement = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEngagement>>, TError,{id: number;data: BodyType<EngagementActionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateEngagement>>,
+        TError,
+        {id: number;data: BodyType<EngagementActionInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateEngagementMutationOptions(options));
+    }
+
+export const getCreateFeeProposalUrl = (id: number,) => {
+
+
+
+
+  return `/api/engagements/${id}/fee-proposals`
+}
+
+/**
+ * @summary Propose a fee on an engagement (either party). Supersedes earlier open proposals.
+ */
+export const createFeeProposal = async (id: number,
+    feeProposalInput: FeeProposalInput, options?: Parameters<typeof customFetch>[1]): Promise<FeeProposal> => {
+
+  return customFetch<FeeProposal>(getCreateFeeProposalUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(feeProposalInput)
+  }
+);}
+
+
+
+
+
+export const getCreateFeeProposalMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFeeProposal>>, TError,{id: number;data: BodyType<FeeProposalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createFeeProposal>>, TError,{id: number;data: BodyType<FeeProposalInput>}, TContext> => {
+
+const mutationKey = ['createFeeProposal'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createFeeProposal>>, {id: number;data: BodyType<FeeProposalInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createFeeProposal(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateFeeProposalMutationResult = NonNullable<Awaited<ReturnType<typeof createFeeProposal>>>
+    export type CreateFeeProposalMutationBody = BodyType<FeeProposalInput>
+    export type CreateFeeProposalMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Propose a fee on an engagement (either party). Supersedes earlier open proposals.
+ */
+export const useCreateFeeProposal = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFeeProposal>>, TError,{id: number;data: BodyType<FeeProposalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createFeeProposal>>,
+        TError,
+        {id: number;data: BodyType<FeeProposalInput>},
+        TContext
+      > => {
+      return useMutation(getCreateFeeProposalMutationOptions(options));
+    }
+
+export const getUpdateFeeProposalUrl = (id: number,) => {
+
+
+
+
+  return `/api/fee-proposals/${id}`
+}
+
+/**
+ * @summary Accept or reject a fee proposal (counterparty only).
+ */
+export const updateFeeProposal = async (id: number,
+    feeProposalStatusInput: FeeProposalStatusInput, options?: Parameters<typeof customFetch>[1]): Promise<FeeProposal> => {
+
+  return customFetch<FeeProposal>(getUpdateFeeProposalUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(feeProposalStatusInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateFeeProposalMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFeeProposal>>, TError,{id: number;data: BodyType<FeeProposalStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateFeeProposal>>, TError,{id: number;data: BodyType<FeeProposalStatusInput>}, TContext> => {
+
+const mutationKey = ['updateFeeProposal'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateFeeProposal>>, {id: number;data: BodyType<FeeProposalStatusInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateFeeProposal(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateFeeProposalMutationResult = NonNullable<Awaited<ReturnType<typeof updateFeeProposal>>>
+    export type UpdateFeeProposalMutationBody = BodyType<FeeProposalStatusInput>
+    export type UpdateFeeProposalMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Accept or reject a fee proposal (counterparty only).
+ */
+export const useUpdateFeeProposal = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFeeProposal>>, TError,{id: number;data: BodyType<FeeProposalStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateFeeProposal>>,
+        TError,
+        {id: number;data: BodyType<FeeProposalStatusInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateFeeProposalMutationOptions(options));
     }
 
 export const getListMandatesUrl = () => {

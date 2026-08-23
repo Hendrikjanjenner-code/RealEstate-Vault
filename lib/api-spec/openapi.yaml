@@ -12,6 +12,7 @@ tags:
   - name: deals
   - name: brokers
   - name: professionals
+  - name: deal-team
   - name: mandates
   - name: access
   - name: auth
@@ -800,6 +801,269 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/team:
+    get:
+      operationId: getDealTeam
+      tags: [deal-team]
+      summary: Deal team roles and members. Managers see everything; engaged professionals see the appointed team only.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Team
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DealTeamResponse" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deal-team/candidates:
+    get:
+      operationId: listDealTeamCandidates
+      tags: [deal-team]
+      summary: Ranked professional candidates for a deal role, with reasoned match scores (never volume-based).
+      parameters:
+        - name: dealId
+          in: query
+          required: true
+          schema: { type: integer }
+        - name: role
+          in: query
+          required: true
+          schema: { type: string }
+        - name: country
+          in: query
+          required: false
+          schema: { type: string }
+        - name: q
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Candidates
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CandidateMatch" }
+        "400":
+          description: Unknown role
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Not the deal manager
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/team/invitations:
+    post:
+      operationId: createTeamInvitation
+      tags: [deal-team]
+      summary: Invite a professional to a deal role with scope, data-room permissions and an optional fee proposal.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TeamInvitationInput" }
+      responses:
+        "201":
+          description: Created engagement
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EngagementWithProfessional" }
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Not the deal manager
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "409":
+          description: Professional already engaged for this role
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /engagements/mine:
+    get:
+      operationId: listMyEngagements
+      tags: [deal-team]
+      summary: Engagements for the signed-in professional (their workspace).
+      responses:
+        "200":
+          description: Engagements
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/MyEngagement" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /engagements/{id}:
+    patch:
+      operationId: updateEngagement
+      tags: [deal-team]
+      summary: Advance the engagement lifecycle. Professionals respond (interested / request info / decline); the deal manager appoints, activates, cancels or completes.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EngagementActionInput" }
+      responses:
+        "200":
+          description: Updated engagement
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Engagement" }
+        "400":
+          description: Invalid transition
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Not a party to this engagement
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /engagements/{id}/fee-proposals:
+    post:
+      operationId: createFeeProposal
+      tags: [deal-team]
+      summary: Propose a fee on an engagement (either party). Supersedes earlier open proposals.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FeeProposalInput" }
+      responses:
+        "201":
+          description: Created proposal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FeeProposal" }
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Not a party to this engagement
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /fee-proposals/{id}:
+    patch:
+      operationId: updateFeeProposal
+      tags: [deal-team]
+      summary: Accept or reject a fee proposal (counterparty only).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FeeProposalStatusInput" }
+      responses:
+        "200":
+          description: Updated proposal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FeeProposal" }
+        "400":
+          description: Proposal not open
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Not a party to this engagement
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /mandates:
     get:
       operationId: listMandates
@@ -1469,6 +1733,168 @@ components:
         ratingDealUnderstanding: { type: number, minimum: 1, maximum: 10 }
         ratingOverall: { type: number, minimum: 1, maximum: 10 }
         comment: { type: string }
+    DealTeamRole:
+      type: object
+      required: [id, label, category]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        category:
+          type: string
+          description: "Professional marketplace category this role recruits from."
+    DocumentPermission:
+      type: object
+      required: [category, permission]
+      properties:
+        category: { type: string }
+        permission:
+          type: string
+          enum: [view, download, no_access]
+    FeeProposal:
+      type: object
+      required: [id, engagementId, proposedByUserId, proposedByName, feeType, currency, vatIncluded, status, createdAt]
+      properties:
+        id: { type: integer }
+        engagementId: { type: integer }
+        proposedByUserId: { type: string }
+        proposedByName: { type: string }
+        feeType:
+          type: string
+          enum: [fixed, hourly, percentage, success, retainer, custom]
+        amount: { type: ["number", "null"] }
+        currency: { type: string }
+        percentage: { type: ["number", "null"] }
+        vatIncluded: { type: boolean }
+        paymentTerms: { type: ["string", "null"] }
+        scopeDescription: { type: ["string", "null"] }
+        status:
+          type: string
+          enum: [proposed, accepted, rejected, superseded]
+        createdAt: { type: string, format: date-time }
+    FeeProposalInput:
+      type: object
+      required: [feeType]
+      properties:
+        feeType:
+          type: string
+          enum: [fixed, hourly, percentage, success, retainer, custom]
+        amount: { type: number }
+        currency: { type: string }
+        percentage: { type: number }
+        vatIncluded: { type: boolean }
+        paymentTerms: { type: string }
+        scopeDescription: { type: string }
+    Engagement:
+      type: object
+      required: [id, dealId, professionalId, role, invitedByUserId, invitedByName, status, updatedAt, createdAt]
+      properties:
+        id: { type: integer }
+        dealId: { type: integer }
+        professionalId: { type: integer }
+        role: { type: string }
+        invitedByUserId: { type: string }
+        invitedByName: { type: string }
+        scope: { type: ["string", "null"] }
+        message: { type: ["string", "null"] }
+        status:
+          type: string
+          enum: [invited, interested, info_requested, proposal_sent, negotiation, appointed, active, declined, completed, cancelled]
+        matchScore: { type: ["number", "null"] }
+        matchReasons:
+          type: ["array", "null"]
+          items: { type: string }
+        respondedAt: { type: ["string", "null"], format: date-time }
+        updatedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+    EngagementWithProfessional:
+      type: object
+      required: [engagement, professional, permissions, feeProposals]
+      properties:
+        engagement: { $ref: "#/components/schemas/Engagement" }
+        professional: { $ref: "#/components/schemas/Broker" }
+        permissions:
+          type: array
+          items: { $ref: "#/components/schemas/DocumentPermission" }
+        feeProposals:
+          type: array
+          items: { $ref: "#/components/schemas/FeeProposal" }
+    DealTeamResponse:
+      type: object
+      required: [roles, members, canManage, documentCategories]
+      properties:
+        roles:
+          type: array
+          items: { $ref: "#/components/schemas/DealTeamRole" }
+        members:
+          type: array
+          items: { $ref: "#/components/schemas/EngagementWithProfessional" }
+        canManage:
+          type: boolean
+          description: "Whether the viewer may invite/appoint professionals on this deal."
+        documentCategories:
+          type: array
+          items: { type: string }
+          description: "Data room categories on this deal, for permission grids."
+    CandidateMatch:
+      type: object
+      required: [professional, matchScore, matchReasons]
+      properties:
+        professional: { $ref: "#/components/schemas/Broker" }
+        matchScore: { type: number }
+        matchReasons:
+          type: array
+          items: { type: string }
+    TeamInvitationInput:
+      type: object
+      required: [professionalId, role, permissions]
+      properties:
+        professionalId: { type: integer }
+        role: { type: string }
+        scope: { type: string }
+        message: { type: string }
+        permissions:
+          type: array
+          items: { $ref: "#/components/schemas/DocumentPermission" }
+        feeProposal: { $ref: "#/components/schemas/FeeProposalInput" }
+    EngagementActionInput:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [interested, request_info, decline, appoint, activate, cancel, complete]
+        message: { type: string }
+    FeeProposalStatusInput:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [accepted, rejected]
+    EngagementDealSummary:
+      type: object
+      required: [id, title, assetClass, country, city, confidential]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        assetClass: { type: string }
+        country: { type: string }
+        city: { type: string }
+        confidential: { type: boolean }
+        askingPrice: { type: ["number", "null"] }
+        currency: { type: ["string", "null"] }
+    MyEngagement:
+      type: object
+      required: [engagement, deal, permissions, feeProposals]
+      properties:
+        engagement: { $ref: "#/components/schemas/Engagement" }
+        deal: { $ref: "#/components/schemas/EngagementDealSummary" }
+        permissions:
+          type: array
+          items: { $ref: "#/components/schemas/DocumentPermission" }
+        feeProposals:
+          type: array
+          items: { $ref: "#/components/schemas/FeeProposal" }
     BrokerProfileEnvelope:
       type: object
       required: [profile]

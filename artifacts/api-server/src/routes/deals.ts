@@ -1,7 +1,17 @@
 import { randomUUID } from "crypto";
 import { Readable } from "stream";
 import { toJson } from "../lib/serialize";
-import { Router, type IRouter, type Request } from "express";
+import {
+  getEngagementDocAccess,
+  permissionAllowsView,
+  permissionAllowsDownload,
+} from "../lib/dealTeamAccess";
+import {
+  Router,
+  type IRouter,
+  type Request,
+  type Response as ExpressResponse,
+} from "express";
 import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import {
   db,
@@ -81,7 +91,7 @@ function hasBrokerCredential(req: Request): boolean {
  * authenticated broker. Unowned (seeded/demo) deals may be managed by any
  * authenticated broker.
  */
-function canManageDealDocuments(req: Request, deal: Deal): boolean {
+export function canManageDealDocuments(req: Request, deal: Deal): boolean {
   if (deal.brokerUserId != null) {
     return req.isAuthenticated() && req.user.id === deal.brokerUserId;
   }
@@ -451,8 +461,22 @@ router.get("/deals/:id/documents", async (req, res): Promise<void> => {
     .where(eq(dealDocumentsTable.dealId, params.data.id))
     .orderBy(dealDocumentsTable.id);
 
-  // NDA-required documents are withheld entirely until access is granted.
-  const visible = granted ? docs : docs.filter((doc) => !doc.ndaRequired);
+  // Appointed/active deal-team professionals see exactly the categories they
+  // were granted — nothing more, regardless of NDA state or confidentiality.
+  // Their engagement permissions are authoritative (unless they also manage
+  // the deal); data isolation is enforced here, server-side, never client-side.
+  const engagementAccess = canManageDealDocuments(req, deal)
+    ? null
+    : await getEngagementDocAccess(deal.id, req.user.id);
+  let visible: typeof docs;
+  if (engagementAccess != null) {
+    visible = docs.filter((doc) =>
+      permissionAllowsView(engagementAccess.get(doc.category)),
+    );
+  } else {
+    // NDA-required documents are withheld entirely until access is granted.
+    visible = granted ? docs : docs.filter((doc) => !doc.ndaRequired);
+  }
 
   res.json(ListDealDocumentsResponse.parse(toJson(visible.map(toPublicDocument))));
 });
@@ -746,6 +770,39 @@ router.get(
       return;
     }
 
+    // Deal-team professionals: their engagement permissions are authoritative
+    // for every document — an explicit download grant on this category is
+    // required, and a signed NDA can never widen their engagement scope
+    // (unless they also manage the deal themselves).
+    if (req.isAuthenticated()) {
+      const [dealRow] = await db
+        .select()
+        .from(dealsTable)
+        .where(eq(dealsTable.id, doc.dealId));
+      const isManager = dealRow != null && canManageDealDocuments(req, dealRow);
+      if (!isManager) {
+        const engagementAccess = await getEngagementDocAccess(
+          doc.dealId,
+          req.user.id,
+        );
+        if (
+          engagementAccess != null &&
+          !permissionAllowsDownload(engagementAccess.get(doc.category))
+        ) {
+          res.status(403).json({
+            error:
+              "Your engagement does not include download rights for this document category.",
+          });
+          return;
+        }
+        if (engagementAccess != null) {
+          // Grant confirmed: skip the NDA gate below.
+          await streamDocument(req, doc, res);
+          return;
+        }
+      }
+    }
+
     // NDA gate: accept either an unguessable server-issued download token
     // (from the requestKey signing flow) or a session-linked nda_signed request.
     if (doc.ndaRequired) {
@@ -797,46 +854,55 @@ router.get(
       return;
     }
 
-    if (!doc.objectPath) {
-      res.status(404).json({
-        error: "No file is attached to this document yet.",
-      });
-      return;
-    }
-
-    try {
-      const objectFile = await objectStorageService.getObjectEntityFile(
-        doc.objectPath,
-      );
-      const response = await objectStorageService.downloadObject(objectFile);
-
-      res.status(response.status);
-      response.headers.forEach((value, key) => res.setHeader(key, value));
-      if (doc.contentType) {
-        res.setHeader("Content-Type", doc.contentType);
-      }
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${doc.name.replace(/["\\]/g, "")}"`,
-      );
-
-      if (response.body) {
-        const nodeStream = Readable.fromWeb(
-          response.body as ReadableStream<Uint8Array>,
-        );
-        nodeStream.pipe(res);
-      } else {
-        res.end();
-      }
-    } catch (error) {
-      if (error instanceof ObjectNotFoundError) {
-        res.status(404).json({ error: "File not found in storage" });
-        return;
-      }
-      req.log.error({ err: error }, "Error downloading document");
-      res.status(500).json({ error: "Failed to download document" });
-    }
+    await streamDocument(req, doc, res);
   },
 );
+
+/** Stream a data-room document's file from object storage to the response. */
+async function streamDocument(
+  req: Request,
+  doc: typeof dealDocumentsTable.$inferSelect,
+  res: ExpressResponse,
+): Promise<void> {
+  if (!doc.objectPath) {
+    res.status(404).json({
+      error: "No file is attached to this document yet.",
+    });
+    return;
+  }
+
+  try {
+    const objectFile = await objectStorageService.getObjectEntityFile(
+      doc.objectPath,
+    );
+    const response = await objectStorageService.downloadObject(objectFile);
+
+    res.status(response.status);
+    response.headers.forEach((value, key) => res.setHeader(key, value));
+    if (doc.contentType) {
+      res.setHeader("Content-Type", doc.contentType);
+    }
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${doc.name.replace(/["\\]/g, "")}"`,
+    );
+
+    if (response.body) {
+      const nodeStream = Readable.fromWeb(
+        response.body as ReadableStream<Uint8Array>,
+      );
+      nodeStream.pipe(res);
+    } else {
+      res.end();
+    }
+  } catch (error) {
+    if (error instanceof ObjectNotFoundError) {
+      res.status(404).json({ error: "File not found in storage" });
+      return;
+    }
+    req.log.error({ err: error }, "Error downloading document");
+    res.status(500).json({ error: "Failed to download document" });
+  }
+}
 
 export default router;

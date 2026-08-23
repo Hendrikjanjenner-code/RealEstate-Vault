@@ -44,7 +44,7 @@ const VERIFICATION_TIER_WEIGHT: Record<string, number> = {
   specialist_verified: 1.5,
 };
 
-type ReviewAggregate = { avgRating: number | null; reviewCount: number };
+export type ReviewAggregate = { avgRating: number | null; reviewCount: number };
 
 // A review counts (for serving and for ranking) only when its verification
 // can be trusted: 'connection' reviews are created server-side against an
@@ -59,7 +59,7 @@ function isServableReview(
   return review.source === "seeded" && professional.isDemo;
 }
 
-async function getReviewAggregates(
+export async function getReviewAggregates(
   professionals: Pick<Broker, "id" | "isDemo">[],
 ): Promise<Map<number, ReviewAggregate>> {
   const aggregates = new Map<number, ReviewAggregate>();
@@ -88,7 +88,7 @@ async function getReviewAggregates(
   return aggregates;
 }
 
-function presentProfessional(
+export function presentProfessional(
   professional: Broker,
   aggregate: ReviewAggregate | undefined,
 ) {

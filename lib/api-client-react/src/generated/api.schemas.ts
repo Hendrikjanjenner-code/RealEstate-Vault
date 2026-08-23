@@ -419,6 +419,210 @@ export interface ProfessionalReviewInput {
   comment?: string;
 }
 
+export interface DealTeamRole {
+  id: string;
+  label: string;
+  /** Professional marketplace category this role recruits from. */
+  category: string;
+}
+
+export type DocumentPermissionPermission = typeof DocumentPermissionPermission[keyof typeof DocumentPermissionPermission];
+
+
+export const DocumentPermissionPermission = {
+  view: 'view',
+  download: 'download',
+  no_access: 'no_access',
+} as const;
+
+export interface DocumentPermission {
+  category: string;
+  permission: DocumentPermissionPermission;
+}
+
+export type FeeProposalFeeType = typeof FeeProposalFeeType[keyof typeof FeeProposalFeeType];
+
+
+export const FeeProposalFeeType = {
+  fixed: 'fixed',
+  hourly: 'hourly',
+  percentage: 'percentage',
+  success: 'success',
+  retainer: 'retainer',
+  custom: 'custom',
+} as const;
+
+export type FeeProposalStatus = typeof FeeProposalStatus[keyof typeof FeeProposalStatus];
+
+
+export const FeeProposalStatus = {
+  proposed: 'proposed',
+  accepted: 'accepted',
+  rejected: 'rejected',
+  superseded: 'superseded',
+} as const;
+
+export interface FeeProposal {
+  id: number;
+  engagementId: number;
+  proposedByUserId: string;
+  proposedByName: string;
+  feeType: FeeProposalFeeType;
+  /** @nullable */
+  amount?: number | null;
+  currency: string;
+  /** @nullable */
+  percentage?: number | null;
+  vatIncluded: boolean;
+  /** @nullable */
+  paymentTerms?: string | null;
+  /** @nullable */
+  scopeDescription?: string | null;
+  status: FeeProposalStatus;
+  createdAt: string;
+}
+
+export type FeeProposalInputFeeType = typeof FeeProposalInputFeeType[keyof typeof FeeProposalInputFeeType];
+
+
+export const FeeProposalInputFeeType = {
+  fixed: 'fixed',
+  hourly: 'hourly',
+  percentage: 'percentage',
+  success: 'success',
+  retainer: 'retainer',
+  custom: 'custom',
+} as const;
+
+export interface FeeProposalInput {
+  feeType: FeeProposalInputFeeType;
+  amount?: number;
+  currency?: string;
+  percentage?: number;
+  vatIncluded?: boolean;
+  paymentTerms?: string;
+  scopeDescription?: string;
+}
+
+export type EngagementStatus = typeof EngagementStatus[keyof typeof EngagementStatus];
+
+
+export const EngagementStatus = {
+  invited: 'invited',
+  interested: 'interested',
+  info_requested: 'info_requested',
+  proposal_sent: 'proposal_sent',
+  negotiation: 'negotiation',
+  appointed: 'appointed',
+  active: 'active',
+  declined: 'declined',
+  completed: 'completed',
+  cancelled: 'cancelled',
+} as const;
+
+export interface Engagement {
+  id: number;
+  dealId: number;
+  professionalId: number;
+  role: string;
+  invitedByUserId: string;
+  invitedByName: string;
+  /** @nullable */
+  scope?: string | null;
+  /** @nullable */
+  message?: string | null;
+  status: EngagementStatus;
+  /** @nullable */
+  matchScore?: number | null;
+  /** @nullable */
+  matchReasons?: string[] | null;
+  /** @nullable */
+  respondedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+
+export interface EngagementWithProfessional {
+  engagement: Engagement;
+  professional: Broker;
+  permissions: DocumentPermission[];
+  feeProposals: FeeProposal[];
+}
+
+export interface DealTeamResponse {
+  roles: DealTeamRole[];
+  members: EngagementWithProfessional[];
+  /** Whether the viewer may invite/appoint professionals on this deal. */
+  canManage: boolean;
+  /** Data room categories on this deal, for permission grids. */
+  documentCategories: string[];
+}
+
+export interface CandidateMatch {
+  professional: Broker;
+  matchScore: number;
+  matchReasons: string[];
+}
+
+export interface TeamInvitationInput {
+  professionalId: number;
+  role: string;
+  scope?: string;
+  message?: string;
+  permissions: DocumentPermission[];
+  feeProposal?: FeeProposalInput;
+}
+
+export type EngagementActionInputAction = typeof EngagementActionInputAction[keyof typeof EngagementActionInputAction];
+
+
+export const EngagementActionInputAction = {
+  interested: 'interested',
+  request_info: 'request_info',
+  decline: 'decline',
+  appoint: 'appoint',
+  activate: 'activate',
+  cancel: 'cancel',
+  complete: 'complete',
+} as const;
+
+export interface EngagementActionInput {
+  action: EngagementActionInputAction;
+  message?: string;
+}
+
+export type FeeProposalStatusInputStatus = typeof FeeProposalStatusInputStatus[keyof typeof FeeProposalStatusInputStatus];
+
+
+export const FeeProposalStatusInputStatus = {
+  accepted: 'accepted',
+  rejected: 'rejected',
+} as const;
+
+export interface FeeProposalStatusInput {
+  status: FeeProposalStatusInputStatus;
+}
+
+export interface EngagementDealSummary {
+  id: number;
+  title: string;
+  assetClass: string;
+  country: string;
+  city: string;
+  confidential: boolean;
+  /** @nullable */
+  askingPrice?: number | null;
+  /** @nullable */
+  currency?: string | null;
+}
+
+export interface MyEngagement {
+  engagement: Engagement;
+  deal: EngagementDealSummary;
+  permissions: DocumentPermission[];
+  feeProposals: FeeProposal[];
+}
+
 export interface BrokerProfileEnvelope {
   profile: Broker | null;
 }
@@ -767,6 +971,13 @@ country?: string;
 /**
  * Free-text match on name, company or city.
  */
+q?: string;
+};
+
+export type ListDealTeamCandidatesParams = {
+dealId: number;
+role: string;
+country?: string;
 q?: string;
 };
 

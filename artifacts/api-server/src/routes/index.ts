@@ -5,6 +5,7 @@ import dealsRouter from "./deals";
 import accessRequestsRouter from "./access-requests";
 import networkRouter from "./network";
 import professionalsRouter from "./professionals";
+import dealTeamRouter from "./deal-team";
 import messagesRouter from "./messages";
 import ownerNetworkRouter from "./owner-network";
 import dashboardRouter from "./dashboard";
@@ -40,6 +41,7 @@ router.use(requireAuth);
 
 router.use(networkRouter);
 router.use(professionalsRouter);
+router.use(dealTeamRouter);
 router.use(ownerNetworkRouter);
 router.use(messagesRouter);
 router.use(dashboardRouter);

@@ -963,6 +963,370 @@ export const CreateProfessionalReviewResponse = zod.object({
 
 
 /**
+ * @summary Deal team roles and members. Managers see everything; engaged professionals see the appointed team only.
+ */
+export const GetDealTeamParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetDealTeamResponse = zod.object({
+  "roles": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "category": zod.string().describe('Professional marketplace category this role recruits from.')
+})),
+  "members": zod.array(zod.object({
+  "engagement": zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "professionalId": zod.int(),
+  "role": zod.string(),
+  "invitedByUserId": zod.string(),
+  "invitedByName": zod.string(),
+  "scope": zod.string().nullish(),
+  "message": zod.string().nullish(),
+  "status": zod.enum(['invited', 'interested', 'info_requested', 'proposal_sent', 'negotiation', 'appointed', 'active', 'declined', 'completed', 'cancelled']),
+  "matchScore": zod.number().nullish(),
+  "matchReasons": zod.array(zod.string()).nullish(),
+  "respondedAt": zod.coerce.date().nullish(),
+  "updatedAt": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+}),
+  "professional": zod.object({
+  "id": zod.int(),
+  "userId": zod.string().nullish().describe('Auth user id this profile belongs to. Null for demo personas.'),
+  "isDemo": zod.boolean().describe('True for seeded demo personas not tied to a real account.'),
+  "name": zod.string(),
+  "company": zod.string(),
+  "title": zod.string(),
+  "city": zod.string(),
+  "country": zod.string(),
+  "verified": zod.boolean(),
+  "score": zod.number(),
+  "closedDeals": zod.int(),
+  "transactionVolume": zod.number(),
+  "yearsExperience": zod.int(),
+  "specialisations": zod.array(zod.string()),
+  "bio": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "category": zod.string().describe('Professional category slug (e.g. brokers, legal_advisors). The canonical list comes from \/professionals\/categories.'),
+  "verificationStatus": zod.enum(['unverified', 'verification_pending', 'verified_professional', 'verified_firm', 'specialist_verified']),
+  "countries": zod.array(zod.string()),
+  "languages": zod.array(zod.string()),
+  "assetClasses": zod.array(zod.string()),
+  "credentials": zod.array(zod.string()),
+  "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
+  "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
+}),
+  "permissions": zod.array(zod.object({
+  "category": zod.string(),
+  "permission": zod.enum(['view', 'download', 'no_access'])
+})),
+  "feeProposals": zod.array(zod.object({
+  "id": zod.int(),
+  "engagementId": zod.int(),
+  "proposedByUserId": zod.string(),
+  "proposedByName": zod.string(),
+  "feeType": zod.enum(['fixed', 'hourly', 'percentage', 'success', 'retainer', 'custom']),
+  "amount": zod.number().nullish(),
+  "currency": zod.string(),
+  "percentage": zod.number().nullish(),
+  "vatIncluded": zod.boolean(),
+  "paymentTerms": zod.string().nullish(),
+  "scopeDescription": zod.string().nullish(),
+  "status": zod.enum(['proposed', 'accepted', 'rejected', 'superseded']),
+  "createdAt": zod.coerce.date()
+}))
+})),
+  "canManage": zod.boolean().describe('Whether the viewer may invite\/appoint professionals on this deal.'),
+  "documentCategories": zod.array(zod.string()).describe('Data room categories on this deal, for permission grids.')
+})
+
+
+/**
+ * @summary Ranked professional candidates for a deal role, with reasoned match scores (never volume-based).
+ */
+export const ListDealTeamCandidatesQueryParams = zod.object({
+  "dealId": zod.coerce.number().int(),
+  "role": zod.coerce.string(),
+  "country": zod.coerce.string().optional(),
+  "q": zod.coerce.string().optional()
+})
+
+export const ListDealTeamCandidatesResponseItem = zod.object({
+  "professional": zod.object({
+  "id": zod.int(),
+  "userId": zod.string().nullish().describe('Auth user id this profile belongs to. Null for demo personas.'),
+  "isDemo": zod.boolean().describe('True for seeded demo personas not tied to a real account.'),
+  "name": zod.string(),
+  "company": zod.string(),
+  "title": zod.string(),
+  "city": zod.string(),
+  "country": zod.string(),
+  "verified": zod.boolean(),
+  "score": zod.number(),
+  "closedDeals": zod.int(),
+  "transactionVolume": zod.number(),
+  "yearsExperience": zod.int(),
+  "specialisations": zod.array(zod.string()),
+  "bio": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "category": zod.string().describe('Professional category slug (e.g. brokers, legal_advisors). The canonical list comes from \/professionals\/categories.'),
+  "verificationStatus": zod.enum(['unverified', 'verification_pending', 'verified_professional', 'verified_firm', 'specialist_verified']),
+  "countries": zod.array(zod.string()),
+  "languages": zod.array(zod.string()),
+  "assetClasses": zod.array(zod.string()),
+  "credentials": zod.array(zod.string()),
+  "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
+  "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
+}),
+  "matchScore": zod.number(),
+  "matchReasons": zod.array(zod.string())
+})
+export const ListDealTeamCandidatesResponse = zod.array(ListDealTeamCandidatesResponseItem)
+
+
+/**
+ * @summary Invite a professional to a deal role with scope, data-room permissions and an optional fee proposal.
+ */
+export const CreateTeamInvitationParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const CreateTeamInvitationBody = zod.object({
+  "professionalId": zod.int(),
+  "role": zod.string(),
+  "scope": zod.string().optional(),
+  "message": zod.string().optional(),
+  "permissions": zod.array(zod.object({
+  "category": zod.string(),
+  "permission": zod.enum(['view', 'download', 'no_access'])
+})),
+  "feeProposal": zod.object({
+  "feeType": zod.enum(['fixed', 'hourly', 'percentage', 'success', 'retainer', 'custom']),
+  "amount": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "percentage": zod.number().optional(),
+  "vatIncluded": zod.boolean().optional(),
+  "paymentTerms": zod.string().optional(),
+  "scopeDescription": zod.string().optional()
+}).optional()
+})
+
+export const CreateTeamInvitationResponse = zod.object({
+  "engagement": zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "professionalId": zod.int(),
+  "role": zod.string(),
+  "invitedByUserId": zod.string(),
+  "invitedByName": zod.string(),
+  "scope": zod.string().nullish(),
+  "message": zod.string().nullish(),
+  "status": zod.enum(['invited', 'interested', 'info_requested', 'proposal_sent', 'negotiation', 'appointed', 'active', 'declined', 'completed', 'cancelled']),
+  "matchScore": zod.number().nullish(),
+  "matchReasons": zod.array(zod.string()).nullish(),
+  "respondedAt": zod.coerce.date().nullish(),
+  "updatedAt": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+}),
+  "professional": zod.object({
+  "id": zod.int(),
+  "userId": zod.string().nullish().describe('Auth user id this profile belongs to. Null for demo personas.'),
+  "isDemo": zod.boolean().describe('True for seeded demo personas not tied to a real account.'),
+  "name": zod.string(),
+  "company": zod.string(),
+  "title": zod.string(),
+  "city": zod.string(),
+  "country": zod.string(),
+  "verified": zod.boolean(),
+  "score": zod.number(),
+  "closedDeals": zod.int(),
+  "transactionVolume": zod.number(),
+  "yearsExperience": zod.int(),
+  "specialisations": zod.array(zod.string()),
+  "bio": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "category": zod.string().describe('Professional category slug (e.g. brokers, legal_advisors). The canonical list comes from \/professionals\/categories.'),
+  "verificationStatus": zod.enum(['unverified', 'verification_pending', 'verified_professional', 'verified_firm', 'specialist_verified']),
+  "countries": zod.array(zod.string()),
+  "languages": zod.array(zod.string()),
+  "assetClasses": zod.array(zod.string()),
+  "credentials": zod.array(zod.string()),
+  "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
+  "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
+}),
+  "permissions": zod.array(zod.object({
+  "category": zod.string(),
+  "permission": zod.enum(['view', 'download', 'no_access'])
+})),
+  "feeProposals": zod.array(zod.object({
+  "id": zod.int(),
+  "engagementId": zod.int(),
+  "proposedByUserId": zod.string(),
+  "proposedByName": zod.string(),
+  "feeType": zod.enum(['fixed', 'hourly', 'percentage', 'success', 'retainer', 'custom']),
+  "amount": zod.number().nullish(),
+  "currency": zod.string(),
+  "percentage": zod.number().nullish(),
+  "vatIncluded": zod.boolean(),
+  "paymentTerms": zod.string().nullish(),
+  "scopeDescription": zod.string().nullish(),
+  "status": zod.enum(['proposed', 'accepted', 'rejected', 'superseded']),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Engagements for the signed-in professional (their workspace).
+ */
+export const ListMyEngagementsResponseItem = zod.object({
+  "engagement": zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "professionalId": zod.int(),
+  "role": zod.string(),
+  "invitedByUserId": zod.string(),
+  "invitedByName": zod.string(),
+  "scope": zod.string().nullish(),
+  "message": zod.string().nullish(),
+  "status": zod.enum(['invited', 'interested', 'info_requested', 'proposal_sent', 'negotiation', 'appointed', 'active', 'declined', 'completed', 'cancelled']),
+  "matchScore": zod.number().nullish(),
+  "matchReasons": zod.array(zod.string()).nullish(),
+  "respondedAt": zod.coerce.date().nullish(),
+  "updatedAt": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+}),
+  "deal": zod.object({
+  "id": zod.int(),
+  "title": zod.string(),
+  "assetClass": zod.string(),
+  "country": zod.string(),
+  "city": zod.string(),
+  "confidential": zod.boolean(),
+  "askingPrice": zod.number().nullish(),
+  "currency": zod.string().nullish()
+}),
+  "permissions": zod.array(zod.object({
+  "category": zod.string(),
+  "permission": zod.enum(['view', 'download', 'no_access'])
+})),
+  "feeProposals": zod.array(zod.object({
+  "id": zod.int(),
+  "engagementId": zod.int(),
+  "proposedByUserId": zod.string(),
+  "proposedByName": zod.string(),
+  "feeType": zod.enum(['fixed', 'hourly', 'percentage', 'success', 'retainer', 'custom']),
+  "amount": zod.number().nullish(),
+  "currency": zod.string(),
+  "percentage": zod.number().nullish(),
+  "vatIncluded": zod.boolean(),
+  "paymentTerms": zod.string().nullish(),
+  "scopeDescription": zod.string().nullish(),
+  "status": zod.enum(['proposed', 'accepted', 'rejected', 'superseded']),
+  "createdAt": zod.coerce.date()
+}))
+})
+export const ListMyEngagementsResponse = zod.array(ListMyEngagementsResponseItem)
+
+
+/**
+ * @summary Advance the engagement lifecycle. Professionals respond (interested / request info / decline); the deal manager appoints, activates, cancels or completes.
+ */
+export const UpdateEngagementParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const UpdateEngagementBody = zod.object({
+  "action": zod.enum(['interested', 'request_info', 'decline', 'appoint', 'activate', 'cancel', 'complete']),
+  "message": zod.string().optional()
+})
+
+export const UpdateEngagementResponse = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "professionalId": zod.int(),
+  "role": zod.string(),
+  "invitedByUserId": zod.string(),
+  "invitedByName": zod.string(),
+  "scope": zod.string().nullish(),
+  "message": zod.string().nullish(),
+  "status": zod.enum(['invited', 'interested', 'info_requested', 'proposal_sent', 'negotiation', 'appointed', 'active', 'declined', 'completed', 'cancelled']),
+  "matchScore": zod.number().nullish(),
+  "matchReasons": zod.array(zod.string()).nullish(),
+  "respondedAt": zod.coerce.date().nullish(),
+  "updatedAt": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Propose a fee on an engagement (either party). Supersedes earlier open proposals.
+ */
+export const CreateFeeProposalParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const CreateFeeProposalBody = zod.object({
+  "feeType": zod.enum(['fixed', 'hourly', 'percentage', 'success', 'retainer', 'custom']),
+  "amount": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "percentage": zod.number().optional(),
+  "vatIncluded": zod.boolean().optional(),
+  "paymentTerms": zod.string().optional(),
+  "scopeDescription": zod.string().optional()
+})
+
+export const CreateFeeProposalResponse = zod.object({
+  "id": zod.int(),
+  "engagementId": zod.int(),
+  "proposedByUserId": zod.string(),
+  "proposedByName": zod.string(),
+  "feeType": zod.enum(['fixed', 'hourly', 'percentage', 'success', 'retainer', 'custom']),
+  "amount": zod.number().nullish(),
+  "currency": zod.string(),
+  "percentage": zod.number().nullish(),
+  "vatIncluded": zod.boolean(),
+  "paymentTerms": zod.string().nullish(),
+  "scopeDescription": zod.string().nullish(),
+  "status": zod.enum(['proposed', 'accepted', 'rejected', 'superseded']),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Accept or reject a fee proposal (counterparty only).
+ */
+export const UpdateFeeProposalParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const UpdateFeeProposalBody = zod.object({
+  "status": zod.enum(['accepted', 'rejected'])
+})
+
+export const UpdateFeeProposalResponse = zod.object({
+  "id": zod.int(),
+  "engagementId": zod.int(),
+  "proposedByUserId": zod.string(),
+  "proposedByName": zod.string(),
+  "feeType": zod.enum(['fixed', 'hourly', 'percentage', 'success', 'retainer', 'custom']),
+  "amount": zod.number().nullish(),
+  "currency": zod.string(),
+  "percentage": zod.number().nullish(),
+  "vatIncluded": zod.boolean(),
+  "paymentTerms": zod.string().nullish(),
+  "scopeDescription": zod.string().nullish(),
+  "status": zod.enum(['proposed', 'accepted', 'rejected', 'superseded']),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
  * @summary List investor mandates
  */
 export const ListMandatesResponseItem = zod.object({

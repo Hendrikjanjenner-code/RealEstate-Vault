@@ -56,6 +56,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           { label: "Deals", href: "/demo/deals", icon: Briefcase },
           { label: "Mandates", href: "/demo/mandates", icon: FileText },
           { label: "Professionals", href: "/demo/professionals", icon: Users },
+          { label: "My Engagements", href: "/demo/engagements", icon: Handshake },
           { label: "Messages", href: "/demo/messages", icon: Send },
           { label: "Transactions", href: "/demo/transactions", icon: Handshake },
           { label: "Access Requests", href: "/demo/access-requests", icon: Shield },

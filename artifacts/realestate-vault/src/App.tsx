@@ -23,6 +23,7 @@ import Mandates from '@/pages/mandates';
 import MandateMatches from '@/pages/mandates/matches';
 import Brokers from '@/pages/brokers';
 import Professionals from '@/pages/professionals';
+import Engagements from '@/pages/engagements';
 import BrokerDetail from '@/pages/brokers/detail';
 import Messages from '@/pages/messages';
 import Transactions from '@/pages/transactions';
@@ -135,6 +136,7 @@ function AppShellRouter() {
         <Route path="/demo/brokers" component={Brokers} />
         <Route path="/demo/brokers/:id" component={BrokerDetail} />
         <Route path="/demo/professionals" component={Professionals} />
+        <Route path="/demo/engagements" component={Engagements} />
         <Route path="/demo/professionals/:id" component={BrokerDetail} />
         <Route path="/demo/messages" component={Messages} />
         <Route path="/demo/transactions" component={Transactions} />
