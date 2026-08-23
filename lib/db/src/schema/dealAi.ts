@@ -62,6 +62,17 @@ export const aiFindingsTable = pgTable("ai_findings", {
   reviewedByUserId: text("reviewed_by_user_id"),
   reviewedByName: text("reviewed_by_name"),
   reviewedAt: timestamp("reviewed_at"),
+  // Professional classification of the finding (Professional Reviews tab):
+  // 'confirmed' | 'not_relevant' | 'needs_more_information' | 'material_risk'
+  // | 'minor_risk' | 'resolved'. Null until a professional/manager classifies.
+  classification: text("classification"),
+  classificationNote: text("classification_note"),
+  classificationDocumentId: integer("classification_document_id").references(
+    () => dealDocumentsTable.id,
+  ),
+  classifiedByUserId: text("classified_by_user_id"),
+  classifiedByName: text("classified_by_name"),
+  classifiedAt: timestamp("classified_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

@@ -31,7 +31,7 @@ import {
   GenerateDealAiReportBody,
   GenerateDealAiReportResponse,
 } from "@workspace/api-zod";
-import { canManageDealDocuments, getAccessStatuses } from "./deals";
+import { getAccessStatuses } from "./deals";
 import {
   getEngagementDocAccess,
   permissionAllowsView,
@@ -78,7 +78,11 @@ export async function resolveViewerAccess(
   deal: Deal,
 ): Promise<ViewerAccess> {
   if (!req.isAuthenticated()) return { mode: "basic" };
-  if (canManageDealDocuments(req, deal)) return { mode: "manager" };
+  // Strict manager identity only: the any-broker fallback for unowned deals
+  // must never expose AI analysis of confidential data-room content.
+  if (deal.brokerUserId != null && req.user.id === deal.brokerUserId) {
+    return { mode: "manager" };
+  }
   const engagementAccess = await getEngagementDocAccess(deal.id, req.user.id);
   if (engagementAccess != null) {
     return { mode: "engagement", access: engagementAccess };
@@ -128,6 +132,9 @@ interface PresentedFinding extends Record<string, unknown> {
 
 async function presentFindings(
   findings: AiFinding[],
+  // Documents the current viewer may see; classification attachments outside
+  // this set have their name (and id) redacted. "all" for manager/granted.
+  allowedDocIds: "all" | Set<number> = "all",
 ): Promise<PresentedFinding[]> {
   if (findings.length === 0) return [];
   const refs = await db
@@ -140,7 +147,10 @@ async function presentFindings(
       ),
     );
   const docIds = new Set<number>();
-  for (const f of findings) if (f.documentId != null) docIds.add(f.documentId);
+  for (const f of findings) {
+    if (f.documentId != null) docIds.add(f.documentId);
+    if (f.classificationDocumentId != null) docIds.add(f.classificationDocumentId);
+  }
   for (const r of refs) docIds.add(r.documentId);
   const docs = docIds.size
     ? await db
@@ -169,6 +179,20 @@ async function presentFindings(
     reviewStatus: f.reviewStatus,
     reviewedByName: f.reviewedByName,
     reviewedAt: f.reviewedAt?.toISOString() ?? null,
+    classification: f.classification,
+    classificationNote: f.classificationNote,
+    classificationDocumentId:
+      f.classificationDocumentId != null &&
+      (allowedDocIds === "all" || allowedDocIds.has(f.classificationDocumentId))
+        ? f.classificationDocumentId
+        : null,
+    classificationDocumentName:
+      f.classificationDocumentId != null &&
+      (allowedDocIds === "all" || allowedDocIds.has(f.classificationDocumentId))
+        ? (docNames.get(f.classificationDocumentId) ?? null)
+        : null,
+    classifiedByName: f.classifiedByName,
+    classifiedAt: f.classifiedAt?.toISOString() ?? null,
     createdAt: f.createdAt.toISOString(),
     sources: (refsByFinding.get(f.id) ?? []).map((r) => ({
       id: r.id,
@@ -494,7 +518,14 @@ router.get("/deals/:id/ai-findings", async (req, res): Promise<void> => {
     fullAccess ? "any" : "redacted",
   );
   res.json(
-    ListDealAiFindingsResponse.parse(toJson(await presentFindings(findings))),
+    ListDealAiFindingsResponse.parse(
+      toJson(
+        await presentFindings(
+          findings,
+          fullAccess ? "all" : new Set(docs.map((d) => d.id)),
+        ),
+      ),
+    ),
   );
 });
 
@@ -522,7 +553,7 @@ router.post("/ai-findings/:id/review", async (req, res): Promise<void> => {
     return;
   }
   const deal = await loadDeal(finding.dealId);
-  if (!deal || !canManageDealDocuments(req, deal)) {
+  if (!deal || !(deal.brokerUserId != null && req.user.id === deal.brokerUserId)) {
     res
       .status(403)
       .json({ error: "Only the deal manager can review AI findings." });

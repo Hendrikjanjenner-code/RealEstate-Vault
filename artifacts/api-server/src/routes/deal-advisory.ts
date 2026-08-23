@@ -15,6 +15,7 @@ import {
   dealChecklistStatusTable,
   dealRisksTable,
   riskCommentsTable,
+  ddItemsTable,
   dealEventsTable,
   activityTable,
   type Deal,
@@ -275,6 +276,8 @@ interface HealthInput {
   appointedRoles: Set<string>;
   ndaSignedCount: number;
   pendingRequests: number;
+  /** DD center completion % (0-100), or null when no DD items exist yet. */
+  ddCompletionPct: number | null;
 }
 
 function computeHealth(input: HealthInput): {
@@ -378,19 +381,27 @@ function computeHealth(input: HealthInput): {
     ],
   });
 
-  // Due diligence readiness.
+  // Due diligence readiness. When the DD center is in use, its checklist
+  // completion carries half the component score; the structural signals
+  // (documents + team) carry the other half.
   const hasTechnicalDocs = docCategories.some((c) => /technical|environment|survey|valuation/i.test(c));
+  const ddStructural =
+    (hasTechnicalDocs ? 40 : 0) +
+    (appointedRoles.has("technical_dd") ? 40 : 0) +
+    (appointedRoles.has("valuer") ? 20 : 0);
+  const ddBase =
+    input.ddCompletionPct != null
+      ? ddStructural * 0.5 + input.ddCompletionPct * 0.5
+      : ddStructural;
   components.push({
     key: "dd",
     label: "Due Diligence Readiness",
-    score: clamp(
-      (hasTechnicalDocs ? 40 : 0) +
-        (appointedRoles.has("technical_dd") ? 40 : 0) +
-        (appointedRoles.has("valuer") ? 20 : 0) -
-        riskPenalty(risks, "technical"),
-    ),
+    score: clamp(ddBase - riskPenalty(risks, "technical")),
     weight: 0.15,
     dataUsed: [
+      ...(input.ddCompletionPct != null
+        ? [`DD checklist ${input.ddCompletionPct}% complete`]
+        : []),
       ...(hasTechnicalDocs ? ["Technical documents in data room"] : []),
       ...(appointedRoles.has("technical_dd") ? ["Technical DD appointed"] : []),
       ...(appointedRoles.has("valuer") ? ["Valuer appointed"] : []),
@@ -412,7 +423,8 @@ function computeHealth(input: HealthInput): {
       (deal.status === "active" ? 30 : 10) +
         Math.min(input.ndaSignedCount * 15, 30) +
         Math.min(appointedRoles.size * 10, 30) +
-        (criticalOpen === 0 ? 10 : 0) -
+        (criticalOpen === 0 ? 10 : 0) +
+        (input.ddCompletionPct != null && input.ddCompletionPct >= 75 ? 10 : 0) -
         input.pendingRequests * 5,
     ),
     weight: 0.1,
@@ -420,6 +432,9 @@ function computeHealth(input: HealthInput): {
       `Deal status: ${deal.status}`,
       `${input.ndaSignedCount} signed NDA(s)`,
       `${appointedRoles.size} team role(s) filled`,
+      ...(input.ddCompletionPct != null
+        ? [`DD checklist ${input.ddCompletionPct}% complete`]
+        : []),
     ],
     missingData: input.pendingRequests > 0 ? [`${input.pendingRequests} unanswered access request(s)`] : [],
   });
@@ -454,7 +469,7 @@ router.get("/deals/:id/advisory", async (req, res): Promise<void> => {
   }
   const canManage = canManageDealDocuments(req, deal);
 
-  const [readiness, risks, docs, engagements, requests] = await Promise.all([
+  const [readiness, risks, docs, engagements, requests, ddItems] = await Promise.all([
     computeReadiness(deal),
     db.select().from(dealRisksTable).where(eq(dealRisksTable.dealId, deal.id)),
     db
@@ -469,7 +484,20 @@ router.get("/deals/:id/advisory", async (req, res): Promise<void> => {
       .select()
       .from(accessRequestsTable)
       .where(eq(accessRequestsTable.dealId, deal.id)),
+    db
+      .select({ status: ddItemsTable.status })
+      .from(ddItemsTable)
+      .where(eq(ddItemsTable.dealId, deal.id)),
   ]);
+
+  const ddCompletionPct =
+    ddItems.length === 0
+      ? null
+      : Math.round(
+          (ddItems.filter((i) => i.status === "done" || i.status === "na").length /
+            ddItems.length) *
+            100,
+        );
 
   const docCategories = [...new Set(docs.map((d) => d.category))];
   const appointedRoles = new Set(
@@ -488,6 +516,7 @@ router.get("/deals/:id/advisory", async (req, res): Promise<void> => {
     appointedRoles,
     ndaSignedCount,
     pendingRequests,
+    ddCompletionPct,
   });
 
   const openRisks = risks.filter((r) => OPEN_RISK_STATUSES.includes(r.status));

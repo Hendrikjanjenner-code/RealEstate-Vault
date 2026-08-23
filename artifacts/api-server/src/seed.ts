@@ -17,6 +17,12 @@ import {
   brokerConnectionsTable,
   dealFinancialsTable,
   financingScenariosTable,
+  ddWorkstreamsTable,
+  ddItemsTable,
+  dealQuestionsTable,
+  aiSourceReferencesTable,
+  aiFindingsTable,
+  aiAnalysisRunsTable,
 } from "@workspace/db";
 import { and, asc, eq, isNull, notLike } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -103,6 +109,15 @@ async function seed() {
   await db.delete(threadsTable);
   await db.delete(activityTable);
   await db.delete(accessRequestsTable);
+  // Rows referencing deal documents must go before the documents themselves:
+  // Q&A answers, DD checklist items, and the AI chain (source refs → findings
+  // → runs) all carry document foreign keys.
+  await db.delete(dealQuestionsTable);
+  await db.delete(ddItemsTable);
+  await db.delete(ddWorkstreamsTable);
+  await db.delete(aiSourceReferencesTable);
+  await db.delete(aiFindingsTable);
+  await db.delete(aiAnalysisRunsTable);
   await db.delete(dealDocumentsTable);
   await db.delete(financingScenariosTable);
   await db.delete(dealFinancialsTable);

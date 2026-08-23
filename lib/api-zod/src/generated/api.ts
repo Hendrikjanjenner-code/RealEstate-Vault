@@ -1679,6 +1679,12 @@ export const AnalyzeDealDocumentResponse = zod.object({
   "reviewStatus": zod.enum(['ai_generated', 'professional_reviewed', 'verified']),
   "reviewedByName": zod.string().nullish(),
   "reviewedAt": zod.coerce.date().nullish(),
+  "classification": zod.union([zod.literal('confirmed'),zod.literal('not_relevant'),zod.literal('needs_more_information'),zod.literal('material_risk'),zod.literal('minor_risk'),zod.literal('resolved'),zod.literal(null)]).nullish(),
+  "classificationNote": zod.string().nullish(),
+  "classificationDocumentId": zod.int().nullish(),
+  "classificationDocumentName": zod.string().nullish(),
+  "classifiedByName": zod.string().nullish(),
+  "classifiedAt": zod.coerce.date().nullish(),
   "createdAt": zod.coerce.date(),
   "sources": zod.array(zod.object({
   "id": zod.int(),
@@ -1738,6 +1744,12 @@ export const GetDealDocumentAnalysisResponse = zod.object({
   "reviewStatus": zod.enum(['ai_generated', 'professional_reviewed', 'verified']),
   "reviewedByName": zod.string().nullish(),
   "reviewedAt": zod.coerce.date().nullish(),
+  "classification": zod.union([zod.literal('confirmed'),zod.literal('not_relevant'),zod.literal('needs_more_information'),zod.literal('material_risk'),zod.literal('minor_risk'),zod.literal('resolved'),zod.literal(null)]).nullish(),
+  "classificationNote": zod.string().nullish(),
+  "classificationDocumentId": zod.int().nullish(),
+  "classificationDocumentName": zod.string().nullish(),
+  "classifiedByName": zod.string().nullish(),
+  "classifiedAt": zod.coerce.date().nullish(),
   "createdAt": zod.coerce.date(),
   "sources": zod.array(zod.object({
   "id": zod.int(),
@@ -1774,6 +1786,12 @@ export const ListDealAiFindingsResponseItem = zod.object({
   "reviewStatus": zod.enum(['ai_generated', 'professional_reviewed', 'verified']),
   "reviewedByName": zod.string().nullish(),
   "reviewedAt": zod.coerce.date().nullish(),
+  "classification": zod.union([zod.literal('confirmed'),zod.literal('not_relevant'),zod.literal('needs_more_information'),zod.literal('material_risk'),zod.literal('minor_risk'),zod.literal('resolved'),zod.literal(null)]).nullish(),
+  "classificationNote": zod.string().nullish(),
+  "classificationDocumentId": zod.int().nullish(),
+  "classificationDocumentName": zod.string().nullish(),
+  "classifiedByName": zod.string().nullish(),
+  "classifiedAt": zod.coerce.date().nullish(),
   "createdAt": zod.coerce.date(),
   "sources": zod.array(zod.object({
   "id": zod.int(),
@@ -1813,6 +1831,12 @@ export const ReviewAiFindingResponse = zod.object({
   "reviewStatus": zod.enum(['ai_generated', 'professional_reviewed', 'verified']),
   "reviewedByName": zod.string().nullish(),
   "reviewedAt": zod.coerce.date().nullish(),
+  "classification": zod.union([zod.literal('confirmed'),zod.literal('not_relevant'),zod.literal('needs_more_information'),zod.literal('material_risk'),zod.literal('minor_risk'),zod.literal('resolved'),zod.literal(null)]).nullish(),
+  "classificationNote": zod.string().nullish(),
+  "classificationDocumentId": zod.int().nullish(),
+  "classificationDocumentName": zod.string().nullish(),
+  "classifiedByName": zod.string().nullish(),
+  "classifiedAt": zod.coerce.date().nullish(),
   "createdAt": zod.coerce.date(),
   "sources": zod.array(zod.object({
   "id": zod.int(),
@@ -2174,6 +2198,338 @@ export const PrepareFinancingPackResponse = zod.object({
   "generatedAt": zod.string(),
   "generatedBy": zod.string(),
   "provenance": zod.string()
+})
+
+
+/**
+ * @summary Due diligence center — workstreams with checklist items, responsible professionals, completion and counters. Provisions default workstreams on first access.
+ */
+export const GetDealDdCenterParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetDealDdCenterResponse = zod.object({
+  "dealId": zod.int(),
+  "completionPct": zod.number(),
+  "canManage": zod.boolean(),
+  "workstreams": zod.array(zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "key": zod.string(),
+  "label": zod.string(),
+  "status": zod.enum(['not_started', 'in_progress', 'blocked', 'completed']),
+  "responsible": zod.union([zod.object({
+  "engagementId": zod.int(),
+  "role": zod.string(),
+  "name": zod.string().nullish(),
+  "company": zod.string().nullish()
+}),zod.null()]).optional(),
+  "completionPct": zod.number(),
+  "items": zod.array(zod.object({
+  "id": zod.int(),
+  "workstreamId": zod.int(),
+  "dealId": zod.int(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "required": zod.boolean(),
+  "status": zod.enum(['open', 'in_progress', 'waiting', 'done', 'na']),
+  "note": zod.string().nullish(),
+  "documentId": zod.int().nullish(),
+  "documentName": zod.string().nullish(),
+  "updatedByName": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "openQuestions": zod.int(),
+  "findingsCount": zod.int(),
+  "documentsCount": zod.int(),
+  "canUpdateItems": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary Add a checklist item to a DD workstream (deal manager only). Audited.
+ */
+export const CreateDdItemParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const createDdItemBodyTitleMax = 200;
+
+export const createDdItemBodyDescriptionMax = 2000;
+
+
+
+export const CreateDdItemBody = zod.object({
+  "workstreamId": zod.int(),
+  "title": zod.string().min(1).max(createDdItemBodyTitleMax),
+  "description": zod.string().max(createDdItemBodyDescriptionMax).nullish(),
+  "required": zod.boolean().optional()
+})
+
+export const CreateDdItemResponse = zod.object({
+  "id": zod.int(),
+  "workstreamId": zod.int(),
+  "dealId": zod.int(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "required": zod.boolean(),
+  "status": zod.enum(['open', 'in_progress', 'waiting', 'done', 'na']),
+  "note": zod.string().nullish(),
+  "documentId": zod.int().nullish(),
+  "documentName": zod.string().nullish(),
+  "updatedByName": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a DD checklist item's status, note or linked document (deal manager or the workstream's responsible professional). Audited; completion notifies the manager.
+ */
+export const UpdateDdItemParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const updateDdItemBodyNoteMax = 2000;
+
+
+
+export const UpdateDdItemBody = zod.object({
+  "status": zod.enum(['open', 'in_progress', 'waiting', 'done', 'na']).optional(),
+  "note": zod.string().max(updateDdItemBodyNoteMax).nullish(),
+  "documentId": zod.int().nullish()
+})
+
+export const UpdateDdItemResponse = zod.object({
+  "id": zod.int(),
+  "workstreamId": zod.int(),
+  "dealId": zod.int(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "required": zod.boolean(),
+  "status": zod.enum(['open', 'in_progress', 'waiting', 'done', 'na']),
+  "note": zod.string().nullish(),
+  "documentId": zod.int().nullish(),
+  "documentName": zod.string().nullish(),
+  "updatedByName": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a DD workstream's status or responsible professional (deal manager only). Audited.
+ */
+export const UpdateDdWorkstreamParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const UpdateDdWorkstreamBody = zod.object({
+  "status": zod.enum(['not_started', 'in_progress', 'blocked', 'completed']).optional(),
+  "responsibleEngagementId": zod.int().nullish()
+})
+
+export const UpdateDdWorkstreamResponse = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "key": zod.string(),
+  "label": zod.string(),
+  "status": zod.enum(['not_started', 'in_progress', 'blocked', 'completed']),
+  "responsible": zod.union([zod.object({
+  "engagementId": zod.int(),
+  "role": zod.string(),
+  "name": zod.string().nullish(),
+  "company": zod.string().nullish()
+}),zod.null()]).optional(),
+  "completionPct": zod.number(),
+  "items": zod.array(zod.object({
+  "id": zod.int(),
+  "workstreamId": zod.int(),
+  "dealId": zod.int(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "required": zod.boolean(),
+  "status": zod.enum(['open', 'in_progress', 'waiting', 'done', 'na']),
+  "note": zod.string().nullish(),
+  "documentId": zod.int().nullish(),
+  "documentName": zod.string().nullish(),
+  "updatedByName": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "openQuestions": zod.int(),
+  "findingsCount": zod.int(),
+  "documentsCount": zod.int(),
+  "canUpdateItems": zod.boolean()
+})
+
+
+/**
+ * @summary Structured Q&A log for a deal (manager and granted viewers).
+ */
+export const ListDealQuestionsParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const ListDealQuestionsResponseItem = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "category": zod.string(),
+  "question": zod.string(),
+  "detail": zod.string().nullish(),
+  "askedByName": zod.string().nullish(),
+  "isOwn": zod.boolean().optional(),
+  "assignedEngagementId": zod.int().nullish(),
+  "assignedParty": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
+  "status": zod.enum(['open', 'assigned', 'answered', 'follow_up', 'closed']),
+  "answerText": zod.string().nullish(),
+  "answerDocumentId": zod.int().nullish(),
+  "answerDocumentName": zod.string().nullish(),
+  "answeredByName": zod.string().nullish(),
+  "answeredAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListDealQuestionsResponse = zod.array(ListDealQuestionsResponseItem)
+
+
+/**
+ * @summary Ask a question in the deal's structured Q&A (manager and granted viewers). Notifies the deal manager; audited.
+ */
+export const CreateDealQuestionParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const createDealQuestionBodyCategoryMax = 60;
+
+export const createDealQuestionBodyQuestionMin = 5;
+export const createDealQuestionBodyQuestionMax = 1000;
+
+export const createDealQuestionBodyDetailMax = 4000;
+
+
+
+export const CreateDealQuestionBody = zod.object({
+  "category": zod.string().min(1).max(createDealQuestionBodyCategoryMax),
+  "question": zod.string().min(createDealQuestionBodyQuestionMin).max(createDealQuestionBodyQuestionMax),
+  "detail": zod.string().max(createDealQuestionBodyDetailMax).nullish()
+})
+
+export const CreateDealQuestionResponse = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "category": zod.string(),
+  "question": zod.string(),
+  "detail": zod.string().nullish(),
+  "askedByName": zod.string().nullish(),
+  "isOwn": zod.boolean().optional(),
+  "assignedEngagementId": zod.int().nullish(),
+  "assignedParty": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
+  "status": zod.enum(['open', 'assigned', 'answered', 'follow_up', 'closed']),
+  "answerText": zod.string().nullish(),
+  "answerDocumentId": zod.int().nullish(),
+  "answerDocumentName": zod.string().nullish(),
+  "answeredByName": zod.string().nullish(),
+  "answeredAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Assign, answer or transition a Q&A question. Manager may assign/answer/close; the asker may flag follow-up or close their own question. Notifies the asker on answer; audited.
+ */
+export const UpdateDealQuestionParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const updateDealQuestionBodyAssignedPartyMax = 60;
+
+export const updateDealQuestionBodyAnswerTextMax = 8000;
+
+
+
+export const UpdateDealQuestionBody = zod.object({
+  "status": zod.enum(['open', 'assigned', 'answered', 'follow_up', 'closed']).optional(),
+  "assignedEngagementId": zod.int().nullish(),
+  "assignedParty": zod.string().max(updateDealQuestionBodyAssignedPartyMax).nullish(),
+  "answerText": zod.string().max(updateDealQuestionBodyAnswerTextMax).nullish(),
+  "answerDocumentId": zod.int().nullish()
+})
+
+export const UpdateDealQuestionResponse = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "category": zod.string(),
+  "question": zod.string(),
+  "detail": zod.string().nullish(),
+  "askedByName": zod.string().nullish(),
+  "isOwn": zod.boolean().optional(),
+  "assignedEngagementId": zod.int().nullish(),
+  "assignedParty": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
+  "status": zod.enum(['open', 'assigned', 'answered', 'follow_up', 'closed']),
+  "answerText": zod.string().nullish(),
+  "answerDocumentId": zod.int().nullish(),
+  "answerDocumentName": zod.string().nullish(),
+  "answeredByName": zod.string().nullish(),
+  "answeredAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Professionally classify an AI finding (Confirmed, Not Relevant, Needs More Information, Material Risk, Minor Risk, Resolved) with an optional note and attachment. Deal manager or appointed deal-team professional. Audited.
+ */
+export const ClassifyAiFindingParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const classifyAiFindingBodyNoteMax = 4000;
+
+
+
+export const ClassifyAiFindingBody = zod.object({
+  "classification": zod.enum(['confirmed', 'not_relevant', 'needs_more_information', 'material_risk', 'minor_risk', 'resolved']),
+  "note": zod.string().max(classifyAiFindingBodyNoteMax).nullish(),
+  "documentId": zod.int().nullish()
+})
+
+export const ClassifyAiFindingResponse = zod.object({
+  "id": zod.int(),
+  "runId": zod.int(),
+  "dealId": zod.int(),
+  "documentId": zod.int().nullish(),
+  "documentName": zod.string().nullish(),
+  "category": zod.enum(['document_type', 'date', 'party', 'expiration', 'financial_value', 'clause', 'attention_point', 'missing_information', 'related_document', 'legal', 'tax']),
+  "title": zod.string(),
+  "detail": zod.string().nullish(),
+  "severity": zod.union([zod.literal('low'),zod.literal('medium'),zod.literal('high'),zod.literal(null)]).nullish(),
+  "confidence": zod.enum(['high', 'medium', 'low']),
+  "reviewStatus": zod.enum(['ai_generated', 'professional_reviewed', 'verified']),
+  "reviewedByName": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "classification": zod.union([zod.literal('confirmed'),zod.literal('not_relevant'),zod.literal('needs_more_information'),zod.literal('material_risk'),zod.literal('minor_risk'),zod.literal('resolved'),zod.literal(null)]).nullish(),
+  "classificationNote": zod.string().nullish(),
+  "classificationDocumentId": zod.int().nullish(),
+  "classificationDocumentName": zod.string().nullish(),
+  "classifiedByName": zod.string().nullish(),
+  "classifiedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "sources": zod.array(zod.object({
+  "id": zod.int(),
+  "findingId": zod.int(),
+  "documentId": zod.int(),
+  "documentName": zod.string().nullish(),
+  "page": zod.int().nullish(),
+  "section": zod.string().nullish(),
+  "excerpt": zod.string().nullish()
+}))
 })
 
 

@@ -30,6 +30,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NDA_PARAGRAPHS, NDA_TITLE } from "@workspace/nda-terms";
 import { DealTeamSection } from "@/components/deal-team";
+import { DueDiligenceTab, QaTab, ReviewsTab } from "@/components/deal-dd";
 import {
   AdvisoryOverview,
   DealHealthTab,
@@ -52,6 +53,7 @@ const DEAL_ROOM_TABS = [
   { id: "financing", label: "Financing" },
   { id: "team", label: "Deal Team" },
   { id: "qa", label: "Q&A" },
+  { id: "reviews", label: "Reviews" },
   { id: "offers", label: "Offers" },
   { id: "timeline", label: "Timeline" },
 ] as const;
@@ -326,15 +328,12 @@ export default function DealDetail() {
           )}
           {activeTab === "assistant" && <AssistantTab dealId={id} />}
           {activeTab === "health" && <DealHealthTab dealId={id} />}
-          {activeTab === "dd" && (
-            <PlaceholderTab title="Due Diligence" description="The structured Due Diligence center with workstreams and findings is coming to this tab." />
-          )}
+          {activeTab === "dd" && <DueDiligenceTab dealId={deal.id} />}
           {activeTab === "financing" && (
             <FinancingTab dealId={id} dealTitle={deal?.title ?? `deal-${id}`} />
           )}
-          {activeTab === "qa" && (
-            <PlaceholderTab title="Q&A" description="Structured, auditable deal Q&A between investors and the deal manager is coming to this tab." />
-          )}
+          {activeTab === "qa" && <QaTab dealId={deal.id} />}
+          {activeTab === "reviews" && <ReviewsTab dealId={deal.id} />}
           {activeTab === "offers" && (
             <PlaceholderTab title="Offers" description="Structured offer submission and comparison is coming to this tab." />
           )}

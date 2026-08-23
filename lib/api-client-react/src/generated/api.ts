@@ -46,6 +46,12 @@ import type {
   ChecklistTemplate,
   ChecklistTemplateInput,
   DashboardStats,
+  DdCenterResponse,
+  DdItem,
+  DdItemCreateBody,
+  DdItemUpdateBody,
+  DdWorkstream,
+  DdWorkstreamUpdateBody,
   Deal,
   DealAdvisoryResponse,
   DealAssistantReply,
@@ -55,6 +61,9 @@ import type {
   DealFinancialsResponse,
   DealFinancialsUpsertBody,
   DealInput,
+  DealQuestion,
+  DealQuestionCreateBody,
+  DealQuestionUpdateBody,
   DealRisk,
   DealRiskInput,
   DealRiskUpdate,
@@ -72,6 +81,7 @@ import type {
   FinancingReadinessResponse,
   FinancingScenario,
   FinancingScenarioBody,
+  FindingClassificationBody,
   FindingReviewBody,
   GenerateAiReportBody,
   HandleBrowserLoginCallbackParams,
@@ -5265,6 +5275,592 @@ export const usePrepareFinancingPack = <TError = ErrorType<ApiMessage>,
         TContext
       > => {
       return useMutation(getPrepareFinancingPackMutationOptions(options));
+    }
+
+export const getGetDealDdCenterUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/dd`
+}
+
+/**
+ * @summary Due diligence center — workstreams with checklist items, responsible professionals, completion and counters. Provisions default workstreams on first access.
+ */
+export const getDealDdCenter = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<DdCenterResponse> => {
+
+  return customFetch<DdCenterResponse>(getGetDealDdCenterUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDealDdCenterQueryKey = (id: number,) => {
+    return [
+    `/api/deals/${id}/dd`
+    ] as const;
+    }
+
+
+export const getGetDealDdCenterQueryOptions = <TData = Awaited<ReturnType<typeof getDealDdCenter>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealDdCenter>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDealDdCenterQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDealDdCenter>>> = ({ signal }) => getDealDdCenter(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDealDdCenter>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDealDdCenterQueryResult = NonNullable<Awaited<ReturnType<typeof getDealDdCenter>>>
+export type GetDealDdCenterQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Due diligence center — workstreams with checklist items, responsible professionals, completion and counters. Provisions default workstreams on first access.
+ */
+
+export function useGetDealDdCenter<TData = Awaited<ReturnType<typeof getDealDdCenter>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealDdCenter>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDealDdCenterQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateDdItemUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/dd/items`
+}
+
+/**
+ * @summary Add a checklist item to a DD workstream (deal manager only). Audited.
+ */
+export const createDdItem = async (id: number,
+    ddItemCreateBody: DdItemCreateBody, options?: Parameters<typeof customFetch>[1]): Promise<DdItem> => {
+
+  return customFetch<DdItem>(getCreateDdItemUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(ddItemCreateBody)
+  }
+);}
+
+
+
+
+
+export const getCreateDdItemMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDdItem>>, TError,{id: number;data: BodyType<DdItemCreateBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createDdItem>>, TError,{id: number;data: BodyType<DdItemCreateBody>}, TContext> => {
+
+const mutationKey = ['createDdItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDdItem>>, {id: number;data: BodyType<DdItemCreateBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createDdItem(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateDdItemMutationResult = NonNullable<Awaited<ReturnType<typeof createDdItem>>>
+    export type CreateDdItemMutationBody = BodyType<DdItemCreateBody>
+    export type CreateDdItemMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Add a checklist item to a DD workstream (deal manager only). Audited.
+ */
+export const useCreateDdItem = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDdItem>>, TError,{id: number;data: BodyType<DdItemCreateBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createDdItem>>,
+        TError,
+        {id: number;data: BodyType<DdItemCreateBody>},
+        TContext
+      > => {
+      return useMutation(getCreateDdItemMutationOptions(options));
+    }
+
+export const getUpdateDdItemUrl = (id: number,) => {
+
+
+
+
+  return `/api/dd/items/${id}`
+}
+
+/**
+ * @summary Update a DD checklist item's status, note or linked document (deal manager or the workstream's responsible professional). Audited; completion notifies the manager.
+ */
+export const updateDdItem = async (id: number,
+    ddItemUpdateBody: DdItemUpdateBody, options?: Parameters<typeof customFetch>[1]): Promise<DdItem> => {
+
+  return customFetch<DdItem>(getUpdateDdItemUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(ddItemUpdateBody)
+  }
+);}
+
+
+
+
+
+export const getUpdateDdItemMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDdItem>>, TError,{id: number;data: BodyType<DdItemUpdateBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDdItem>>, TError,{id: number;data: BodyType<DdItemUpdateBody>}, TContext> => {
+
+const mutationKey = ['updateDdItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDdItem>>, {id: number;data: BodyType<DdItemUpdateBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateDdItem(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDdItemMutationResult = NonNullable<Awaited<ReturnType<typeof updateDdItem>>>
+    export type UpdateDdItemMutationBody = BodyType<DdItemUpdateBody>
+    export type UpdateDdItemMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Update a DD checklist item's status, note or linked document (deal manager or the workstream's responsible professional). Audited; completion notifies the manager.
+ */
+export const useUpdateDdItem = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDdItem>>, TError,{id: number;data: BodyType<DdItemUpdateBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDdItem>>,
+        TError,
+        {id: number;data: BodyType<DdItemUpdateBody>},
+        TContext
+      > => {
+      return useMutation(getUpdateDdItemMutationOptions(options));
+    }
+
+export const getUpdateDdWorkstreamUrl = (id: number,) => {
+
+
+
+
+  return `/api/dd/workstreams/${id}`
+}
+
+/**
+ * @summary Update a DD workstream's status or responsible professional (deal manager only). Audited.
+ */
+export const updateDdWorkstream = async (id: number,
+    ddWorkstreamUpdateBody: DdWorkstreamUpdateBody, options?: Parameters<typeof customFetch>[1]): Promise<DdWorkstream> => {
+
+  return customFetch<DdWorkstream>(getUpdateDdWorkstreamUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(ddWorkstreamUpdateBody)
+  }
+);}
+
+
+
+
+
+export const getUpdateDdWorkstreamMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDdWorkstream>>, TError,{id: number;data: BodyType<DdWorkstreamUpdateBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDdWorkstream>>, TError,{id: number;data: BodyType<DdWorkstreamUpdateBody>}, TContext> => {
+
+const mutationKey = ['updateDdWorkstream'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDdWorkstream>>, {id: number;data: BodyType<DdWorkstreamUpdateBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateDdWorkstream(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDdWorkstreamMutationResult = NonNullable<Awaited<ReturnType<typeof updateDdWorkstream>>>
+    export type UpdateDdWorkstreamMutationBody = BodyType<DdWorkstreamUpdateBody>
+    export type UpdateDdWorkstreamMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Update a DD workstream's status or responsible professional (deal manager only). Audited.
+ */
+export const useUpdateDdWorkstream = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDdWorkstream>>, TError,{id: number;data: BodyType<DdWorkstreamUpdateBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDdWorkstream>>,
+        TError,
+        {id: number;data: BodyType<DdWorkstreamUpdateBody>},
+        TContext
+      > => {
+      return useMutation(getUpdateDdWorkstreamMutationOptions(options));
+    }
+
+export const getListDealQuestionsUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/questions`
+}
+
+/**
+ * @summary Structured Q&A log for a deal (manager and granted viewers).
+ */
+export const listDealQuestions = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<DealQuestion[]> => {
+
+  return customFetch<DealQuestion[]>(getListDealQuestionsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDealQuestionsQueryKey = (id: number,) => {
+    return [
+    `/api/deals/${id}/questions`
+    ] as const;
+    }
+
+
+export const getListDealQuestionsQueryOptions = <TData = Awaited<ReturnType<typeof listDealQuestions>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDealQuestions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDealQuestionsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDealQuestions>>> = ({ signal }) => listDealQuestions(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDealQuestions>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDealQuestionsQueryResult = NonNullable<Awaited<ReturnType<typeof listDealQuestions>>>
+export type ListDealQuestionsQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Structured Q&A log for a deal (manager and granted viewers).
+ */
+
+export function useListDealQuestions<TData = Awaited<ReturnType<typeof listDealQuestions>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDealQuestions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDealQuestionsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateDealQuestionUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/questions`
+}
+
+/**
+ * @summary Ask a question in the deal's structured Q&A (manager and granted viewers). Notifies the deal manager; audited.
+ */
+export const createDealQuestion = async (id: number,
+    dealQuestionCreateBody: DealQuestionCreateBody, options?: Parameters<typeof customFetch>[1]): Promise<DealQuestion> => {
+
+  return customFetch<DealQuestion>(getCreateDealQuestionUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(dealQuestionCreateBody)
+  }
+);}
+
+
+
+
+
+export const getCreateDealQuestionMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDealQuestion>>, TError,{id: number;data: BodyType<DealQuestionCreateBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createDealQuestion>>, TError,{id: number;data: BodyType<DealQuestionCreateBody>}, TContext> => {
+
+const mutationKey = ['createDealQuestion'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDealQuestion>>, {id: number;data: BodyType<DealQuestionCreateBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createDealQuestion(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateDealQuestionMutationResult = NonNullable<Awaited<ReturnType<typeof createDealQuestion>>>
+    export type CreateDealQuestionMutationBody = BodyType<DealQuestionCreateBody>
+    export type CreateDealQuestionMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Ask a question in the deal's structured Q&A (manager and granted viewers). Notifies the deal manager; audited.
+ */
+export const useCreateDealQuestion = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDealQuestion>>, TError,{id: number;data: BodyType<DealQuestionCreateBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createDealQuestion>>,
+        TError,
+        {id: number;data: BodyType<DealQuestionCreateBody>},
+        TContext
+      > => {
+      return useMutation(getCreateDealQuestionMutationOptions(options));
+    }
+
+export const getUpdateDealQuestionUrl = (id: number,) => {
+
+
+
+
+  return `/api/questions/${id}`
+}
+
+/**
+ * @summary Assign, answer or transition a Q&A question. Manager may assign/answer/close; the asker may flag follow-up or close their own question. Notifies the asker on answer; audited.
+ */
+export const updateDealQuestion = async (id: number,
+    dealQuestionUpdateBody: DealQuestionUpdateBody, options?: Parameters<typeof customFetch>[1]): Promise<DealQuestion> => {
+
+  return customFetch<DealQuestion>(getUpdateDealQuestionUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(dealQuestionUpdateBody)
+  }
+);}
+
+
+
+
+
+export const getUpdateDealQuestionMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDealQuestion>>, TError,{id: number;data: BodyType<DealQuestionUpdateBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDealQuestion>>, TError,{id: number;data: BodyType<DealQuestionUpdateBody>}, TContext> => {
+
+const mutationKey = ['updateDealQuestion'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDealQuestion>>, {id: number;data: BodyType<DealQuestionUpdateBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateDealQuestion(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDealQuestionMutationResult = NonNullable<Awaited<ReturnType<typeof updateDealQuestion>>>
+    export type UpdateDealQuestionMutationBody = BodyType<DealQuestionUpdateBody>
+    export type UpdateDealQuestionMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Assign, answer or transition a Q&A question. Manager may assign/answer/close; the asker may flag follow-up or close their own question. Notifies the asker on answer; audited.
+ */
+export const useUpdateDealQuestion = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDealQuestion>>, TError,{id: number;data: BodyType<DealQuestionUpdateBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDealQuestion>>,
+        TError,
+        {id: number;data: BodyType<DealQuestionUpdateBody>},
+        TContext
+      > => {
+      return useMutation(getUpdateDealQuestionMutationOptions(options));
+    }
+
+export const getClassifyAiFindingUrl = (id: number,) => {
+
+
+
+
+  return `/api/ai-findings/${id}/classify`
+}
+
+/**
+ * @summary Professionally classify an AI finding (Confirmed, Not Relevant, Needs More Information, Material Risk, Minor Risk, Resolved) with an optional note and attachment. Deal manager or appointed deal-team professional. Audited.
+ */
+export const classifyAiFinding = async (id: number,
+    findingClassificationBody: FindingClassificationBody, options?: Parameters<typeof customFetch>[1]): Promise<AiFinding> => {
+
+  return customFetch<AiFinding>(getClassifyAiFindingUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(findingClassificationBody)
+  }
+);}
+
+
+
+
+
+export const getClassifyAiFindingMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classifyAiFinding>>, TError,{id: number;data: BodyType<FindingClassificationBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof classifyAiFinding>>, TError,{id: number;data: BodyType<FindingClassificationBody>}, TContext> => {
+
+const mutationKey = ['classifyAiFinding'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof classifyAiFinding>>, {id: number;data: BodyType<FindingClassificationBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  classifyAiFinding(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClassifyAiFindingMutationResult = NonNullable<Awaited<ReturnType<typeof classifyAiFinding>>>
+    export type ClassifyAiFindingMutationBody = BodyType<FindingClassificationBody>
+    export type ClassifyAiFindingMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Professionally classify an AI finding (Confirmed, Not Relevant, Needs More Information, Material Risk, Minor Risk, Resolved) with an optional note and attachment. Deal manager or appointed deal-team professional. Audited.
+ */
+export const useClassifyAiFinding = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classifyAiFinding>>, TError,{id: number;data: BodyType<FindingClassificationBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof classifyAiFinding>>,
+        TError,
+        {id: number;data: BodyType<FindingClassificationBody>},
+        TContext
+      > => {
+      return useMutation(getClassifyAiFindingMutationOptions(options));
     }
 
 export const getListMandatesUrl = () => {

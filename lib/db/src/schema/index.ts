@@ -5,4 +5,5 @@ export * from "./dealTeam";
 export * from "./dealAdvisory";
 export * from "./dealAi";
 export * from "./dealFinancials";
+export * from "./dueDiligence";
 export * from "./notifications";

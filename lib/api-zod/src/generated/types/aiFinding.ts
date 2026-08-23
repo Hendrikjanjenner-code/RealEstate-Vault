@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AiFindingCategory } from './aiFindingCategory';
+import type { AiFindingClassification } from './aiFindingClassification';
 import type { AiFindingConfidence } from './aiFindingConfidence';
 import type { AiFindingReviewStatus } from './aiFindingReviewStatus';
 import type { AiFindingSeverity } from './aiFindingSeverity';
@@ -25,6 +26,12 @@ export interface AiFinding {
   reviewStatus: AiFindingReviewStatus;
   reviewedByName?: string | null;
   reviewedAt?: Date | null;
+  classification?: AiFindingClassification;
+  classificationNote?: string | null;
+  classificationDocumentId?: number | null;
+  classificationDocumentName?: string | null;
+  classifiedByName?: string | null;
+  classifiedAt?: Date | null;
   createdAt: Date;
   sources: AiSourceReference[];
 }

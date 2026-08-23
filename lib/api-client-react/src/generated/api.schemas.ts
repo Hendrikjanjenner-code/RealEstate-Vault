@@ -1034,6 +1034,18 @@ export const AiFindingReviewStatus = {
   verified: 'verified',
 } as const;
 
+export type AiFindingClassification = typeof AiFindingClassification[keyof typeof AiFindingClassification] | null;
+
+
+export const AiFindingClassification = {
+  confirmed: 'confirmed',
+  not_relevant: 'not_relevant',
+  needs_more_information: 'needs_more_information',
+  material_risk: 'material_risk',
+  minor_risk: 'minor_risk',
+  resolved: 'resolved',
+} as const;
+
 export interface AiFinding {
   id: number;
   runId: number;
@@ -1048,6 +1060,12 @@ export interface AiFinding {
   reviewStatus: AiFindingReviewStatus;
   reviewedByName?: string | null;
   reviewedAt?: string | null;
+  classification?: AiFindingClassification;
+  classificationNote?: string | null;
+  classificationDocumentId?: number | null;
+  classificationDocumentName?: string | null;
+  classifiedByName?: string | null;
+  classifiedAt?: string | null;
   createdAt: string;
   sources: AiSourceReference[];
 }
@@ -1102,6 +1120,204 @@ export const FindingReviewBodyReviewStatus = {
 
 export interface FindingReviewBody {
   reviewStatus: FindingReviewBodyReviewStatus;
+}
+
+export type FindingClassificationBodyClassification = typeof FindingClassificationBodyClassification[keyof typeof FindingClassificationBodyClassification];
+
+
+export const FindingClassificationBodyClassification = {
+  confirmed: 'confirmed',
+  not_relevant: 'not_relevant',
+  needs_more_information: 'needs_more_information',
+  material_risk: 'material_risk',
+  minor_risk: 'minor_risk',
+  resolved: 'resolved',
+} as const;
+
+export interface FindingClassificationBody {
+  classification: FindingClassificationBodyClassification;
+  /** @maxLength 4000 */
+  note?: string | null;
+  documentId?: number | null;
+}
+
+export type DdItemStatus = typeof DdItemStatus[keyof typeof DdItemStatus];
+
+
+export const DdItemStatus = {
+  open: 'open',
+  in_progress: 'in_progress',
+  waiting: 'waiting',
+  done: 'done',
+  na: 'na',
+} as const;
+
+export interface DdItem {
+  id: number;
+  workstreamId: number;
+  dealId: number;
+  title: string;
+  description?: string | null;
+  required: boolean;
+  status: DdItemStatus;
+  note?: string | null;
+  documentId?: number | null;
+  documentName?: string | null;
+  updatedByName?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DdResponsible {
+  engagementId: number;
+  role: string;
+  name?: string | null;
+  company?: string | null;
+}
+
+export type DdWorkstreamStatus = typeof DdWorkstreamStatus[keyof typeof DdWorkstreamStatus];
+
+
+export const DdWorkstreamStatus = {
+  not_started: 'not_started',
+  in_progress: 'in_progress',
+  blocked: 'blocked',
+  completed: 'completed',
+} as const;
+
+export interface DdWorkstream {
+  id: number;
+  dealId: number;
+  key: string;
+  label: string;
+  status: DdWorkstreamStatus;
+  responsible?: DdResponsible | null;
+  completionPct: number;
+  items: DdItem[];
+  openQuestions: number;
+  findingsCount: number;
+  documentsCount: number;
+  canUpdateItems: boolean;
+}
+
+export interface DdCenterResponse {
+  dealId: number;
+  completionPct: number;
+  canManage: boolean;
+  workstreams: DdWorkstream[];
+}
+
+export interface DdItemCreateBody {
+  workstreamId: number;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  title: string;
+  /** @maxLength 2000 */
+  description?: string | null;
+  required?: boolean;
+}
+
+export type DdItemUpdateBodyStatus = typeof DdItemUpdateBodyStatus[keyof typeof DdItemUpdateBodyStatus];
+
+
+export const DdItemUpdateBodyStatus = {
+  open: 'open',
+  in_progress: 'in_progress',
+  waiting: 'waiting',
+  done: 'done',
+  na: 'na',
+} as const;
+
+export interface DdItemUpdateBody {
+  status?: DdItemUpdateBodyStatus;
+  /** @maxLength 2000 */
+  note?: string | null;
+  documentId?: number | null;
+}
+
+export type DdWorkstreamUpdateBodyStatus = typeof DdWorkstreamUpdateBodyStatus[keyof typeof DdWorkstreamUpdateBodyStatus];
+
+
+export const DdWorkstreamUpdateBodyStatus = {
+  not_started: 'not_started',
+  in_progress: 'in_progress',
+  blocked: 'blocked',
+  completed: 'completed',
+} as const;
+
+export interface DdWorkstreamUpdateBody {
+  status?: DdWorkstreamUpdateBodyStatus;
+  responsibleEngagementId?: number | null;
+}
+
+export type DealQuestionStatus = typeof DealQuestionStatus[keyof typeof DealQuestionStatus];
+
+
+export const DealQuestionStatus = {
+  open: 'open',
+  assigned: 'assigned',
+  answered: 'answered',
+  follow_up: 'follow_up',
+  closed: 'closed',
+} as const;
+
+export interface DealQuestion {
+  id: number;
+  dealId: number;
+  category: string;
+  question: string;
+  detail?: string | null;
+  askedByName?: string | null;
+  isOwn?: boolean;
+  assignedEngagementId?: number | null;
+  assignedParty?: string | null;
+  assignedToName?: string | null;
+  status: DealQuestionStatus;
+  answerText?: string | null;
+  answerDocumentId?: number | null;
+  answerDocumentName?: string | null;
+  answeredByName?: string | null;
+  answeredAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DealQuestionCreateBody {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  category: string;
+  /**
+     * @minLength 5
+     * @maxLength 1000
+     */
+  question: string;
+  /** @maxLength 4000 */
+  detail?: string | null;
+}
+
+export type DealQuestionUpdateBodyStatus = typeof DealQuestionUpdateBodyStatus[keyof typeof DealQuestionUpdateBodyStatus];
+
+
+export const DealQuestionUpdateBodyStatus = {
+  open: 'open',
+  assigned: 'assigned',
+  answered: 'answered',
+  follow_up: 'follow_up',
+  closed: 'closed',
+} as const;
+
+export interface DealQuestionUpdateBody {
+  status?: DealQuestionUpdateBodyStatus;
+  assignedEngagementId?: number | null;
+  /** @maxLength 60 */
+  assignedParty?: string | null;
+  /** @maxLength 8000 */
+  answerText?: string | null;
+  answerDocumentId?: number | null;
 }
 
 export type AiAssistantMessageRole = typeof AiAssistantMessageRole[keyof typeof AiAssistantMessageRole];
