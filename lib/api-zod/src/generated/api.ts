@@ -182,6 +182,7 @@ export const ListDealsResponseItem = zod.object({
   "id": zod.int(),
   "title": zod.string(),
   "dealType": zod.string(),
+  "transactionStructure": zod.string().nullish().describe('e.g. asset_deal | share_deal; used for checklist template matching.'),
   "assetClass": zod.string(),
   "country": zod.string(),
   "city": zod.string(),
@@ -223,6 +224,7 @@ export const ListDealsResponse = zod.array(ListDealsResponseItem)
 export const CreateDealBody = zod.object({
   "title": zod.string().min(1),
   "dealType": zod.string(),
+  "transactionStructure": zod.string().optional(),
   "assetClass": zod.string(),
   "country": zod.string(),
   "city": zod.string(),
@@ -247,6 +249,7 @@ export const CreateDealResponse = zod.object({
   "id": zod.int(),
   "title": zod.string(),
   "dealType": zod.string(),
+  "transactionStructure": zod.string().nullish().describe('e.g. asset_deal | share_deal; used for checklist template matching.'),
   "assetClass": zod.string(),
   "country": zod.string(),
   "city": zod.string(),
@@ -289,6 +292,7 @@ export const GetDealResponse = zod.object({
   "id": zod.int(),
   "title": zod.string(),
   "dealType": zod.string(),
+  "transactionStructure": zod.string().nullish().describe('e.g. asset_deal | share_deal; used for checklist template matching.'),
   "assetClass": zod.string(),
   "country": zod.string(),
   "city": zod.string(),
@@ -331,6 +335,7 @@ export const ToggleSaveDealResponse = zod.object({
   "id": zod.int(),
   "title": zod.string(),
   "dealType": zod.string(),
+  "transactionStructure": zod.string().nullish().describe('e.g. asset_deal | share_deal; used for checklist template matching.'),
   "assetClass": zod.string(),
   "country": zod.string(),
   "city": zod.string(),
@@ -800,6 +805,7 @@ export const ListBrokerDealsResponseItem = zod.object({
   "id": zod.int(),
   "title": zod.string(),
   "dealType": zod.string(),
+  "transactionStructure": zod.string().nullish().describe('e.g. asset_deal | share_deal; used for checklist template matching.'),
   "assetClass": zod.string(),
   "country": zod.string(),
   "city": zod.string(),
@@ -1327,6 +1333,309 @@ export const UpdateFeeProposalResponse = zod.object({
 
 
 /**
+ * @summary Deal Advisory overview — Deal Health score, document readiness, risk summary, team summary and next best actions.
+ */
+export const GetDealAdvisoryParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetDealAdvisoryResponse = zod.object({
+  "overallScore": zod.int(),
+  "components": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "score": zod.int().describe('0-100 component score'),
+  "weight": zod.number(),
+  "dataUsed": zod.array(zod.string()),
+  "missingData": zod.array(zod.string())
+})),
+  "disclaimer": zod.string(),
+  "readiness": zod.object({
+  "templateId": zod.int().nullable(),
+  "templateName": zod.string().nullable(),
+  "readinessPct": zod.int(),
+  "items": zod.array(zod.object({
+  "itemId": zod.int(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "required": zod.boolean(),
+  "status": zod.enum(['available', 'missing', 'outdated', 'needs_signature', 'needs_review']),
+  "note": zod.string().nullish()
+}))
+}),
+  "riskSummary": zod.object({
+  "total": zod.int(),
+  "open": zod.int(),
+  "critical": zod.int(),
+  "high": zod.int()
+}),
+  "teamSummary": zod.object({
+  "appointed": zod.int(),
+  "totalRoles": zod.int()
+}),
+  "nextActions": zod.array(zod.object({
+  "title": zod.string(),
+  "description": zod.string(),
+  "tab": zod.string()
+})),
+  "canManage": zod.boolean()
+})
+
+
+/**
+ * @summary Auditable chronological transaction timeline built from recorded deal events.
+ */
+export const GetDealTimelineParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetDealTimelineResponseItem = zod.object({
+  "kind": zod.string().describe('published | document_added | access_requested | nda_signed | team_invited | team_status | fee_proposed | fee_decided | risk_raised | risk_status'),
+  "title": zod.string(),
+  "detail": zod.string().nullish(),
+  "occurredAt": zod.coerce.date()
+})
+export const GetDealTimelineResponse = zod.array(GetDealTimelineResponseItem)
+
+
+/**
+ * @summary Risks & attention points for a deal, including comments.
+ */
+export const ListDealRisksParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const ListDealRisksResponseItem = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "category": zod.enum(['financial', 'legal', 'tax', 'technical', 'financing', 'documentation', 'other']),
+  "severity": zod.enum(['critical', 'high', 'medium', 'low', 'informational']),
+  "source": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
+  "status": zod.enum(['open', 'under_review', 'information_requested', 'resolved', 'accepted_risk', 'not_applicable']),
+  "createdByName": zod.string(),
+  "detectedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "comments": zod.array(zod.object({
+  "id": zod.int(),
+  "riskId": zod.int(),
+  "authorName": zod.string(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date()
+}))
+})
+export const ListDealRisksResponse = zod.array(ListDealRisksResponseItem)
+
+
+/**
+ * @summary Record a risk / attention point (deal manager only).
+ */
+export const CreateDealRiskParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+
+
+
+export const CreateDealRiskBody = zod.object({
+  "title": zod.string().min(1),
+  "description": zod.string().optional(),
+  "category": zod.enum(['financial', 'legal', 'tax', 'technical', 'financing', 'documentation', 'other']),
+  "severity": zod.enum(['critical', 'high', 'medium', 'low', 'informational']),
+  "source": zod.string().optional(),
+  "assignedToName": zod.string().optional()
+})
+
+export const CreateDealRiskResponse = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "category": zod.enum(['financial', 'legal', 'tax', 'technical', 'financing', 'documentation', 'other']),
+  "severity": zod.enum(['critical', 'high', 'medium', 'low', 'informational']),
+  "source": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
+  "status": zod.enum(['open', 'under_review', 'information_requested', 'resolved', 'accepted_risk', 'not_applicable']),
+  "createdByName": zod.string(),
+  "detectedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "comments": zod.array(zod.object({
+  "id": zod.int(),
+  "riskId": zod.int(),
+  "authorName": zod.string(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Update a risk's workflow status, severity or assignment (deal manager only).
+ */
+export const UpdateDealRiskParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const UpdateDealRiskBody = zod.object({
+  "status": zod.enum(['open', 'under_review', 'information_requested', 'resolved', 'accepted_risk', 'not_applicable']).optional(),
+  "severity": zod.enum(['critical', 'high', 'medium', 'low', 'informational']).optional(),
+  "assignedToName": zod.string().optional()
+})
+
+export const UpdateDealRiskResponse = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "category": zod.enum(['financial', 'legal', 'tax', 'technical', 'financing', 'documentation', 'other']),
+  "severity": zod.enum(['critical', 'high', 'medium', 'low', 'informational']),
+  "source": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
+  "status": zod.enum(['open', 'under_review', 'information_requested', 'resolved', 'accepted_risk', 'not_applicable']),
+  "createdByName": zod.string(),
+  "detectedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "comments": zod.array(zod.object({
+  "id": zod.int(),
+  "riskId": zod.int(),
+  "authorName": zod.string(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Comment on a risk (anyone who can read the deal's advisory data).
+ */
+export const CreateRiskCommentParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+
+
+
+export const CreateRiskCommentBody = zod.object({
+  "body": zod.string().min(1)
+})
+
+export const CreateRiskCommentResponse = zod.object({
+  "id": zod.int(),
+  "riskId": zod.int(),
+  "authorName": zod.string(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Override a checklist item's status for this deal (deal manager only).
+ */
+export const SetDealChecklistStatusParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const SetDealChecklistStatusBody = zod.object({
+  "templateItemId": zod.int(),
+  "status": zod.enum(['available', 'missing', 'outdated', 'needs_signature', 'needs_review']),
+  "note": zod.string().optional()
+})
+
+export const SetDealChecklistStatusResponse = zod.object({
+  "templateId": zod.int().nullable(),
+  "templateName": zod.string().nullable(),
+  "readinessPct": zod.int(),
+  "items": zod.array(zod.object({
+  "itemId": zod.int(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "required": zod.boolean(),
+  "status": zod.enum(['available', 'missing', 'outdated', 'needs_signature', 'needs_review']),
+  "note": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Document checklist templates (brokers only).
+ */
+export const ListChecklistTemplatesResponseItem = zod.object({
+  "id": zod.int(),
+  "name": zod.string(),
+  "assetClass": zod.string().nullish(),
+  "country": zod.string().nullish(),
+  "dealType": zod.string().nullish(),
+  "transactionStructure": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.int(),
+  "category": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "required": zod.boolean(),
+  "sortOrder": zod.int()
+}))
+})
+export const ListChecklistTemplatesResponse = zod.array(ListChecklistTemplatesResponseItem)
+
+
+/**
+ * @summary Create a checklist template with items (brokers only).
+ */
+
+
+
+
+
+
+export const CreateChecklistTemplateBody = zod.object({
+  "name": zod.string().min(1),
+  "assetClass": zod.string().optional(),
+  "country": zod.string().optional(),
+  "dealType": zod.string().optional(),
+  "transactionStructure": zod.string().optional(),
+  "items": zod.array(zod.object({
+  "category": zod.string().min(1),
+  "name": zod.string().min(1),
+  "description": zod.string().optional(),
+  "required": zod.boolean().optional()
+})).min(1)
+})
+
+export const CreateChecklistTemplateResponse = zod.object({
+  "id": zod.int(),
+  "name": zod.string(),
+  "assetClass": zod.string().nullish(),
+  "country": zod.string().nullish(),
+  "dealType": zod.string().nullish(),
+  "transactionStructure": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.int(),
+  "category": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "required": zod.boolean(),
+  "sortOrder": zod.int()
+}))
+})
+
+
+/**
+ * @summary Delete a checklist template you created.
+ */
+export const DeleteChecklistTemplateParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const DeleteChecklistTemplateResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
  * @summary List investor mandates
  */
 export const ListMandatesResponseItem = zod.object({
@@ -1425,6 +1734,7 @@ export const ListMandateMatchesResponseItem = zod.object({
   "id": zod.int(),
   "title": zod.string(),
   "dealType": zod.string(),
+  "transactionStructure": zod.string().nullish().describe('e.g. asset_deal | share_deal; used for checklist template matching.'),
   "assetClass": zod.string(),
   "country": zod.string(),
   "city": zod.string(),

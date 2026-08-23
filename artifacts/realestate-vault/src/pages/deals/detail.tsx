@@ -13,6 +13,8 @@ import {
   useRequestUploadUrl,
   getGetDealQueryKey,
   getListDealDocumentsQueryKey,
+  getGetDealAdvisoryQueryKey,
+  getGetDealTimelineQueryKey,
   getListAccessRequestsQueryKey,
 } from "@workspace/api-client-react";
 import { ObjectUploader } from "@workspace/object-storage-web";
@@ -28,6 +30,28 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NDA_PARAGRAPHS, NDA_TITLE } from "@workspace/nda-terms";
 import { DealTeamSection } from "@/components/deal-team";
+import {
+  AdvisoryOverview,
+  DealHealthTab,
+  ReadinessPanel,
+  TimelineTab,
+  PlaceholderTab,
+} from "@/components/deal-advisory";
+
+const DEAL_ROOM_TABS = [
+  { id: "overview", label: "Overview" },
+  { id: "financials", label: "Financials" },
+  { id: "dataroom", label: "Data Room" },
+  { id: "health", label: "Deal Health" },
+  { id: "dd", label: "Due Diligence" },
+  { id: "financing", label: "Financing" },
+  { id: "team", label: "Deal Team" },
+  { id: "qa", label: "Q&A" },
+  { id: "offers", label: "Offers" },
+  { id: "timeline", label: "Timeline" },
+] as const;
+
+type DealRoomTab = (typeof DEAL_ROOM_TABS)[number]["id"];
 
 type AccessState = "locked" | "requested" | "nda_sent" | "granted" | "rejected";
 
@@ -67,9 +91,15 @@ export default function DealDetail() {
   const [signerName, setSignerName] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [newDocName, setNewDocName] = useState("");
+  const [newDocCategory, setNewDocCategory] = useState("");
+  const invalidateAdvisory = () => {
+    queryClient.invalidateQueries({ queryKey: getGetDealAdvisoryQueryKey(id) });
+    queryClient.invalidateQueries({ queryKey: getGetDealTimelineQueryKey(id) });
+  };
   const [newDocNdaRequired, setNewDocNdaRequired] = useState(false);
   const [editingDocId, setEditingDocId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({ name: "", category: "", ndaRequired: false });
+  const [activeTab, setActiveTab] = useState<DealRoomTab>("overview");
 
   const handleSaveDocEdit = (docId: number) => {
     if (!editForm.name.trim() || !editForm.category.trim()) {
@@ -83,6 +113,7 @@ export default function DealDetail() {
           toast({ title: "Document Updated", description: `${editForm.name.trim()} saved.` });
           setEditingDocId(null);
           queryClient.invalidateQueries({ queryKey: getListDealDocumentsQueryKey(id) });
+          invalidateAdvisory();
         },
         onError: () => {
           toast({ title: "Update failed", description: "Could not update the document.", variant: "destructive" });
@@ -99,6 +130,7 @@ export default function DealDetail() {
         onSuccess: () => {
           toast({ title: "Document Deleted", description: `${docName} removed from the data room.` });
           queryClient.invalidateQueries({ queryKey: getListDealDocumentsQueryKey(id) });
+          invalidateAdvisory();
         },
         onError: () => {
           toast({ title: "Delete failed", description: "Could not delete the document.", variant: "destructive" });
@@ -229,39 +261,85 @@ export default function DealDetail() {
         </div>
       </div>
 
+      {/* Deal Room tab bar */}
+      <div className="max-w-6xl mx-auto px-8 pt-6">
+        <div className="flex gap-1 overflow-x-auto border-b border-white/10 pb-px" data-testid="tabs-deal-room">
+          {DEAL_ROOM_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                activeTab === tab.id
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+              data-testid={`tab-${tab.id}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="max-w-6xl mx-auto px-8 pt-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-12">
-          {/* Key Metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <MetricBox label="Asking Price" value={formatMillions(deal.askingPrice)} />
-            <MetricBox label="Gross Yield" value={deal.grossYield ? `${deal.grossYield}%` : 'N/A'} />
-            <MetricBox label="Area" value={deal.areaSqm ? `${deal.areaSqm.toLocaleString()} sqm` : 'N/A'} />
-            <MetricBox label="Occupancy" value={deal.occupancyPct ? `${deal.occupancyPct}%` : 'N/A'} />
-          </div>
-
-          <div className="space-y-6">
-            <h3 className="text-2xl font-heading font-bold flex items-center gap-2">
-              <Info className="w-5 h-5 text-primary" /> Investment Overview
-            </h3>
-            {isRestricted ? (
-              <div className="p-6 rounded-xl bg-card/30 border border-white/5 backdrop-blur text-muted-foreground italic">
-                {deal.teaser || "Detailed description is locked until NDA is signed."}
+          {activeTab === "overview" && (
+            <>
+              {/* Key Metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <MetricBox label="Asking Price" value={formatMillions(deal.askingPrice)} />
+                <MetricBox label="Gross Yield" value={deal.grossYield ? `${deal.grossYield}%` : 'N/A'} />
+                <MetricBox label="Area" value={deal.areaSqm ? `${deal.areaSqm.toLocaleString()} sqm` : 'N/A'} />
+                <MetricBox label="Occupancy" value={deal.occupancyPct ? `${deal.occupancyPct}%` : 'N/A'} />
               </div>
-            ) : (
-              <div className="prose prose-invert max-w-none text-muted-foreground leading-relaxed">
-                {deal.description?.split('\n').map((para, i) => (
-                  <p key={i}>{para}</p>
-                )) || "No description provided."}
+
+              <AdvisoryOverview dealId={id} onNavigate={(tab) => setActiveTab(tab as DealRoomTab)} />
+
+              <div className="space-y-6">
+                <h3 className="text-2xl font-heading font-bold flex items-center gap-2">
+                  <Info className="w-5 h-5 text-primary" /> Investment Overview
+                </h3>
+                {isRestricted ? (
+                  <div className="p-6 rounded-xl bg-card/30 border border-white/5 backdrop-blur text-muted-foreground italic">
+                    {deal.teaser || "Detailed description is locked until NDA is signed."}
+                  </div>
+                ) : (
+                  <div className="prose prose-invert max-w-none text-muted-foreground leading-relaxed">
+                    {deal.description?.split('\n').map((para, i) => (
+                      <p key={i}>{para}</p>
+                    )) || "No description provided."}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
 
-          <DealTeamSection dealId={id} />
+          {activeTab === "financials" && (
+            <PlaceholderTab title="Financials" description="In-depth financial analysis, scenarios and downloadable financing pack are coming to this tab." />
+          )}
+          {activeTab === "health" && <DealHealthTab dealId={id} />}
+          {activeTab === "dd" && (
+            <PlaceholderTab title="Due Diligence" description="The structured Due Diligence center with workstreams and findings is coming to this tab." />
+          )}
+          {activeTab === "financing" && (
+            <PlaceholderTab title="Financing" description="Financing scenarios, term comparisons and lender outreach are coming to this tab." />
+          )}
+          {activeTab === "qa" && (
+            <PlaceholderTab title="Q&A" description="Structured, auditable deal Q&A between investors and the deal manager is coming to this tab." />
+          )}
+          {activeTab === "offers" && (
+            <PlaceholderTab title="Offers" description="Structured offer submission and comparison is coming to this tab." />
+          )}
+          {activeTab === "timeline" && <TimelineTab dealId={id} />}
 
+          {activeTab === "team" && <DealTeamSection dealId={id} />}
+
+          {activeTab === "dataroom" && (
           <div className="space-y-6">
             <h3 className="text-2xl font-heading font-bold flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" /> Secure Data Room
             </h3>
+            <ReadinessPanel dealId={id} />
             <div className="rounded-xl border border-white/5 bg-card/30 backdrop-blur overflow-hidden">
               {docsLoading ? (
                 <div className="p-6 space-y-4">
@@ -398,6 +476,17 @@ export default function DealDetail() {
                             className="bg-background/50 border-white/10 h-8 text-sm"
                           />
                         </div>
+                        <div className="w-40">
+                          <Label htmlFor="doc-category" className="text-xs text-muted-foreground mb-1 block">Category</Label>
+                          <Input
+                            id="doc-category"
+                            value={newDocCategory}
+                            onChange={(e) => setNewDocCategory(e.target.value)}
+                            placeholder="e.g. Financials"
+                            className="bg-background/50 border-white/10 h-8 text-sm"
+                            data-testid="input-new-doc-category"
+                          />
+                        </div>
                         <div className="flex items-center gap-2 pb-0.5">
                           <Checkbox
                             id="doc-nda"
@@ -424,7 +513,7 @@ export default function DealDetail() {
                                 id,
                                 data: {
                                   name: newDocName.trim(),
-                                  category: 'document',
+                                  category: newDocCategory.trim() || 'document',
                                   sizeKb: Math.round((uploaded.size ?? 0) / 1024),
                                   ndaRequired: newDocNdaRequired,
                                   objectPath: objectPath ?? '',
@@ -435,8 +524,10 @@ export default function DealDetail() {
                                 onSuccess: () => {
                                   toast({ title: "Document Added", description: `${newDocName} uploaded to the data room.` });
                                   setNewDocName("");
+                                  setNewDocCategory("");
                                   setNewDocNdaRequired(false);
                                   queryClient.invalidateQueries({ queryKey: getListDealDocumentsQueryKey(id) });
+                                  invalidateAdvisory();
                                 },
                                 onError: () => {
                                   toast({ title: "Upload failed", description: "Could not register the document.", variant: "destructive" });
@@ -456,6 +547,7 @@ export default function DealDetail() {
               )}
             </div>
           </div>
+          )}
         </div>
 
         {/* Sidebar */}

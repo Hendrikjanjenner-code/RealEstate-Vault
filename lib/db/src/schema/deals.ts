@@ -16,6 +16,8 @@ export const dealsTable = pgTable("deals", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   dealType: text("deal_type").notNull(),
+  // e.g. asset_deal | share_deal; used for checklist template matching.
+  transactionStructure: text("transaction_structure"),
   assetClass: text("asset_class").notNull(),
   country: text("country").notNull(),
   city: text("city").notNull(),

@@ -13,6 +13,10 @@ export interface ApiMessage {
   error: string;
 }
 
+export interface ApiOk {
+  message: string;
+}
+
 export interface AuthUser {
   id: string;
   /** @nullable */
@@ -103,6 +107,11 @@ export interface Deal {
   id: number;
   title: string;
   dealType: string;
+  /**
+     * e.g. asset_deal | share_deal; used for checklist template matching.
+     * @nullable
+     */
+  transactionStructure?: string | null;
   assetClass: string;
   country: string;
   city: string;
@@ -161,6 +170,7 @@ export interface DealInput {
   /** @minLength 1 */
   title: string;
   dealType: string;
+  transactionStructure?: string;
   assetClass: string;
   country: string;
   city: string;
@@ -922,6 +932,277 @@ export interface ActivityItem {
   type: string;
   description: string;
   createdAt: string;
+}
+
+export interface HealthComponent {
+  key: string;
+  label: string;
+  /** 0-100 component score */
+  score: number;
+  weight: number;
+  dataUsed: string[];
+  missingData: string[];
+}
+
+export type ChecklistItemStatusStatus = typeof ChecklistItemStatusStatus[keyof typeof ChecklistItemStatusStatus];
+
+
+export const ChecklistItemStatusStatus = {
+  available: 'available',
+  missing: 'missing',
+  outdated: 'outdated',
+  needs_signature: 'needs_signature',
+  needs_review: 'needs_review',
+} as const;
+
+export interface ChecklistItemStatus {
+  itemId: number;
+  name: string;
+  category: string;
+  required: boolean;
+  status: ChecklistItemStatusStatus;
+  /** @nullable */
+  note?: string | null;
+}
+
+export interface DocumentReadiness {
+  /** @nullable */
+  templateId: number | null;
+  /** @nullable */
+  templateName: string | null;
+  readinessPct: number;
+  items: ChecklistItemStatus[];
+}
+
+export interface NextBestAction {
+  title: string;
+  description: string;
+  tab: string;
+}
+
+export type DealAdvisoryResponseRiskSummary = {
+  total: number;
+  open: number;
+  critical: number;
+  high: number;
+};
+
+export type DealAdvisoryResponseTeamSummary = {
+  appointed: number;
+  totalRoles: number;
+};
+
+export interface DealAdvisoryResponse {
+  overallScore: number;
+  components: HealthComponent[];
+  disclaimer: string;
+  readiness: DocumentReadiness;
+  riskSummary: DealAdvisoryResponseRiskSummary;
+  teamSummary: DealAdvisoryResponseTeamSummary;
+  nextActions: NextBestAction[];
+  canManage: boolean;
+}
+
+export interface TimelineEvent {
+  /** published | document_added | access_requested | nda_signed | team_invited | team_status | fee_proposed | fee_decided | risk_raised | risk_status */
+  kind: string;
+  title: string;
+  /** @nullable */
+  detail?: string | null;
+  occurredAt: string;
+}
+
+export interface RiskComment {
+  id: number;
+  riskId: number;
+  authorName: string;
+  body: string;
+  createdAt: string;
+}
+
+export type DealRiskCategory = typeof DealRiskCategory[keyof typeof DealRiskCategory];
+
+
+export const DealRiskCategory = {
+  financial: 'financial',
+  legal: 'legal',
+  tax: 'tax',
+  technical: 'technical',
+  financing: 'financing',
+  documentation: 'documentation',
+  other: 'other',
+} as const;
+
+export type DealRiskSeverity = typeof DealRiskSeverity[keyof typeof DealRiskSeverity];
+
+
+export const DealRiskSeverity = {
+  critical: 'critical',
+  high: 'high',
+  medium: 'medium',
+  low: 'low',
+  informational: 'informational',
+} as const;
+
+export type DealRiskStatus = typeof DealRiskStatus[keyof typeof DealRiskStatus];
+
+
+export const DealRiskStatus = {
+  open: 'open',
+  under_review: 'under_review',
+  information_requested: 'information_requested',
+  resolved: 'resolved',
+  accepted_risk: 'accepted_risk',
+  not_applicable: 'not_applicable',
+} as const;
+
+export interface DealRisk {
+  id: number;
+  dealId: number;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  category: DealRiskCategory;
+  severity: DealRiskSeverity;
+  /** @nullable */
+  source?: string | null;
+  /** @nullable */
+  assignedToName?: string | null;
+  status: DealRiskStatus;
+  createdByName: string;
+  detectedAt: string;
+  updatedAt: string;
+  comments: RiskComment[];
+}
+
+export type DealRiskInputCategory = typeof DealRiskInputCategory[keyof typeof DealRiskInputCategory];
+
+
+export const DealRiskInputCategory = {
+  financial: 'financial',
+  legal: 'legal',
+  tax: 'tax',
+  technical: 'technical',
+  financing: 'financing',
+  documentation: 'documentation',
+  other: 'other',
+} as const;
+
+export type DealRiskInputSeverity = typeof DealRiskInputSeverity[keyof typeof DealRiskInputSeverity];
+
+
+export const DealRiskInputSeverity = {
+  critical: 'critical',
+  high: 'high',
+  medium: 'medium',
+  low: 'low',
+  informational: 'informational',
+} as const;
+
+export interface DealRiskInput {
+  /** @minLength 1 */
+  title: string;
+  description?: string;
+  category: DealRiskInputCategory;
+  severity: DealRiskInputSeverity;
+  source?: string;
+  assignedToName?: string;
+}
+
+export type DealRiskUpdateStatus = typeof DealRiskUpdateStatus[keyof typeof DealRiskUpdateStatus];
+
+
+export const DealRiskUpdateStatus = {
+  open: 'open',
+  under_review: 'under_review',
+  information_requested: 'information_requested',
+  resolved: 'resolved',
+  accepted_risk: 'accepted_risk',
+  not_applicable: 'not_applicable',
+} as const;
+
+export type DealRiskUpdateSeverity = typeof DealRiskUpdateSeverity[keyof typeof DealRiskUpdateSeverity];
+
+
+export const DealRiskUpdateSeverity = {
+  critical: 'critical',
+  high: 'high',
+  medium: 'medium',
+  low: 'low',
+  informational: 'informational',
+} as const;
+
+export interface DealRiskUpdate {
+  status?: DealRiskUpdateStatus;
+  severity?: DealRiskUpdateSeverity;
+  assignedToName?: string;
+}
+
+export interface RiskCommentInput {
+  /** @minLength 1 */
+  body: string;
+}
+
+export type ChecklistStatusInputStatus = typeof ChecklistStatusInputStatus[keyof typeof ChecklistStatusInputStatus];
+
+
+export const ChecklistStatusInputStatus = {
+  available: 'available',
+  missing: 'missing',
+  outdated: 'outdated',
+  needs_signature: 'needs_signature',
+  needs_review: 'needs_review',
+} as const;
+
+export interface ChecklistStatusInput {
+  templateItemId: number;
+  status: ChecklistStatusInputStatus;
+  note?: string;
+}
+
+export interface ChecklistTemplateItem {
+  id: number;
+  category: string;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  required: boolean;
+  sortOrder: number;
+}
+
+export interface ChecklistTemplate {
+  id: number;
+  name: string;
+  /** @nullable */
+  assetClass?: string | null;
+  /** @nullable */
+  country?: string | null;
+  /** @nullable */
+  dealType?: string | null;
+  /** @nullable */
+  transactionStructure?: string | null;
+  createdAt: string;
+  items: ChecklistTemplateItem[];
+}
+
+export type ChecklistTemplateInputItemsItem = {
+  /** @minLength 1 */
+  category: string;
+  /** @minLength 1 */
+  name: string;
+  description?: string;
+  required?: boolean;
+};
+
+export interface ChecklistTemplateInput {
+  /** @minLength 1 */
+  name: string;
+  assetClass?: string;
+  country?: string;
+  dealType?: string;
+  transactionStructure?: string;
+  /** @minItems 1 */
+  items: ChecklistTemplateInputItemsItem[];
 }
 
 /**

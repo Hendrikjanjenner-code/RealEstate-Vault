@@ -27,6 +27,7 @@ import type {
   AccessRequestUpdateResult,
   ActivityItem,
   ApiMessage,
+  ApiOk,
   AuthUser,
   AuthUserEnvelope,
   BeginBrowserLoginParams,
@@ -37,13 +38,21 @@ import type {
   BrokerProfileEnvelope,
   BrokerProfileInput,
   CandidateMatch,
+  ChecklistStatusInput,
+  ChecklistTemplate,
+  ChecklistTemplateInput,
   DashboardStats,
   Deal,
+  DealAdvisoryResponse,
   DealDocument,
   DealDocumentInput,
   DealDocumentUpdate,
   DealInput,
+  DealRisk,
+  DealRiskInput,
+  DealRiskUpdate,
   DealTeamResponse,
+  DocumentReadiness,
   Engagement,
   EngagementActionInput,
   EngagementWithProfessional,
@@ -78,10 +87,13 @@ import type {
   ProfessionalReviewInput,
   PublicDealTeaser,
   PublicPlatformStats,
+  RiskComment,
+  RiskCommentInput,
   SessionResponse,
   SetRoleBody,
   SignNdaInput,
   TeamInvitationInput,
+  TimelineEvent,
   Transaction,
   UploadUrlRequest,
   UploadUrlResponse
@@ -3387,6 +3399,744 @@ export const useUpdateFeeProposal = <TError = ErrorType<ApiMessage>,
         TContext
       > => {
       return useMutation(getUpdateFeeProposalMutationOptions(options));
+    }
+
+export const getGetDealAdvisoryUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/advisory`
+}
+
+/**
+ * @summary Deal Advisory overview — Deal Health score, document readiness, risk summary, team summary and next best actions.
+ */
+export const getDealAdvisory = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<DealAdvisoryResponse> => {
+
+  return customFetch<DealAdvisoryResponse>(getGetDealAdvisoryUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDealAdvisoryQueryKey = (id: number,) => {
+    return [
+    `/api/deals/${id}/advisory`
+    ] as const;
+    }
+
+
+export const getGetDealAdvisoryQueryOptions = <TData = Awaited<ReturnType<typeof getDealAdvisory>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealAdvisory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDealAdvisoryQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDealAdvisory>>> = ({ signal }) => getDealAdvisory(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDealAdvisory>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDealAdvisoryQueryResult = NonNullable<Awaited<ReturnType<typeof getDealAdvisory>>>
+export type GetDealAdvisoryQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Deal Advisory overview — Deal Health score, document readiness, risk summary, team summary and next best actions.
+ */
+
+export function useGetDealAdvisory<TData = Awaited<ReturnType<typeof getDealAdvisory>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealAdvisory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDealAdvisoryQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetDealTimelineUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/timeline`
+}
+
+/**
+ * @summary Auditable chronological transaction timeline built from recorded deal events.
+ */
+export const getDealTimeline = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<TimelineEvent[]> => {
+
+  return customFetch<TimelineEvent[]>(getGetDealTimelineUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDealTimelineQueryKey = (id: number,) => {
+    return [
+    `/api/deals/${id}/timeline`
+    ] as const;
+    }
+
+
+export const getGetDealTimelineQueryOptions = <TData = Awaited<ReturnType<typeof getDealTimeline>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealTimeline>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDealTimelineQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDealTimeline>>> = ({ signal }) => getDealTimeline(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDealTimeline>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDealTimelineQueryResult = NonNullable<Awaited<ReturnType<typeof getDealTimeline>>>
+export type GetDealTimelineQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Auditable chronological transaction timeline built from recorded deal events.
+ */
+
+export function useGetDealTimeline<TData = Awaited<ReturnType<typeof getDealTimeline>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealTimeline>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDealTimelineQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListDealRisksUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/risks`
+}
+
+/**
+ * @summary Risks & attention points for a deal, including comments.
+ */
+export const listDealRisks = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<DealRisk[]> => {
+
+  return customFetch<DealRisk[]>(getListDealRisksUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDealRisksQueryKey = (id: number,) => {
+    return [
+    `/api/deals/${id}/risks`
+    ] as const;
+    }
+
+
+export const getListDealRisksQueryOptions = <TData = Awaited<ReturnType<typeof listDealRisks>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDealRisks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDealRisksQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDealRisks>>> = ({ signal }) => listDealRisks(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDealRisks>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDealRisksQueryResult = NonNullable<Awaited<ReturnType<typeof listDealRisks>>>
+export type ListDealRisksQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Risks & attention points for a deal, including comments.
+ */
+
+export function useListDealRisks<TData = Awaited<ReturnType<typeof listDealRisks>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDealRisks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDealRisksQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateDealRiskUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/risks`
+}
+
+/**
+ * @summary Record a risk / attention point (deal manager only).
+ */
+export const createDealRisk = async (id: number,
+    dealRiskInput: DealRiskInput, options?: Parameters<typeof customFetch>[1]): Promise<DealRisk> => {
+
+  return customFetch<DealRisk>(getCreateDealRiskUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(dealRiskInput)
+  }
+);}
+
+
+
+
+
+export const getCreateDealRiskMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDealRisk>>, TError,{id: number;data: BodyType<DealRiskInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createDealRisk>>, TError,{id: number;data: BodyType<DealRiskInput>}, TContext> => {
+
+const mutationKey = ['createDealRisk'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDealRisk>>, {id: number;data: BodyType<DealRiskInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createDealRisk(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateDealRiskMutationResult = NonNullable<Awaited<ReturnType<typeof createDealRisk>>>
+    export type CreateDealRiskMutationBody = BodyType<DealRiskInput>
+    export type CreateDealRiskMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Record a risk / attention point (deal manager only).
+ */
+export const useCreateDealRisk = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDealRisk>>, TError,{id: number;data: BodyType<DealRiskInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createDealRisk>>,
+        TError,
+        {id: number;data: BodyType<DealRiskInput>},
+        TContext
+      > => {
+      return useMutation(getCreateDealRiskMutationOptions(options));
+    }
+
+export const getUpdateDealRiskUrl = (id: number,) => {
+
+
+
+
+  return `/api/risks/${id}`
+}
+
+/**
+ * @summary Update a risk's workflow status, severity or assignment (deal manager only).
+ */
+export const updateDealRisk = async (id: number,
+    dealRiskUpdate: DealRiskUpdate, options?: Parameters<typeof customFetch>[1]): Promise<DealRisk> => {
+
+  return customFetch<DealRisk>(getUpdateDealRiskUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(dealRiskUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateDealRiskMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDealRisk>>, TError,{id: number;data: BodyType<DealRiskUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDealRisk>>, TError,{id: number;data: BodyType<DealRiskUpdate>}, TContext> => {
+
+const mutationKey = ['updateDealRisk'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDealRisk>>, {id: number;data: BodyType<DealRiskUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateDealRisk(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDealRiskMutationResult = NonNullable<Awaited<ReturnType<typeof updateDealRisk>>>
+    export type UpdateDealRiskMutationBody = BodyType<DealRiskUpdate>
+    export type UpdateDealRiskMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Update a risk's workflow status, severity or assignment (deal manager only).
+ */
+export const useUpdateDealRisk = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDealRisk>>, TError,{id: number;data: BodyType<DealRiskUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDealRisk>>,
+        TError,
+        {id: number;data: BodyType<DealRiskUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateDealRiskMutationOptions(options));
+    }
+
+export const getCreateRiskCommentUrl = (id: number,) => {
+
+
+
+
+  return `/api/risks/${id}/comments`
+}
+
+/**
+ * @summary Comment on a risk (anyone who can read the deal's advisory data).
+ */
+export const createRiskComment = async (id: number,
+    riskCommentInput: RiskCommentInput, options?: Parameters<typeof customFetch>[1]): Promise<RiskComment> => {
+
+  return customFetch<RiskComment>(getCreateRiskCommentUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(riskCommentInput)
+  }
+);}
+
+
+
+
+
+export const getCreateRiskCommentMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRiskComment>>, TError,{id: number;data: BodyType<RiskCommentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createRiskComment>>, TError,{id: number;data: BodyType<RiskCommentInput>}, TContext> => {
+
+const mutationKey = ['createRiskComment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createRiskComment>>, {id: number;data: BodyType<RiskCommentInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createRiskComment(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateRiskCommentMutationResult = NonNullable<Awaited<ReturnType<typeof createRiskComment>>>
+    export type CreateRiskCommentMutationBody = BodyType<RiskCommentInput>
+    export type CreateRiskCommentMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Comment on a risk (anyone who can read the deal's advisory data).
+ */
+export const useCreateRiskComment = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRiskComment>>, TError,{id: number;data: BodyType<RiskCommentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createRiskComment>>,
+        TError,
+        {id: number;data: BodyType<RiskCommentInput>},
+        TContext
+      > => {
+      return useMutation(getCreateRiskCommentMutationOptions(options));
+    }
+
+export const getSetDealChecklistStatusUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/checklist-status`
+}
+
+/**
+ * @summary Override a checklist item's status for this deal (deal manager only).
+ */
+export const setDealChecklistStatus = async (id: number,
+    checklistStatusInput: ChecklistStatusInput, options?: Parameters<typeof customFetch>[1]): Promise<DocumentReadiness> => {
+
+  return customFetch<DocumentReadiness>(getSetDealChecklistStatusUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(checklistStatusInput)
+  }
+);}
+
+
+
+
+
+export const getSetDealChecklistStatusMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setDealChecklistStatus>>, TError,{id: number;data: BodyType<ChecklistStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setDealChecklistStatus>>, TError,{id: number;data: BodyType<ChecklistStatusInput>}, TContext> => {
+
+const mutationKey = ['setDealChecklistStatus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setDealChecklistStatus>>, {id: number;data: BodyType<ChecklistStatusInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  setDealChecklistStatus(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetDealChecklistStatusMutationResult = NonNullable<Awaited<ReturnType<typeof setDealChecklistStatus>>>
+    export type SetDealChecklistStatusMutationBody = BodyType<ChecklistStatusInput>
+    export type SetDealChecklistStatusMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Override a checklist item's status for this deal (deal manager only).
+ */
+export const useSetDealChecklistStatus = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setDealChecklistStatus>>, TError,{id: number;data: BodyType<ChecklistStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setDealChecklistStatus>>,
+        TError,
+        {id: number;data: BodyType<ChecklistStatusInput>},
+        TContext
+      > => {
+      return useMutation(getSetDealChecklistStatusMutationOptions(options));
+    }
+
+export const getListChecklistTemplatesUrl = () => {
+
+
+
+
+  return `/api/checklist-templates`
+}
+
+/**
+ * @summary Document checklist templates (brokers only).
+ */
+export const listChecklistTemplates = async ( options?: Parameters<typeof customFetch>[1]): Promise<ChecklistTemplate[]> => {
+
+  return customFetch<ChecklistTemplate[]>(getListChecklistTemplatesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListChecklistTemplatesQueryKey = () => {
+    return [
+    `/api/checklist-templates`
+    ] as const;
+    }
+
+
+export const getListChecklistTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof listChecklistTemplates>>, TError = ErrorType<ApiMessage>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listChecklistTemplates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListChecklistTemplatesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listChecklistTemplates>>> = ({ signal }) => listChecklistTemplates({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listChecklistTemplates>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListChecklistTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof listChecklistTemplates>>>
+export type ListChecklistTemplatesQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Document checklist templates (brokers only).
+ */
+
+export function useListChecklistTemplates<TData = Awaited<ReturnType<typeof listChecklistTemplates>>, TError = ErrorType<ApiMessage>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listChecklistTemplates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListChecklistTemplatesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateChecklistTemplateUrl = () => {
+
+
+
+
+  return `/api/checklist-templates`
+}
+
+/**
+ * @summary Create a checklist template with items (brokers only).
+ */
+export const createChecklistTemplate = async (checklistTemplateInput: ChecklistTemplateInput, options?: Parameters<typeof customFetch>[1]): Promise<ChecklistTemplate> => {
+
+  return customFetch<ChecklistTemplate>(getCreateChecklistTemplateUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(checklistTemplateInput)
+  }
+);}
+
+
+
+
+
+export const getCreateChecklistTemplateMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createChecklistTemplate>>, TError,{data: BodyType<ChecklistTemplateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createChecklistTemplate>>, TError,{data: BodyType<ChecklistTemplateInput>}, TContext> => {
+
+const mutationKey = ['createChecklistTemplate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createChecklistTemplate>>, {data: BodyType<ChecklistTemplateInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createChecklistTemplate(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateChecklistTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof createChecklistTemplate>>>
+    export type CreateChecklistTemplateMutationBody = BodyType<ChecklistTemplateInput>
+    export type CreateChecklistTemplateMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Create a checklist template with items (brokers only).
+ */
+export const useCreateChecklistTemplate = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createChecklistTemplate>>, TError,{data: BodyType<ChecklistTemplateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createChecklistTemplate>>,
+        TError,
+        {data: BodyType<ChecklistTemplateInput>},
+        TContext
+      > => {
+      return useMutation(getCreateChecklistTemplateMutationOptions(options));
+    }
+
+export const getDeleteChecklistTemplateUrl = (id: number,) => {
+
+
+
+
+  return `/api/checklist-templates/${id}`
+}
+
+/**
+ * @summary Delete a checklist template you created.
+ */
+export const deleteChecklistTemplate = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<ApiOk> => {
+
+  return customFetch<ApiOk>(getDeleteChecklistTemplateUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteChecklistTemplateMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteChecklistTemplate>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteChecklistTemplate>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteChecklistTemplate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteChecklistTemplate>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteChecklistTemplate(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteChecklistTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof deleteChecklistTemplate>>>
+
+    export type DeleteChecklistTemplateMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Delete a checklist template you created.
+ */
+export const useDeleteChecklistTemplate = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteChecklistTemplate>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteChecklistTemplate>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteChecklistTemplateMutationOptions(options));
     }
 
 export const getListMandatesUrl = () => {

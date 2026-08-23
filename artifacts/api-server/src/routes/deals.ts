@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { Readable } from "stream";
 import { toJson } from "../lib/serialize";
+import { recordDealEvent } from "../lib/dealEvents";
 import {
   getEngagementDocAccess,
   permissionAllowsView,
@@ -691,6 +692,17 @@ router.patch(
       return;
     }
 
+    await recordDealEvent({
+      dealId: deal.id,
+      kind: "document_updated",
+      title: `Document updated: ${doc.name}`,
+      detail: Object.keys(updates)
+        .map((k) => (k === "ndaRequired" ? "NDA requirement" : k))
+        .join(", "),
+      category: doc.category,
+      req,
+    });
+
     res.json(UpdateDealDocumentResponse.parse(toJson(toPublicDocument(doc))));
   },
 );
@@ -739,6 +751,15 @@ router.delete(
       res.status(404).json({ error: "Document not found" });
       return;
     }
+
+    await recordDealEvent({
+      dealId: deal.id,
+      kind: "document_deleted",
+      title: `Document removed: ${doc.name}`,
+      detail: doc.category,
+      category: doc.category,
+      req,
+    });
 
     res.json(
       DeleteDealDocumentResponse.parse({ error: `Deleted ${doc.name}` }),

@@ -10,6 +10,11 @@ export interface Deal {
   id: number;
   title: string;
   dealType: string;
+  /**
+     * e.g. asset_deal | share_deal; used for checklist template matching.
+     * @nullable
+     */
+  transactionStructure?: string | null;
   assetClass: string;
   country: string;
   city: string;

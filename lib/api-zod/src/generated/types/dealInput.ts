@@ -10,6 +10,7 @@ export interface DealInput {
   /** @minLength 1 */
   title: string;
   dealType: string;
+  transactionStructure?: string;
   assetClass: string;
   country: string;
   city: string;

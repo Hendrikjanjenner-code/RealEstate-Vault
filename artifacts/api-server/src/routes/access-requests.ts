@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { toJson } from "../lib/serialize";
+import { recordDealEvent } from "../lib/dealEvents";
 import { Router, type IRouter } from "express";
 import { desc, eq, inArray } from "drizzle-orm";
 import {
@@ -179,6 +180,18 @@ router.patch("/access-requests/:id", async (req, res): Promise<void> => {
         accessRequestId: request.id,
       });
     }
+  }
+
+  // Immutable audit event for the decision (requester identity manager-only).
+  if (request.status !== existing.status) {
+    await recordDealEvent({
+      dealId: request.dealId,
+      kind: "access_decision",
+      title: `Access request ${request.status.replace(/_/g, " ")}`,
+      detail: `${request.requesterName ?? "Requester"}: ${existing.status.replace(/_/g, " ")} → ${request.status.replace(/_/g, " ")}`,
+      visibility: "manager",
+      req,
+    });
   }
 
   // Notify the requesting investor when their request status changes.

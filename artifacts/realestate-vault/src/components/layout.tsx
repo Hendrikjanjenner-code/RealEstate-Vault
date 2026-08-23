@@ -51,6 +51,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             ? [
                 { label: "My Profile", href: "/demo/profile", icon: UserRound },
                 { label: "Owner Assignments", href: "/demo/assignments", icon: Building2 },
+                { label: "Checklists", href: "/demo/checklist-templates", icon: FileText },
               ]
             : []),
           { label: "Deals", href: "/demo/deals", icon: Briefcase },

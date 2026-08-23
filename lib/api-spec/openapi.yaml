@@ -13,6 +13,7 @@ tags:
   - name: brokers
   - name: professionals
   - name: deal-team
+  - name: deal-advisory
   - name: mandates
   - name: access
   - name: auth
@@ -1064,6 +1065,350 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/advisory:
+    get:
+      operationId: getDealAdvisory
+      tags: [deal-advisory]
+      summary: Deal Advisory overview — Deal Health score, document readiness, risk summary, team summary and next best actions.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Advisory overview
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DealAdvisoryResponse" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access to this deal's advisory data
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/timeline:
+    get:
+      operationId: getDealTimeline
+      tags: [deal-advisory]
+      summary: Auditable chronological transaction timeline built from recorded deal events.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Timeline events, oldest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TimelineEvent" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/risks:
+    get:
+      operationId: listDealRisks
+      tags: [deal-advisory]
+      summary: Risks & attention points for a deal, including comments.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Risks
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/DealRisk" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+    post:
+      operationId: createDealRisk
+      tags: [deal-advisory]
+      summary: Record a risk / attention point (deal manager only).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DealRiskInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DealRisk" }
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Not the deal manager
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /risks/{id}:
+    patch:
+      operationId: updateDealRisk
+      tags: [deal-advisory]
+      summary: Update a risk's workflow status, severity or assignment (deal manager only).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DealRiskUpdate" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DealRisk" }
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Not the deal manager
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /risks/{id}/comments:
+    post:
+      operationId: createRiskComment
+      tags: [deal-advisory]
+      summary: Comment on a risk (anyone who can read the deal's advisory data).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RiskCommentInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RiskComment" }
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/checklist-status:
+    post:
+      operationId: setDealChecklistStatus
+      tags: [deal-advisory]
+      summary: Override a checklist item's status for this deal (deal manager only).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChecklistStatusInput" }
+      responses:
+        "200":
+          description: Updated readiness
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DocumentReadiness" }
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Not the deal manager
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /checklist-templates:
+    get:
+      operationId: listChecklistTemplates
+      tags: [deal-advisory]
+      summary: Document checklist templates (brokers only).
+      responses:
+        "200":
+          description: Templates with items
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ChecklistTemplate" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Brokers only
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+    post:
+      operationId: createChecklistTemplate
+      tags: [deal-advisory]
+      summary: Create a checklist template with items (brokers only).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChecklistTemplateInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChecklistTemplate" }
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Brokers only
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /checklist-templates/{id}:
+    delete:
+      operationId: deleteChecklistTemplate
+      tags: [deal-advisory]
+      summary: Delete a checklist template you created.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiOk" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Not the template owner
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /mandates:
     get:
       operationId: listMandates
@@ -1383,6 +1728,11 @@ components:
       properties:
         error: { type: string }
       required: [error]
+    ApiOk:
+      type: object
+      properties:
+        message: { type: string }
+      required: [message]
     AuthUser:
       type: object
       required: [id, email, firstName, lastName, profileImageUrl, role]
@@ -1496,6 +1846,9 @@ components:
         id: { type: integer }
         title: { type: string }
         dealType: { type: string }
+        transactionStructure:
+          type: ["string", "null"]
+          description: "e.g. asset_deal | share_deal; used for checklist template matching."
         assetClass: { type: string }
         country: { type: string }
         city: { type: string }
@@ -1534,6 +1887,7 @@ components:
       properties:
         title: { type: string, minLength: 1 }
         dealType: { type: string }
+        transactionStructure: { type: string }
         assetClass: { type: string }
         country: { type: string }
         city: { type: string }
@@ -2126,3 +2480,210 @@ components:
         type: { type: string }
         description: { type: string }
         createdAt: { type: string }
+    HealthComponent:
+      type: object
+      required: [key, label, score, weight, dataUsed, missingData]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        score: { type: integer, description: "0-100 component score" }
+        weight: { type: number }
+        dataUsed:
+          type: array
+          items: { type: string }
+        missingData:
+          type: array
+          items: { type: string }
+    ChecklistItemStatus:
+      type: object
+      required: [itemId, name, category, required, status]
+      properties:
+        itemId: { type: integer }
+        name: { type: string }
+        category: { type: string }
+        required: { type: boolean }
+        status:
+          type: string
+          enum: [available, missing, outdated, needs_signature, needs_review]
+        note: { type: ["string", "null"] }
+    DocumentReadiness:
+      type: object
+      required: [templateId, templateName, readinessPct, items]
+      properties:
+        templateId: { type: ["integer", "null"] }
+        templateName: { type: ["string", "null"] }
+        readinessPct: { type: integer }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ChecklistItemStatus" }
+    NextBestAction:
+      type: object
+      required: [title, description, tab]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        # Deal Room tab where the action can be taken.
+        tab: { type: string }
+    DealAdvisoryResponse:
+      type: object
+      required:
+        [
+          overallScore,
+          components,
+          disclaimer,
+          readiness,
+          riskSummary,
+          teamSummary,
+          nextActions,
+          canManage,
+        ]
+      properties:
+        overallScore: { type: integer }
+        components:
+          type: array
+          items: { $ref: "#/components/schemas/HealthComponent" }
+        disclaimer: { type: string }
+        readiness: { $ref: "#/components/schemas/DocumentReadiness" }
+        riskSummary:
+          type: object
+          required: [total, open, critical, high]
+          properties:
+            total: { type: integer }
+            open: { type: integer }
+            critical: { type: integer }
+            high: { type: integer }
+        teamSummary:
+          type: object
+          required: [appointed, totalRoles]
+          properties:
+            appointed: { type: integer }
+            totalRoles: { type: integer }
+        nextActions:
+          type: array
+          items: { $ref: "#/components/schemas/NextBestAction" }
+        canManage: { type: boolean }
+    TimelineEvent:
+      type: object
+      required: [kind, title, occurredAt]
+      properties:
+        kind: { type: string, description: "published | document_added | access_requested | nda_signed | team_invited | team_status | fee_proposed | fee_decided | risk_raised | risk_status" }
+        title: { type: string }
+        detail: { type: ["string", "null"] }
+        occurredAt: { type: string, format: date-time }
+    RiskComment:
+      type: object
+      required: [id, riskId, authorName, body, createdAt]
+      properties:
+        id: { type: integer }
+        riskId: { type: integer }
+        authorName: { type: string }
+        body: { type: string }
+        createdAt: { type: string, format: date-time }
+    DealRisk:
+      type: object
+      required:
+        [id, dealId, title, category, severity, status, createdByName, detectedAt, updatedAt, comments]
+      properties:
+        id: { type: integer }
+        dealId: { type: integer }
+        title: { type: string }
+        description: { type: ["string", "null"] }
+        category:
+          type: string
+          enum: [financial, legal, tax, technical, financing, documentation, other]
+        severity:
+          type: string
+          enum: [critical, high, medium, low, informational]
+        source: { type: ["string", "null"] }
+        assignedToName: { type: ["string", "null"] }
+        status:
+          type: string
+          enum: [open, under_review, information_requested, resolved, accepted_risk, not_applicable]
+        createdByName: { type: string }
+        detectedAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        comments:
+          type: array
+          items: { $ref: "#/components/schemas/RiskComment" }
+    DealRiskInput:
+      type: object
+      required: [title, category, severity]
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        category:
+          type: string
+          enum: [financial, legal, tax, technical, financing, documentation, other]
+        severity:
+          type: string
+          enum: [critical, high, medium, low, informational]
+        source: { type: string }
+        assignedToName: { type: string }
+    DealRiskUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [open, under_review, information_requested, resolved, accepted_risk, not_applicable]
+        severity:
+          type: string
+          enum: [critical, high, medium, low, informational]
+        assignedToName: { type: string }
+    RiskCommentInput:
+      type: object
+      required: [body]
+      properties:
+        body: { type: string, minLength: 1 }
+    ChecklistStatusInput:
+      type: object
+      required: [templateItemId, status]
+      properties:
+        templateItemId: { type: integer }
+        status:
+          type: string
+          enum: [available, missing, outdated, needs_signature, needs_review]
+        note: { type: string }
+    ChecklistTemplateItem:
+      type: object
+      required: [id, category, name, required, sortOrder]
+      properties:
+        id: { type: integer }
+        category: { type: string }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        required: { type: boolean }
+        sortOrder: { type: integer }
+    ChecklistTemplate:
+      type: object
+      required: [id, name, createdAt, items]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        assetClass: { type: ["string", "null"] }
+        country: { type: ["string", "null"] }
+        dealType: { type: ["string", "null"] }
+        transactionStructure: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ChecklistTemplateItem" }
+    ChecklistTemplateInput:
+      type: object
+      required: [name, items]
+      properties:
+        name: { type: string, minLength: 1 }
+        assetClass: { type: string }
+        country: { type: string }
+        dealType: { type: string }
+        transactionStructure: { type: string }
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [category, name]
+            properties:
+              category: { type: string, minLength: 1 }
+              name: { type: string, minLength: 1 }
+              description: { type: string }
+              required: { type: boolean }

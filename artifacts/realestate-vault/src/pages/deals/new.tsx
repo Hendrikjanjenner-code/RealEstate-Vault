@@ -21,6 +21,7 @@ export default function DealCreate() {
     city: "",
     askingPrice: "",
     currency: "EUR",
+    transactionStructure: "asset_deal",
     confidential: true,
     locationPrivacy: "country_only",
     teaser: "",
@@ -132,6 +133,19 @@ export default function DealCreate() {
                     <SelectItem value="share_deal">Share Deal</SelectItem>
                     <SelectItem value="forward_funding">Forward Funding</SelectItem>
                     <SelectItem value="joint_venture">Joint Venture</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="deal-structure">Transaction Structure</Label>
+                <Select value={formData.transactionStructure} onValueChange={(v) => setFormData(f => ({ ...f, transactionStructure: v }))}>
+                  <SelectTrigger id="deal-structure" className="bg-background/50 border-white/10" data-testid="select-deal-structure">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="asset_deal">Asset Deal</SelectItem>
+                    <SelectItem value="share_deal">Share Deal</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
