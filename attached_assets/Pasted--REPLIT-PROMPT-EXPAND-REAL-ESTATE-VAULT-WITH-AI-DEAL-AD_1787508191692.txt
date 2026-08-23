@@ -1,0 +1,2210 @@
+# REPLIT PROMPT — EXPAND REAL ESTATE VAULT WITH AI DEAL ADVISORY & PROFESSIONAL DEAL TEAMS
+
+Expand the existing **Real Estate Vault** application with a comprehensive **AI Deal Advisory, Deal Health and Professional Deal Team ecosystem**.
+
+IMPORTANT:
+
+Do NOT rebuild the application from scratch.
+
+Do NOT replace the existing Real Estate Vault functionality.
+
+Extend the existing architecture, database, user system, deal pages, NDA workflow, data rooms, broker marketplace, transaction pipeline and permissions.
+
+The purpose of this expansion is to turn Real Estate Vault from a private commercial real estate marketplace into a complete transaction infrastructure platform.
+
+The expanded transaction journey should become:
+
+**Discover → Connect → NDA → Data Room → Analyse → Assemble Deal Team → Finance → Due Diligence → Offer → Negotiate → Close → Verify → Reputation**
+
+The platform must combine AI automation with qualified human professionals.
+
+AI should:
+
+* Read
+* Extract
+* Organise
+* Calculate
+* Compare
+* Summarise
+* Detect missing information
+* Flag potential risks
+* Prepare questions
+* Prepare reports
+* Prepare professional review
+
+AI must NOT be presented as a replacement for lawyers, tax advisors, valuers, financing specialists, notaries or other regulated professionals.
+
+Where professional judgement is required, the system should clearly allow the user to request professional review.
+
+---
+
+# 1. NEW CORE MODULE: DEAL ADVISORY
+
+Add a new major module to every confidential transaction:
+
+**Deal Advisory**
+
+This becomes available after the user has the required deal access and NDA permissions.
+
+Main sections:
+
+* Deal Health
+* Financial Analysis
+* Legal Review
+* Tax & Structure
+* Financing
+* Document Readiness
+* Due Diligence
+* Risks & Attention Points
+* Deal Team
+* Professional Reviews
+
+The user should see one central overview of the complete health and readiness of the transaction.
+
+---
+
+# 2. DEAL HEALTH SCORE
+
+Create a **Deal Health Score** between 0 and 100.
+
+Example:
+
+## Deal Health
+
+**78 / 100**
+
+Financial Health
+86 / 100
+
+Legal Readiness
+71 / 100
+
+Documentation
+64 / 100
+
+Financing Readiness
+82 / 100
+
+Due Diligence Readiness
+74 / 100
+
+Transaction Readiness
+79 / 100
+
+Display this as a premium institutional dashboard.
+
+Do not make it look gamified.
+
+It should resemble professional investment or risk-management software.
+
+---
+
+# 3. IMPORTANT SCORE DISCLAIMER
+
+The Deal Health Score must not imply that the platform guarantees the quality or safety of an investment.
+
+Add clear contextual wording:
+
+**Deal Health is an analytical readiness indicator based on available deal information and documents. It does not constitute legal, tax, financial or investment advice.**
+
+Scores must explain:
+
+* Which data was used
+* Which documents were analysed
+* Which information is missing
+* Which assumptions were made
+* Which areas require professional review
+
+Never create false certainty.
+
+---
+
+# 4. DEAL HEALTH OVERVIEW
+
+Create cards for:
+
+## Financial
+
+Revenue
+
+EBITDA
+
+Cash flow
+
+Debt
+
+Working capital
+
+Historical performance
+
+Margins
+
+Operating performance
+
+## Legal
+
+Contracts
+
+Ownership documentation
+
+Lease documentation
+
+Corporate structure
+
+Security documents
+
+Change-of-control provisions
+
+Expiry dates
+
+Missing documents
+
+## Tax & Structure
+
+Available tax documentation
+
+Transaction structure
+
+Corporate entities
+
+Asset vs share transaction scenario
+
+Tax documentation completeness
+
+Professional review status
+
+## Financing
+
+Indicative debt requirement
+
+Loan-to-value
+
+Debt service capacity
+
+Financing documentation
+
+Security package
+
+Financing readiness
+
+## Documentation
+
+Documents available
+
+Documents missing
+
+Documents outdated
+
+Documents requiring signature
+
+Documents requiring professional review
+
+## Due Diligence
+
+Financial DD
+
+Legal DD
+
+Tax DD
+
+Technical DD
+
+Commercial DD
+
+Environmental DD where applicable
+
+---
+
+# 5. AI DOCUMENT INTELLIGENCE
+
+Extend the existing Virtual Data Room with an AI document intelligence layer.
+
+When authorised documents are uploaded, allow the system to analyse them.
+
+Examples:
+
+* PDF
+* Word
+* Excel
+* Financial statements
+* Lease agreements
+* Management agreements
+* Franchise agreements
+* Loan agreements
+* Property documentation
+* Valuation reports
+* Technical reports
+* Corporate documents
+* Due diligence reports
+
+For every document create:
+
+Document Type
+
+Document Date
+
+Relevant Parties
+
+Expiry Date if applicable
+
+Financial Values
+
+Important Clauses
+
+Potential Attention Points
+
+Missing Information
+
+Related Documents
+
+Professional Review Status
+
+---
+
+# 6. DOCUMENT SUMMARY
+
+Every supported document should have:
+
+**AI Summary**
+
+The summary should answer:
+
+What is this document?
+
+Why is it relevant?
+
+What are the main commercial points?
+
+What important dates exist?
+
+What obligations exist?
+
+What information may require attention?
+
+What should a professional reviewer verify?
+
+Never present the AI summary as definitive legal interpretation.
+
+---
+
+# 7. SOURCE REFERENCES
+
+Every AI-generated finding must link back to its source.
+
+For example:
+
+**Potential Change of Control Requirement**
+
+Source:
+
+Hotel Management Agreement
+
+Page 34
+
+Section 12.4
+
+Allow the user to click:
+
+**View Source**
+
+and open the relevant document.
+
+This is critical.
+
+AI findings should be traceable to underlying documents wherever technically possible.
+
+---
+
+# 8. AI CONFIDENCE
+
+For extracted information, internally maintain confidence levels.
+
+Examples:
+
+High Confidence
+
+Medium Confidence
+
+Low Confidence
+
+Do not overstate uncertain findings.
+
+When confidence is low, display:
+
+**Requires Verification**
+
+---
+
+# 9. MISSING DOCUMENT DETECTION
+
+Create a **Document Readiness** module.
+
+Based on:
+
+* Asset type
+* Transaction type
+* Country
+* Deal structure
+* Financing
+* Available documents
+
+the platform should generate a configurable checklist.
+
+Example for a hotel transaction:
+
+Investment Memorandum ✓
+
+Property Ownership Documentation ✓
+
+Historical Financials ✓
+
+Current P&L ✓
+
+Hotel Management Agreement ✓
+
+Franchise Agreement Missing
+
+Technical Survey Missing
+
+Energy Documentation ✓
+
+Tax Information Requires Update
+
+Financing Information Missing
+
+Display:
+
+**Document Readiness: 72%**
+
+**7 documents missing**
+
+**3 documents outdated**
+
+**4 items require professional review**
+
+---
+
+# 10. ADMIN-CONTROLLED CHECKLISTS
+
+Do not permanently hardcode document requirements.
+
+Create configurable templates.
+
+Admin can define document checklists based on:
+
+Asset Class
+
+Country
+
+Deal Type
+
+Transaction Structure
+
+Example:
+
+Hotel + Netherlands + Asset Deal
+
+can have a different checklist from:
+
+Office + Germany + Share Deal
+
+---
+
+# 11. FINANCIAL ANALYSIS
+
+Create a Financial Analysis section.
+
+Where data is available, calculate:
+
+Revenue
+
+Revenue growth
+
+EBITDA
+
+EBITDA margin
+
+NOI
+
+Cash flow
+
+Debt
+
+Debt / EBITDA
+
+Working capital
+
+Receivables
+
+Operating expenses
+
+Capital expenditure
+
+Historical growth
+
+For hotels additionally support:
+
+Occupancy
+
+ADR
+
+RevPAR
+
+GOP
+
+GOP margin
+
+Rooms revenue
+
+F&B revenue
+
+Other revenue
+
+---
+
+# 12. FINANCIAL TRENDS
+
+Display historical performance visually.
+
+Examples:
+
+Revenue 2023
+Revenue 2024
+Revenue 2025
+Revenue 2026
+
+EBITDA
+
+NOI
+
+Occupancy
+
+ADR
+
+RevPAR
+
+Use professional charts.
+
+---
+
+# 13. FINANCING ANALYSIS
+
+Create a Financing module.
+
+The purpose is to prepare and structure information for financing discussions.
+
+Allow:
+
+Purchase Price
+
+Equity Contribution
+
+Requested Debt
+
+Interest Rate Assumption
+
+Amortisation
+
+Loan Term
+
+LTV
+
+DSCR
+
+Debt Yield
+
+Exit Value
+
+Exit Yield
+
+---
+
+# 14. FINANCING SCENARIOS
+
+Allow users to create scenarios.
+
+Example:
+
+## Conservative
+
+Purchase Price
+€25M
+
+Debt
+€12.5M
+
+LTV
+50%
+
+Interest
+5.5%
+
+## Base
+
+Debt
+€15M
+
+LTV
+60%
+
+Interest
+5.25%
+
+## Higher Leverage
+
+Debt
+€17.5M
+
+LTV
+70%
+
+Interest
+5.75%
+
+Calculate relevant metrics.
+
+Clearly label assumptions.
+
+---
+
+# 15. FINANCING READINESS
+
+Create:
+
+**Financing Readiness Score**
+
+Use factors such as:
+
+Financial documentation completeness
+
+Historical performance
+
+Debt service capacity
+
+Valuation availability
+
+Ownership documents
+
+Security documentation
+
+Business plan
+
+Investor equity information
+
+Do not present this score as a guarantee that financing will be obtained.
+
+---
+
+# 16. FINANCING PACK
+
+Allow the user to click:
+
+**Prepare Financing Pack**
+
+The system should compile available information into a structured package.
+
+Include:
+
+Executive Summary
+
+Transaction Overview
+
+Property Information
+
+Purchase Price
+
+Equity Requirement
+
+Debt Requirement
+
+Historical Financials
+
+Financial Projections
+
+Key Ratios
+
+Property Information
+
+Ownership Structure
+
+Available Security Information
+
+Supporting Documents
+
+Missing Information
+
+This should help prepare the transaction for a financing professional or lender.
+
+---
+
+# 17. LEGAL REVIEW MODULE
+
+Create a Legal Review dashboard.
+
+AI can identify and organise:
+
+Available agreements
+
+Parties
+
+Contract dates
+
+Expiry dates
+
+Renewal periods
+
+Notice periods
+
+Security documentation
+
+Change-of-control language
+
+Assignment clauses
+
+Guarantees
+
+Conditions
+
+Potential missing documents
+
+Do NOT let AI present definitive legal conclusions.
+
+Use terminology such as:
+
+**Potential Attention Point**
+
+**Professional Review Recommended**
+
+**Document Missing**
+
+**Requires Legal Verification**
+
+---
+
+# 18. TAX & STRUCTURE MODULE
+
+Create a Tax & Structure area.
+
+Show:
+
+Transaction structure
+
+Asset Deal
+
+Share Deal
+
+Entity structure
+
+Property-owning company
+
+Operating company
+
+Holding company
+
+Available tax documentation
+
+Available corporate documentation
+
+Potential structural scenarios
+
+AI may organise and compare available information.
+
+Do not automatically provide definitive tax advice.
+
+Create:
+
+**Request Tax Review**
+
+---
+
+# 19. RISK & ATTENTION CENTER
+
+Create one central:
+
+# Risks & Attention Points
+
+Combine signals from:
+
+Financial
+
+Legal
+
+Tax
+
+Financing
+
+Technical
+
+Documentation
+
+Due Diligence
+
+Display severity:
+
+Critical
+
+High
+
+Medium
+
+Low
+
+Informational
+
+Also display:
+
+Source
+
+Responsible Party
+
+Status
+
+Professional Review
+
+---
+
+# 20. ATTENTION POINT WORKFLOW
+
+Every attention point should have:
+
+Title
+
+Description
+
+Category
+
+Severity
+
+Source
+
+Date detected
+
+Assigned person
+
+Professional reviewer
+
+Status
+
+Comments
+
+Attachments
+
+Statuses:
+
+Open
+
+Under Review
+
+Information Requested
+
+Resolved
+
+Accepted Risk
+
+Not Applicable
+
+---
+
+# 21. PROFESSIONAL REVIEW
+
+Every AI-generated attention point can have a button:
+
+**Request Professional Review**
+
+Depending on category:
+
+Legal → Lawyer / Legal Advisor
+
+Tax → Tax Advisor
+
+Financing → Financing Advisor
+
+Valuation → Valuer
+
+Technical → Technical DD Specialist
+
+Commercial → Commercial Advisor
+
+---
+
+# 22. PROFESSIONAL MARKETPLACE
+
+Expand the existing broker marketplace into a broader professional marketplace.
+
+Create main navigation:
+
+**Professionals**
+
+Categories:
+
+Brokers
+
+Acquisition Brokers
+
+Legal Advisors
+
+Tax Advisors
+
+Financing Advisors
+
+Valuers
+
+Technical Due Diligence
+
+Commercial Due Diligence
+
+Notaries
+
+Asset Managers
+
+Other Specialists
+
+---
+
+# 23. PROFESSIONAL PROFILE
+
+Each professional can have:
+
+Name
+
+Photo
+
+Company
+
+Title
+
+Professional Category
+
+Verified Badge
+
+Specialisations
+
+Countries
+
+Languages
+
+Asset Classes
+
+Years Experience
+
+Completed Assignments
+
+Verified Transactions
+
+Verified Deal Volume where relevant
+
+Client Rating
+
+Average Response Time
+
+Biography
+
+Credentials
+
+---
+
+# 24. PROFESSIONAL VERIFICATION
+
+Create category-specific verification.
+
+Possible statuses:
+
+Unverified
+
+Verification Pending
+
+Verified Professional
+
+Verified Firm
+
+Specialist Verified
+
+Where a profession is regulated, architecture must allow additional credential verification.
+
+Do not automatically claim regulatory verification without actual verification.
+
+---
+
+# 25. DEAL TEAM
+
+Create a new major feature:
+
+# Deal Team
+
+Every transaction can have its own Deal Team.
+
+Example:
+
+## Deal Team
+
+Selling Broker
+Alexander de Vries ✓
+
+Acquisition Broker
+Hendrik Janssen ✓
+
+Legal Counsel
+Not Selected
+
+Tax Advisor
+Not Selected
+
+Financing Advisor
+Not Selected
+
+Valuer
+Not Selected
+
+Technical DD
+Not Selected
+
+Notary
+Not Selected
+
+---
+
+# 26. BUILD YOUR DEAL TEAM
+
+For empty roles show:
+
+**Find Professional**
+
+Clicking opens relevant professionals filtered by:
+
+Deal location
+
+Asset class
+
+Transaction size
+
+Expertise
+
+Rating
+
+Verified assignments
+
+Availability where supported
+
+---
+
+# 27. PROFESSIONAL MATCH SCORE
+
+Create an AI-supported Professional Match Score.
+
+Example:
+
+**94% Match**
+
+Reasons:
+
+Hospitality specialist
+
+27 verified hotel transactions
+
+Netherlands expertise
+
+Relevant transaction range
+
+Excellent client reviews
+
+Fast response time
+
+Do not rank only on deal volume.
+
+---
+
+# 28. INVITE PROFESSIONAL
+
+Allow user to invite a professional to the transaction.
+
+Workflow:
+
+Select Professional
+
+Select Role
+
+Select Scope
+
+Select Data Room Permissions
+
+Optional Fee Proposal
+
+Send Invitation
+
+Professional can:
+
+Accept
+
+Decline
+
+Request Information
+
+Propose Fee
+
+---
+
+# 29. PROFESSIONAL ENGAGEMENT
+
+Create engagement statuses:
+
+Invited
+
+Interested
+
+Proposal Sent
+
+Negotiation
+
+Appointed
+
+Active
+
+Completed
+
+Cancelled
+
+---
+
+# 30. PROFESSIONAL FEE PROPOSAL
+
+Allow professionals to propose fees.
+
+Fee types:
+
+Fixed Fee
+
+Hourly
+
+Percentage
+
+Success Fee
+
+Retainer
+
+Custom
+
+Display:
+
+Scope
+
+Fee
+
+VAT / Taxes
+
+Payment Terms
+
+Conditions
+
+---
+
+# 31. GRANULAR DATA ROOM PERMISSIONS
+
+This is critical.
+
+Professionals should NOT automatically receive access to the complete data room.
+
+When inviting someone, choose folders.
+
+Example:
+
+Legal Counsel:
+
+Legal ✓
+
+Corporate ✓
+
+Lease Documentation ✓
+
+Financials Limited
+
+Technical ✕
+
+Investor Personal Documents ✕
+
+Financing Advisor:
+
+Financials ✓
+
+Valuation ✓
+
+Business Plan ✓
+
+Legal Limited
+
+Technical Limited
+
+Allow:
+
+View
+
+Download
+
+Upload
+
+Comment
+
+No Access
+
+---
+
+# 32. PROFESSIONAL WORKSPACE
+
+When appointed, a professional receives a deal workspace.
+
+Show only authorised information.
+
+Workspace contains:
+
+Deal Overview
+
+Assigned Tasks
+
+Documents
+
+Questions
+
+Attention Points
+
+Comments
+
+Professional Review
+
+Deliverables
+
+Deadlines
+
+---
+
+# 33. PROFESSIONAL REVIEW OUTPUT
+
+Allow professional to classify an AI finding:
+
+Confirmed
+
+Not Relevant
+
+Needs More Information
+
+Material Risk
+
+Minor Risk
+
+Resolved
+
+Professional can add:
+
+Explanation
+
+Recommendation
+
+Supporting Document
+
+Comments
+
+---
+
+# 34. HUMAN-IN-THE-LOOP SYSTEM
+
+Design the system around:
+
+**AI identifies → Human verifies → Platform records → Deal progresses**
+
+Never blur the distinction between:
+
+AI Analysis
+
+and
+
+Professional Review.
+
+Use badges:
+
+AI Generated
+
+Professional Reviewed
+
+Verified
+
+---
+
+# 35. DUE DILIGENCE CENTER
+
+Create:
+
+# Due Diligence
+
+Categories:
+
+Financial DD
+
+Legal DD
+
+Tax DD
+
+Technical DD
+
+Commercial DD
+
+Environmental DD
+
+Operational DD
+
+For hotels:
+
+Hotel Operational DD
+
+Management Agreement Review
+
+Franchise Review
+
+---
+
+# 36. DD CHECKLIST
+
+Each category contains:
+
+Checklist
+
+Responsible professional
+
+Status
+
+Documents
+
+Questions
+
+Findings
+
+Completion %
+
+Example:
+
+Legal DD
+68%
+
+Financial DD
+92%
+
+Technical DD
+45%
+
+Tax DD
+71%
+
+---
+
+# 37. QUESTIONS & ANSWERS
+
+Create a structured Q&A system.
+
+Buyer or advisor can submit a question.
+
+Example:
+
+Category:
+
+Financial
+
+Question:
+
+Please provide monthly occupancy and ADR figures for the previous 36 months.
+
+Assigned To:
+
+Selling Broker
+
+Status:
+
+Open
+
+Response:
+
+Upload document or answer.
+
+---
+
+# 38. Q&A STATUS
+
+Open
+
+Assigned
+
+Answered
+
+Follow-Up
+
+Closed
+
+---
+
+# 39. DEAL READINESS
+
+Create an overall:
+
+**Transaction Readiness**
+
+Example:
+
+## Transaction Readiness
+
+82%
+
+NDA
+Complete
+
+Data Room
+86%
+
+Financial DD
+92%
+
+Legal DD
+74%
+
+Financing
+80%
+
+Technical DD
+65%
+
+Offer
+Submitted
+
+Professional Team
+5 / 7 appointed
+
+---
+
+# 40. NEXT BEST ACTION
+
+Create a smart module:
+
+**Next Best Action**
+
+Examples:
+
+7 documents are missing
+
+Legal review required for management agreement
+
+Financing pack is 84% complete
+
+Technical DD specialist has not been appointed
+
+Offer expires in 4 days
+
+Display actionable buttons.
+
+---
+
+# 41. TRANSACTION TIMELINE
+
+Create a complete chronological timeline.
+
+Example:
+
+01 Aug
+Deal Published
+
+03 Aug
+Investor Requested Access
+
+03 Aug
+Broker Approved
+
+04 Aug
+NDA Signed
+
+04 Aug
+Data Room Opened
+
+07 Aug
+Financing Advisor Appointed
+
+09 Aug
+Legal DD Started
+
+12 Aug
+Offer Submitted
+
+Everything should be auditable.
+
+---
+
+# 42. DEAL ROOM HOME SCREEN
+
+Redesign the confidential deal page to act as a complete Deal Room.
+
+Tabs:
+
+Overview
+
+Financials
+
+Data Room
+
+Deal Health
+
+Due Diligence
+
+Financing
+
+Deal Team
+
+Q&A
+
+Offers
+
+Timeline
+
+Messages
+
+---
+
+# 43. AI DEAL ASSISTANT
+
+Add a contextual AI assistant inside each Deal Room.
+
+Example questions:
+
+Summarise this transaction.
+
+What documents are missing?
+
+Show me the largest financial risks.
+
+What changed in the data room this week?
+
+Summarise the lease agreement.
+
+Prepare questions for the selling broker.
+
+Prepare this deal for financing review.
+
+What items still require professional verification?
+
+AI must only use information the current user is authorised to access.
+
+---
+
+# 44. STRICT AI PERMISSIONS
+
+AI must follow exactly the same access permissions as the user.
+
+If a user cannot access a document, AI cannot:
+
+Read it
+
+Summarise it
+
+Reference it
+
+Reveal extracted information from it
+
+This must be enforced server-side.
+
+---
+
+# 45. DEAL ADVISORY DASHBOARD
+
+Create dashboard cards:
+
+Deal Health
+
+78 / 100
+
+Document Readiness
+
+72%
+
+Financing Readiness
+
+82%
+
+Due Diligence
+
+67%
+
+Attention Points
+
+12
+
+Critical Issues
+
+1
+
+Professional Reviews Pending
+
+3
+
+Deal Team
+
+5 / 7
+
+---
+
+# 46. PROFESSIONAL REVIEWS
+
+Create a central tab:
+
+Professional Reviews
+
+Show:
+
+Finding
+
+Category
+
+AI Status
+
+Reviewer
+
+Review Status
+
+Result
+
+Date
+
+---
+
+# 47. PROFESSIONAL REPUTATION
+
+After an assignment is completed, allow authorised transaction participants to review the professional.
+
+Rating categories:
+
+Expertise
+
+Communication
+
+Speed
+
+Quality
+
+Professionalism
+
+Deal Understanding
+
+Overall
+
+Only verified assignments should generate verified reviews.
+
+---
+
+# 48. VERIFIED ASSIGNMENTS
+
+Professionals should build a platform track record.
+
+Example:
+
+**Sarah de Jong**
+
+Real Estate Lawyer
+
+Verified Professional
+
+47 Verified Assignments
+
+€620M Transaction Experience
+
+Hospitality Specialist
+
+4.9 / 5
+
+Only use transaction volume where it can legitimately be verified.
+
+---
+
+# 49. PROFESSIONAL RANKINGS
+
+Future-proof ranking architecture for:
+
+Top Real Estate Lawyers
+
+Top Financing Advisors
+
+Top Hotel Tax Specialists
+
+Top Technical DD Specialists
+
+Top Valuers
+
+Rankings should consider:
+
+Verified assignments
+
+Relevant asset expertise
+
+Relevant geography
+
+Reviews
+
+Response rate
+
+Experience
+
+Deal relevance
+
+Do not rank purely by volume.
+
+---
+
+# 50. SERVICE MARKETPLACE BUSINESS MODEL
+
+Prepare the architecture for Real Estate Vault to monetise professional services later.
+
+Possible models:
+
+Professional subscription
+
+Lead fee
+
+Introduction fee
+
+Marketplace fee
+
+Success fee where legally permitted
+
+Premium profile
+
+Featured professional
+
+Enterprise membership
+
+Do not activate regulated or transaction-based fee models without appropriate legal review.
+
+---
+
+# 51. FINANCING MARKETPLACE — FUTURE READY
+
+Prepare architecture for future lender and financing partner profiles.
+
+Possible categories:
+
+Bank
+
+Debt Fund
+
+Private Lender
+
+Mezzanine Provider
+
+Bridge Lender
+
+Alternative Financier
+
+Mortgage Advisor
+
+Do NOT automatically represent Real Estate Vault as a regulated credit intermediary.
+
+Keep this as modular future functionality subject to regulatory review.
+
+---
+
+# 52. DEAL TEAM NOTIFICATIONS
+
+Create notifications:
+
+Professional invited
+
+Professional accepted
+
+Fee proposal received
+
+Professional review completed
+
+New attention point
+
+Document requested
+
+DD item completed
+
+Financing pack ready
+
+Deal Health changed
+
+Critical issue detected
+
+---
+
+# 53. AUDIT TRAIL
+
+Log:
+
+AI analysis performed
+
+Document analysed
+
+Finding created
+
+Finding changed
+
+Professional invited
+
+Professional accepted
+
+Access granted
+
+Access revoked
+
+Professional review submitted
+
+Finding resolved
+
+Financing scenario created
+
+Report generated
+
+---
+
+# 54. REPORT GENERATION
+
+Allow authorised users to generate:
+
+Deal Health Report
+
+Financial Analysis Report
+
+Document Readiness Report
+
+Financing Readiness Report
+
+Due Diligence Status Report
+
+Professional Review Report
+
+Transaction Readiness Report
+
+Reports should clearly distinguish:
+
+AI Generated Information
+
+User Entered Information
+
+Professional Reviewed Information
+
+---
+
+# 55. SECURITY
+
+This expansion involves highly sensitive information.
+
+Maintain:
+
+Role-based permissions
+
+Deal-level permissions
+
+Folder-level permissions
+
+Document-level permissions
+
+Professional access restrictions
+
+Secure storage
+
+Signed URLs
+
+Audit logs
+
+Encryption
+
+Session security
+
+Server-side authorisation
+
+Never rely solely on frontend visibility to protect confidential data.
+
+---
+
+# 56. DATA ISOLATION
+
+Professional A must never see information assigned exclusively to Professional B unless specifically authorised.
+
+Company users must respect company-level permissions.
+
+Investor data must not become visible to other investors.
+
+Seller information must remain confidential according to deal permissions.
+
+---
+
+# 57. NEW DATABASE ENTITIES
+
+Extend the existing database where appropriate with entities similar to:
+
+deal_health_scores
+
+deal_health_components
+
+document_analysis
+
+document_extractions
+
+document_requirements
+
+document_checklist_templates
+
+deal_attention_points
+
+attention_point_sources
+
+professional_profiles
+
+professional_categories
+
+professional_credentials
+
+deal_team_members
+
+professional_invitations
+
+professional_engagements
+
+professional_fee_proposals
+
+professional_reviews
+
+professional_assignments
+
+due_diligence_workstreams
+
+due_diligence_items
+
+deal_questions
+
+deal_answers
+
+financing_scenarios
+
+financing_readiness
+
+financing_packs
+
+professional_findings
+
+deal_readiness_scores
+
+ai_analysis_runs
+
+ai_findings
+
+ai_source_references
+
+professional_verifications
+
+Do not duplicate existing entities unnecessarily.
+
+Extend existing models where that is architecturally cleaner.
+
+---
+
+# 58. NEW NAVIGATION
+
+Update navigation where appropriate:
+
+Dashboard
+
+Discover
+
+Deals
+
+Mandates
+
+Professionals
+
+Messages
+
+Pipeline
+
+Transactions
+
+Documents
+
+Analytics
+
+Settings
+
+Inside a deal:
+
+Overview
+
+Deal Health
+
+Financials
+
+Data Room
+
+Due Diligence
+
+Financing
+
+Deal Team
+
+Q&A
+
+Offers
+
+Timeline
+
+---
+
+# 59. DESIGN
+
+Continue using the existing **Real Estate Vault** branding.
+
+Brand:
+
+**Real Estate Vault**
+
+Tagline:
+
+**Private Deals. Trusted Access.**
+
+Maintain the existing premium visual identity:
+
+Deep dark green
+
+Charcoal / black
+
+Warm metallic gold
+
+Off-white
+
+Professional typography
+
+Institutional financial interface
+
+Do not redesign the brand.
+
+Do not make Deal Health look like a consumer credit score.
+
+It must feel suitable for transactions worth €5M–€500M+.
+
+---
+
+# 60. UX EXAMPLE
+
+For a confidential hotel opportunity:
+
+## Prime Amsterdam Hotel Opportunity
+
+€25M
+
+142 Keys
+
+4-Star
+
+NDA Signed ✓
+
+### Deal Health
+
+78 / 100
+
+### Document Readiness
+
+72%
+
+7 Missing Documents
+
+### Financing Readiness
+
+82%
+
+Indicative Debt Requirement:
+
+€15M
+
+### Due Diligence
+
+67%
+
+### Attention Points
+
+12 Open
+
+1 Critical
+
+3 Professional Reviews Required
+
+### Deal Team
+
+Selling Broker ✓
+
+Acquisition Broker ✓
+
+Legal Counsel ✓
+
+Tax Advisor —
+
+Financing Advisor ✓
+
+Valuer —
+
+Technical DD —
+
+Buttons:
+
+Review Attention Points
+
+Open Data Room
+
+Build Deal Team
+
+Prepare Financing Pack
+
+Continue Due Diligence
+
+---
+
+# 61. CORE PLATFORM PHILOSOPHY
+
+Real Estate Vault should no longer stop after connecting a buyer and seller.
+
+It should support the entire commercial real estate transaction.
+
+The platform journey becomes:
+
+**DISCOVER**
+
+Find off-market deals.
+
+↓
+
+**ACCESS**
+
+Verification + NDA + secure data room.
+
+↓
+
+**ANALYSE**
+
+AI analyses available financial, legal, operational and transaction information.
+
+↓
+
+**IDENTIFY**
+
+Missing documents, attention points and areas requiring professional review are identified.
+
+↓
+
+**ASSEMBLE**
+
+Build the professional Deal Team.
+
+↓
+
+**VERIFY**
+
+Qualified professionals review relevant issues.
+
+↓
+
+**FINANCE**
+
+Prepare the transaction for financing.
+
+↓
+
+**DUE DILIGENCE**
+
+Manage financial, legal, tax, technical and commercial DD.
+
+↓
+
+**TRANSACT**
+
+Offers, negotiations, commission protection and agreements.
+
+↓
+
+**CLOSE**
+
+Complete and verify the transaction.
+
+↓
+
+**BUILD REPUTATION**
+
+Brokers and professionals build verified track records.
+
+---
+
+# 62. IMPORTANT LEGAL / PRODUCT PRINCIPLE
+
+The platform should clearly distinguish three information levels:
+
+### 1. AI GENERATED
+
+Machine-generated analysis based on available information.
+
+### 2. PROFESSIONAL REVIEWED
+
+Reviewed by an appointed professional.
+
+### 3. VERIFIED
+
+Verified through the platform's defined verification process.
+
+Never present AI-generated conclusions as professionally verified conclusions.
+
+---
+
+# 63. FINAL PRODUCT VISION
+
+The goal is for Real Estate Vault to become:
+
+**The transaction infrastructure for commercial real estate.**
+
+Not simply:
+
+A listing website.
+
+Not simply:
+
+A broker network.
+
+Not simply:
+
+A data room.
+
+Real Estate Vault connects:
+
+Deals
+
+Investors
+
+Brokers
+
+Documents
+
+NDAs
+
+Introductions
+
+Commission Agreements
+
+Financial Analysis
+
+Financing
+
+Legal Review
+
+Tax Review
+
+Due Diligence
+
+Professional Advisors
+
+Offers
+
+Closing
+
+Verified Reputation
+
+The long-term competitive advantage is the combination of:
+
+**Deal Flow + Confidential Data + Professional Network + Transaction Workflow + Verified Reputation.**
+
+Build this expansion as a deeply integrated part of the existing Real Estate Vault platform.
