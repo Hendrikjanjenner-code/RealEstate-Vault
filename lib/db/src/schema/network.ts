@@ -28,9 +28,57 @@ export const brokersTable = pgTable("brokers", {
   specialisations: text("specialisations").array().notNull().default([]),
   bio: text("bio"),
   avatarUrl: text("avatar_url"),
+  // --- Professionals-marketplace fields (additive; brokers are the
+  // "brokers" category). Category slugs are served by the API, never
+  // hardcoded in frontends.
+  category: text("category").notNull().default("brokers"),
+  // unverified | verification_pending | verified_professional | verified_firm | specialist_verified
+  verificationStatus: text("verification_status").notNull().default("unverified"),
+  countries: text("countries").array().notNull().default([]),
+  languages: text("languages").array().notNull().default([]),
+  assetClasses: text("asset_classes").array().notNull().default([]),
+  credentials: text("credentials").array().notNull().default([]),
+  // Typical first-response time in hours, when known.
+  avgResponseHours: doublePrecision("avg_response_hours"),
 });
 
 export type Broker = typeof brokersTable.$inferSelect;
+
+// Reviews on professional profiles, one rating per assessment category.
+// Only reviews tied to a verified engagement are surfaced publicly; the
+// engagement linkage itself arrives with the Deal Teams feature, so seeded
+// reviews carry verifiedEngagement=true explicitly.
+export const professionalReviewsTable = pgTable("professional_reviews", {
+  id: serial("id").primaryKey(),
+  professionalId: integer("professional_id").notNull(),
+  reviewerName: text("reviewer_name").notNull(),
+  reviewerCompany: text("reviewer_company"),
+  reviewerUserId: varchar("reviewer_user_id"),
+  // Where the review came from: 'connection' reviews are created through the
+  // authenticated endpoint and reference an accepted broker connection;
+  // 'seeded' reviews are editorial demo content and are only ever served on
+  // demo profiles. Future engagement-based reviews (Deal Teams) add their own
+  // source value with their own referential linkage.
+  source: text("source").notNull().default("seeded"),
+  // Accepted broker_connections row this review is based on (for
+  // source='connection'). Verification is derived server-side from this
+  // linkage, never accepted from the client.
+  connectionId: integer("connection_id"),
+  verifiedEngagement: boolean("verified_engagement").notNull().default(false),
+  ratingExpertise: doublePrecision("rating_expertise").notNull(),
+  ratingCommunication: doublePrecision("rating_communication").notNull(),
+  ratingSpeed: doublePrecision("rating_speed").notNull(),
+  ratingQuality: doublePrecision("rating_quality").notNull(),
+  ratingProfessionalism: doublePrecision("rating_professionalism").notNull(),
+  ratingDealUnderstanding: doublePrecision("rating_deal_understanding").notNull(),
+  ratingOverall: doublePrecision("rating_overall").notNull(),
+  comment: text("comment"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type ProfessionalReview = typeof professionalReviewsTable.$inferSelect;
 
 export const mandatesTable = pgTable("mandates", {
   id: serial("id").primaryKey(),

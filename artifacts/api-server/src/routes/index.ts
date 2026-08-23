@@ -4,6 +4,7 @@ import authRouter from "./auth";
 import dealsRouter from "./deals";
 import accessRequestsRouter from "./access-requests";
 import networkRouter from "./network";
+import professionalsRouter from "./professionals";
 import messagesRouter from "./messages";
 import ownerNetworkRouter from "./owner-network";
 import dashboardRouter from "./dashboard";
@@ -38,6 +39,7 @@ function requireAuth(req: Request, res: Response, next: NextFunction): void {
 router.use(requireAuth);
 
 router.use(networkRouter);
+router.use(professionalsRouter);
 router.use(ownerNetworkRouter);
 router.use(messagesRouter);
 router.use(dashboardRouter);

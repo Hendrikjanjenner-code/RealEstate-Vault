@@ -46,6 +46,7 @@ import type {
   HandleBrowserLoginCallbackParams,
   HealthStatus,
   ListDealsParams,
+  ListProfessionalsParams,
   ListPublicDealTeasersParams,
   LogoutBrowserSessionParams,
   LogoutSuccess,
@@ -62,6 +63,9 @@ import type {
   OwnerAssignment,
   OwnerAssignmentInput,
   OwnerAssignmentStatusInput,
+  ProfessionalCategory,
+  ProfessionalReview,
+  ProfessionalReviewInput,
   PublicDealTeaser,
   PublicPlatformStats,
   SessionResponse,
@@ -2537,6 +2541,316 @@ export function useListBrokerDeals<TData = Awaited<ReturnType<typeof listBrokerD
 
 
 
+
+export const getListProfessionalsUrl = (params?: ListProfessionalsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/professionals?${stringifiedParams}` : `/api/professionals`
+}
+
+/**
+ * @summary Ranked professionals directory across all categories. Ranking blends reputation score, verification tier and review quality — never transaction volume alone.
+ */
+export const listProfessionals = async (params?: ListProfessionalsParams, options?: Parameters<typeof customFetch>[1]): Promise<Broker[]> => {
+
+  return customFetch<Broker[]>(getListProfessionalsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListProfessionalsQueryKey = (params?: ListProfessionalsParams,) => {
+    return [
+    `/api/professionals`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListProfessionalsQueryOptions = <TData = Awaited<ReturnType<typeof listProfessionals>>, TError = ErrorType<unknown>>(params?: ListProfessionalsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProfessionals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListProfessionalsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProfessionals>>> = ({ signal }) => listProfessionals(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProfessionals>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListProfessionalsQueryResult = NonNullable<Awaited<ReturnType<typeof listProfessionals>>>
+export type ListProfessionalsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Ranked professionals directory across all categories. Ranking blends reputation score, verification tier and review quality — never transaction volume alone.
+ */
+
+export function useListProfessionals<TData = Awaited<ReturnType<typeof listProfessionals>>, TError = ErrorType<unknown>>(
+ params?: ListProfessionalsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProfessionals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListProfessionalsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListProfessionalCategoriesUrl = () => {
+
+
+
+
+  return `/api/professionals/categories`
+}
+
+/**
+ * @summary Canonical professional categories with live member counts
+ */
+export const listProfessionalCategories = async ( options?: Parameters<typeof customFetch>[1]): Promise<ProfessionalCategory[]> => {
+
+  return customFetch<ProfessionalCategory[]>(getListProfessionalCategoriesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListProfessionalCategoriesQueryKey = () => {
+    return [
+    `/api/professionals/categories`
+    ] as const;
+    }
+
+
+export const getListProfessionalCategoriesQueryOptions = <TData = Awaited<ReturnType<typeof listProfessionalCategories>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProfessionalCategories>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListProfessionalCategoriesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProfessionalCategories>>> = ({ signal }) => listProfessionalCategories({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProfessionalCategories>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListProfessionalCategoriesQueryResult = NonNullable<Awaited<ReturnType<typeof listProfessionalCategories>>>
+export type ListProfessionalCategoriesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Canonical professional categories with live member counts
+ */
+
+export function useListProfessionalCategories<TData = Awaited<ReturnType<typeof listProfessionalCategories>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProfessionalCategories>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListProfessionalCategoriesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListProfessionalReviewsUrl = (id: number,) => {
+
+
+
+
+  return `/api/professionals/${id}/reviews`
+}
+
+/**
+ * @summary Verified-engagement reviews for a professional profile
+ */
+export const listProfessionalReviews = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<ProfessionalReview[]> => {
+
+  return customFetch<ProfessionalReview[]>(getListProfessionalReviewsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListProfessionalReviewsQueryKey = (id: number,) => {
+    return [
+    `/api/professionals/${id}/reviews`
+    ] as const;
+    }
+
+
+export const getListProfessionalReviewsQueryOptions = <TData = Awaited<ReturnType<typeof listProfessionalReviews>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProfessionalReviews>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListProfessionalReviewsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProfessionalReviews>>> = ({ signal }) => listProfessionalReviews(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProfessionalReviews>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListProfessionalReviewsQueryResult = NonNullable<Awaited<ReturnType<typeof listProfessionalReviews>>>
+export type ListProfessionalReviewsQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Verified-engagement reviews for a professional profile
+ */
+
+export function useListProfessionalReviews<TData = Awaited<ReturnType<typeof listProfessionalReviews>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProfessionalReviews>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListProfessionalReviewsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateProfessionalReviewUrl = (id: number,) => {
+
+
+
+
+  return `/api/professionals/${id}/reviews`
+}
+
+/**
+ * @summary Submit a review. Eligibility is derived server-side from an accepted connection with the professional; verification can never be asserted by the client.
+ */
+export const createProfessionalReview = async (id: number,
+    professionalReviewInput: ProfessionalReviewInput, options?: Parameters<typeof customFetch>[1]): Promise<ProfessionalReview> => {
+
+  return customFetch<ProfessionalReview>(getCreateProfessionalReviewUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(professionalReviewInput)
+  }
+);}
+
+
+
+
+
+export const getCreateProfessionalReviewMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProfessionalReview>>, TError,{id: number;data: BodyType<ProfessionalReviewInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createProfessionalReview>>, TError,{id: number;data: BodyType<ProfessionalReviewInput>}, TContext> => {
+
+const mutationKey = ['createProfessionalReview'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createProfessionalReview>>, {id: number;data: BodyType<ProfessionalReviewInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createProfessionalReview(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateProfessionalReviewMutationResult = NonNullable<Awaited<ReturnType<typeof createProfessionalReview>>>
+    export type CreateProfessionalReviewMutationBody = BodyType<ProfessionalReviewInput>
+    export type CreateProfessionalReviewMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Submit a review. Eligibility is derived server-side from an accepted connection with the professional; verification can never be asserted by the client.
+ */
+export const useCreateProfessionalReview = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProfessionalReview>>, TError,{id: number;data: BodyType<ProfessionalReviewInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createProfessionalReview>>,
+        TError,
+        {id: number;data: BodyType<ProfessionalReviewInput>},
+        TContext
+      > => {
+      return useMutation(getCreateProfessionalReviewMutationOptions(options));
+    }
 
 export const getListMandatesUrl = () => {
 

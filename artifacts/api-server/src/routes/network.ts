@@ -40,9 +40,12 @@ import {
 const router: IRouter = Router();
 
 router.get("/brokers", async (_req, res): Promise<void> => {
+  // The legacy broker directory shows sell-side brokers only; other
+  // professional categories live under /professionals.
   const brokers = await db
     .select()
     .from(brokersTable)
+    .where(eq(brokersTable.category, "brokers"))
     .orderBy(desc(brokersTable.score));
   res.json(ListBrokersResponse.parse(toJson(brokers)));
 });

@@ -652,7 +652,16 @@ export const ListBrokersResponseItem = zod.object({
   "yearsExperience": zod.int(),
   "specialisations": zod.array(zod.string()),
   "bio": zod.string().nullish(),
-  "avatarUrl": zod.string().nullish()
+  "avatarUrl": zod.string().nullish(),
+  "category": zod.string().describe('Professional category slug (e.g. brokers, legal_advisors). The canonical list comes from \/professionals\/categories.'),
+  "verificationStatus": zod.enum(['unverified', 'verification_pending', 'verified_professional', 'verified_firm', 'specialist_verified']),
+  "countries": zod.array(zod.string()),
+  "languages": zod.array(zod.string()),
+  "assetClasses": zod.array(zod.string()),
+  "credentials": zod.array(zod.string()),
+  "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
+  "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
 })
 export const ListBrokersResponse = zod.array(ListBrokersResponseItem)
 
@@ -677,7 +686,16 @@ export const GetMyBrokerProfileResponse = zod.object({
   "yearsExperience": zod.int(),
   "specialisations": zod.array(zod.string()),
   "bio": zod.string().nullish(),
-  "avatarUrl": zod.string().nullish()
+  "avatarUrl": zod.string().nullish(),
+  "category": zod.string().describe('Professional category slug (e.g. brokers, legal_advisors). The canonical list comes from \/professionals\/categories.'),
+  "verificationStatus": zod.enum(['unverified', 'verification_pending', 'verified_professional', 'verified_firm', 'specialist_verified']),
+  "countries": zod.array(zod.string()),
+  "languages": zod.array(zod.string()),
+  "assetClasses": zod.array(zod.string()),
+  "credentials": zod.array(zod.string()),
+  "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
+  "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
 }),zod.null()])
 })
 
@@ -722,7 +740,16 @@ export const UpsertMyBrokerProfileResponse = zod.object({
   "yearsExperience": zod.int(),
   "specialisations": zod.array(zod.string()),
   "bio": zod.string().nullish(),
-  "avatarUrl": zod.string().nullish()
+  "avatarUrl": zod.string().nullish(),
+  "category": zod.string().describe('Professional category slug (e.g. brokers, legal_advisors). The canonical list comes from \/professionals\/categories.'),
+  "verificationStatus": zod.enum(['unverified', 'verification_pending', 'verified_professional', 'verified_firm', 'specialist_verified']),
+  "countries": zod.array(zod.string()),
+  "languages": zod.array(zod.string()),
+  "assetClasses": zod.array(zod.string()),
+  "credentials": zod.array(zod.string()),
+  "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
+  "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
 })
 
 
@@ -749,7 +776,16 @@ export const GetBrokerResponse = zod.object({
   "yearsExperience": zod.int(),
   "specialisations": zod.array(zod.string()),
   "bio": zod.string().nullish(),
-  "avatarUrl": zod.string().nullish()
+  "avatarUrl": zod.string().nullish(),
+  "category": zod.string().describe('Professional category slug (e.g. brokers, legal_advisors). The canonical list comes from \/professionals\/categories.'),
+  "verificationStatus": zod.enum(['unverified', 'verification_pending', 'verified_professional', 'verified_firm', 'specialist_verified']),
+  "countries": zod.array(zod.string()),
+  "languages": zod.array(zod.string()),
+  "assetClasses": zod.array(zod.string()),
+  "credentials": zod.array(zod.string()),
+  "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
+  "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
 })
 
 
@@ -794,6 +830,136 @@ export const ListBrokerDealsResponseItem = zod.object({
   "accessStatus": zod.string().nullish().describe('Current viewer\'s access to confidential details: granted | pending | approved | nda_sent | rejected | none')
 })
 export const ListBrokerDealsResponse = zod.array(ListBrokerDealsResponseItem)
+
+
+/**
+ * @summary Ranked professionals directory across all categories. Ranking blends reputation score, verification tier and review quality — never transaction volume alone.
+ */
+export const ListProfessionalsQueryParams = zod.object({
+  "category": zod.coerce.string().optional().describe('Category slug from \/professionals\/categories.'),
+  "country": zod.coerce.string().optional(),
+  "q": zod.coerce.string().optional().describe('Free-text match on name, company or city.')
+})
+
+export const ListProfessionalsResponseItem = zod.object({
+  "id": zod.int(),
+  "userId": zod.string().nullish().describe('Auth user id this profile belongs to. Null for demo personas.'),
+  "isDemo": zod.boolean().describe('True for seeded demo personas not tied to a real account.'),
+  "name": zod.string(),
+  "company": zod.string(),
+  "title": zod.string(),
+  "city": zod.string(),
+  "country": zod.string(),
+  "verified": zod.boolean(),
+  "score": zod.number(),
+  "closedDeals": zod.int(),
+  "transactionVolume": zod.number(),
+  "yearsExperience": zod.int(),
+  "specialisations": zod.array(zod.string()),
+  "bio": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "category": zod.string().describe('Professional category slug (e.g. brokers, legal_advisors). The canonical list comes from \/professionals\/categories.'),
+  "verificationStatus": zod.enum(['unverified', 'verification_pending', 'verified_professional', 'verified_firm', 'specialist_verified']),
+  "countries": zod.array(zod.string()),
+  "languages": zod.array(zod.string()),
+  "assetClasses": zod.array(zod.string()),
+  "credentials": zod.array(zod.string()),
+  "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
+  "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
+})
+export const ListProfessionalsResponse = zod.array(ListProfessionalsResponseItem)
+
+
+/**
+ * @summary Canonical professional categories with live member counts
+ */
+export const ListProfessionalCategoriesResponseItem = zod.object({
+  "id": zod.string().describe('Stable category slug used as the filter value.'),
+  "label": zod.string(),
+  "count": zod.int().describe('Number of professionals currently in this category.')
+})
+export const ListProfessionalCategoriesResponse = zod.array(ListProfessionalCategoriesResponseItem)
+
+
+/**
+ * @summary Verified-engagement reviews for a professional profile
+ */
+export const ListProfessionalReviewsParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const ListProfessionalReviewsResponseItem = zod.object({
+  "id": zod.int(),
+  "professionalId": zod.int(),
+  "reviewerName": zod.string(),
+  "reviewerCompany": zod.string().nullish(),
+  "source": zod.enum(['connection', 'seeded']).describe('connection = created via the authenticated endpoint against an accepted connection; seeded = editorial demo content, only served on demo profiles.'),
+  "verifiedEngagement": zod.boolean().describe('Derived server-side from the engagement linkage; never accepted from clients.'),
+  "ratingExpertise": zod.number(),
+  "ratingCommunication": zod.number(),
+  "ratingSpeed": zod.number(),
+  "ratingQuality": zod.number(),
+  "ratingProfessionalism": zod.number(),
+  "ratingDealUnderstanding": zod.number(),
+  "ratingOverall": zod.number(),
+  "comment": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListProfessionalReviewsResponse = zod.array(ListProfessionalReviewsResponseItem)
+
+
+/**
+ * @summary Submit a review. Eligibility is derived server-side from an accepted connection with the professional; verification can never be asserted by the client.
+ */
+export const CreateProfessionalReviewParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const createProfessionalReviewBodyRatingExpertiseMax = 10;
+
+export const createProfessionalReviewBodyRatingCommunicationMax = 10;
+
+export const createProfessionalReviewBodyRatingSpeedMax = 10;
+
+export const createProfessionalReviewBodyRatingQualityMax = 10;
+
+export const createProfessionalReviewBodyRatingProfessionalismMax = 10;
+
+export const createProfessionalReviewBodyRatingDealUnderstandingMax = 10;
+
+export const createProfessionalReviewBodyRatingOverallMax = 10;
+
+
+
+export const CreateProfessionalReviewBody = zod.object({
+  "ratingExpertise": zod.number().min(1).max(createProfessionalReviewBodyRatingExpertiseMax),
+  "ratingCommunication": zod.number().min(1).max(createProfessionalReviewBodyRatingCommunicationMax),
+  "ratingSpeed": zod.number().min(1).max(createProfessionalReviewBodyRatingSpeedMax),
+  "ratingQuality": zod.number().min(1).max(createProfessionalReviewBodyRatingQualityMax),
+  "ratingProfessionalism": zod.number().min(1).max(createProfessionalReviewBodyRatingProfessionalismMax),
+  "ratingDealUnderstanding": zod.number().min(1).max(createProfessionalReviewBodyRatingDealUnderstandingMax),
+  "ratingOverall": zod.number().min(1).max(createProfessionalReviewBodyRatingOverallMax),
+  "comment": zod.string().optional()
+})
+
+export const CreateProfessionalReviewResponse = zod.object({
+  "id": zod.int(),
+  "professionalId": zod.int(),
+  "reviewerName": zod.string(),
+  "reviewerCompany": zod.string().nullish(),
+  "source": zod.enum(['connection', 'seeded']).describe('connection = created via the authenticated endpoint against an accepted connection; seeded = editorial demo content, only served on demo profiles.'),
+  "verifiedEngagement": zod.boolean().describe('Derived server-side from the engagement linkage; never accepted from clients.'),
+  "ratingExpertise": zod.number(),
+  "ratingCommunication": zod.number(),
+  "ratingSpeed": zod.number(),
+  "ratingQuality": zod.number(),
+  "ratingProfessionalism": zod.number(),
+  "ratingDealUnderstanding": zod.number(),
+  "ratingOverall": zod.number(),
+  "comment": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**

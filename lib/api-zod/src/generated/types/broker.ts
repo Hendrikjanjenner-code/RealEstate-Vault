@@ -5,6 +5,7 @@
  * RealEstate Vault API
  * OpenAPI spec version: 0.1.0
  */
+import type { BrokerVerificationStatus } from './brokerVerificationStatus';
 
 export interface Broker {
   id: number;
@@ -30,4 +31,23 @@ export interface Broker {
   bio?: string | null;
   /** @nullable */
   avatarUrl?: string | null;
+  /** Professional category slug (e.g. brokers, legal_advisors). The canonical list comes from /professionals/categories. */
+  category: string;
+  verificationStatus: BrokerVerificationStatus;
+  countries: string[];
+  languages: string[];
+  assetClasses: string[];
+  credentials: string[];
+  /**
+     * Typical first-response time in hours, when known.
+     * @nullable
+     */
+  avgResponseHours?: number | null;
+  /**
+     * Average overall rating from verified-engagement reviews (1-10), null when unreviewed.
+     * @nullable
+     */
+  avgRating?: number | null;
+  /** Number of verified-engagement reviews. */
+  reviewCount?: number;
 }

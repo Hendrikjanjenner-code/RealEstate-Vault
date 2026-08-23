@@ -11,3 +11,4 @@
 - [Completion review covers the whole branch diff](completion-review-whole-diff.md) — review rejects on inherited base regressions too; typecheck and sanity-check merged features before completing.
 - [Public/anonymous endpoint rules](public-endpoint-redaction.md) — honour locationPrivacy, count distinct verified populations, fall back to static data only on API error (empty ≠ error).
 - [Broken-merge route corruption](merge-corruption-route-files.md) — a merge scrambled route handlers (wrong schemas, swapped bodies) while still typechecking; diff against last good commit and restore.
+- [Trust claims need structural enforcement](trust-claims-structural.md) — completion review rejects caller-settable "verified" flags; derive verification server-side from a referenced entity (e.g. accepted connection) and gate seeded data to demo profiles.

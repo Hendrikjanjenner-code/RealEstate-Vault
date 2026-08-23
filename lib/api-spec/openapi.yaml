@@ -11,6 +11,7 @@ tags:
   - name: health
   - name: deals
   - name: brokers
+  - name: professionals
   - name: mandates
   - name: access
   - name: auth
@@ -690,6 +691,115 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ApiMessage" }
+  /professionals:
+    get:
+      operationId: listProfessionals
+      tags: [professionals]
+      summary: Ranked professionals directory across all categories. Ranking blends reputation score, verification tier and review quality — never transaction volume alone.
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema: { type: string }
+          description: Category slug from /professionals/categories.
+        - name: country
+          in: query
+          required: false
+          schema: { type: string }
+        - name: q
+          in: query
+          required: false
+          schema: { type: string }
+          description: Free-text match on name, company or city.
+      responses:
+        "200":
+          description: Professionals
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Broker" }
+  /professionals/categories:
+    get:
+      operationId: listProfessionalCategories
+      tags: [professionals]
+      summary: Canonical professional categories with live member counts
+      responses:
+        "200":
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ProfessionalCategory" }
+  /professionals/{id}/reviews:
+    get:
+      operationId: listProfessionalReviews
+      tags: [professionals]
+      summary: Verified-engagement reviews for a professional profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ProfessionalReview" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+    post:
+      operationId: createProfessionalReview
+      tags: [professionals]
+      summary: Submit a review. Eligibility is derived server-side from an accepted connection with the professional; verification can never be asserted by the client.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProfessionalReviewInput" }
+      responses:
+        "201":
+          description: Created review
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProfessionalReview" }
+        "400":
+          description: Invalid ratings
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No accepted engagement with this professional
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "409":
+          description: Already reviewed this engagement
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /mandates:
     get:
       operationId: listMandates
@@ -1279,7 +1389,7 @@ components:
         agreed: { type: boolean }
     Broker:
       type: object
-      required: [id, name, company, title, city, country, verified, score, closedDeals, transactionVolume, yearsExperience, specialisations, isDemo]
+      required: [id, name, company, title, city, country, verified, score, closedDeals, transactionVolume, yearsExperience, specialisations, isDemo, category, verificationStatus, countries, languages, assetClasses, credentials]
       properties:
         id: { type: integer }
         userId: { type: ["string", "null"], description: "Auth user id this profile belongs to. Null for demo personas." }
@@ -1299,6 +1409,66 @@ components:
           items: { type: string }
         bio: { type: ["string", "null"] }
         avatarUrl: { type: ["string", "null"] }
+        category: { type: string, description: "Professional category slug (e.g. brokers, legal_advisors). The canonical list comes from /professionals/categories." }
+        verificationStatus:
+          type: string
+          enum: [unverified, verification_pending, verified_professional, verified_firm, specialist_verified]
+        countries:
+          type: array
+          items: { type: string }
+        languages:
+          type: array
+          items: { type: string }
+        assetClasses:
+          type: array
+          items: { type: string }
+        credentials:
+          type: array
+          items: { type: string }
+        avgResponseHours: { type: ["number", "null"], description: "Typical first-response time in hours, when known." }
+        avgRating: { type: ["number", "null"], description: "Average overall rating from verified-engagement reviews (1-10), null when unreviewed." }
+        reviewCount: { type: integer, description: "Number of verified-engagement reviews." }
+    ProfessionalCategory:
+      type: object
+      required: [id, label, count]
+      properties:
+        id: { type: string, description: "Stable category slug used as the filter value." }
+        label: { type: string }
+        count: { type: integer, description: "Number of professionals currently in this category." }
+    ProfessionalReview:
+      type: object
+      required: [id, professionalId, reviewerName, source, verifiedEngagement, ratingExpertise, ratingCommunication, ratingSpeed, ratingQuality, ratingProfessionalism, ratingDealUnderstanding, ratingOverall, createdAt]
+      properties:
+        id: { type: integer }
+        professionalId: { type: integer }
+        reviewerName: { type: string }
+        reviewerCompany: { type: ["string", "null"] }
+        source:
+          type: string
+          enum: [connection, seeded]
+          description: "connection = created via the authenticated endpoint against an accepted connection; seeded = editorial demo content, only served on demo profiles."
+        verifiedEngagement: { type: boolean, description: "Derived server-side from the engagement linkage; never accepted from clients." }
+        ratingExpertise: { type: number }
+        ratingCommunication: { type: number }
+        ratingSpeed: { type: number }
+        ratingQuality: { type: number }
+        ratingProfessionalism: { type: number }
+        ratingDealUnderstanding: { type: number }
+        ratingOverall: { type: number }
+        comment: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+    ProfessionalReviewInput:
+      type: object
+      required: [ratingExpertise, ratingCommunication, ratingSpeed, ratingQuality, ratingProfessionalism, ratingDealUnderstanding, ratingOverall]
+      properties:
+        ratingExpertise: { type: number, minimum: 1, maximum: 10 }
+        ratingCommunication: { type: number, minimum: 1, maximum: 10 }
+        ratingSpeed: { type: number, minimum: 1, maximum: 10 }
+        ratingQuality: { type: number, minimum: 1, maximum: 10 }
+        ratingProfessionalism: { type: number, minimum: 1, maximum: 10 }
+        ratingDealUnderstanding: { type: number, minimum: 1, maximum: 10 }
+        ratingOverall: { type: number, minimum: 1, maximum: 10 }
+        comment: { type: string }
     BrokerProfileEnvelope:
       type: object
       required: [profile]

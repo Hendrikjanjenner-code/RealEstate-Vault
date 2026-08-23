@@ -1,6 +1,12 @@
 import { formatMillions } from "@/lib/utils";
 import { Link, useParams } from "wouter";
-import { useGetBroker, useListBrokerDeals } from "@workspace/api-client-react";
+import {
+  useGetBroker,
+  useListBrokerDeals,
+  useListProfessionalReviews,
+  useListProfessionalCategories,
+} from "@workspace/api-client-react";
+import { VerificationBadge } from "@/components/verification-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +19,10 @@ import {
   Building2,
   ArrowLeft,
   Briefcase,
+  Globe2,
+  Clock,
+  Award,
+  MessageSquareQuote,
 } from "lucide-react";
 
 export default function BrokerDetail() {
@@ -20,6 +30,13 @@ export default function BrokerDetail() {
   const id = Number(params.id);
   const { data: broker, isLoading, isError } = useGetBroker(id);
   const { data: deals, isLoading: dealsLoading } = useListBrokerDeals(id);
+  const { data: reviews } = useListProfessionalReviews(id);
+  const { data: categories } = useListProfessionalCategories();
+  const categoryLabel = broker
+    ? categories?.find((c) => c.id === broker.category)?.label
+    : undefined;
+  // Only sell-side brokers own listings; other professionals never do.
+  const isListingBroker = broker?.category === "brokers";
 
   if (isLoading) {
     return (
@@ -52,11 +69,11 @@ export default function BrokerDetail() {
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <Link
-        href="/demo/brokers"
+        href="/demo/professionals"
         className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
         data-testid="link-back-to-brokers"
       >
-        <ArrowLeft className="w-4 h-4 mr-2" /> Broker Directory
+        <ArrowLeft className="w-4 h-4 mr-2" /> Professionals Directory
       </Link>
 
       <Card className="bg-card/30 backdrop-blur border-white/5 overflow-hidden">
@@ -80,6 +97,14 @@ export default function BrokerDetail() {
                   )}
                 </h1>
                 <p className="text-muted-foreground font-medium mt-1">{broker.title}</p>
+                <div className="flex items-center gap-2 flex-wrap mt-2">
+                  {categoryLabel && (
+                    <Badge variant="secondary" className="bg-background border-white/10 text-xs">
+                      {categoryLabel}
+                    </Badge>
+                  )}
+                  <VerificationBadge status={broker.verificationStatus} />
+                </div>
                 <p className="text-sm text-muted-foreground/80 flex items-center gap-1 mt-1">
                   <Building2 className="w-4 h-4" /> {broker.company}
                 </p>
@@ -110,6 +135,37 @@ export default function BrokerDetail() {
                 ))}
               </div>
             </div>
+
+            <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
+              {(broker.countries?.length ?? 0) > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4" /> {broker.countries!.join(", ")}
+                </span>
+              )}
+              {(broker.languages?.length ?? 0) > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <Globe2 className="w-4 h-4" /> {broker.languages!.join(", ")}
+                </span>
+              )}
+              {broker.avgResponseHours != null && (
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-4 h-4" /> Typically responds in ~{broker.avgResponseHours}h
+                </span>
+              )}
+            </div>
+
+            {(broker.credentials?.length ?? 0) > 0 && (
+              <div className="mt-6">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">Credentials</p>
+                <div className="flex gap-2 flex-wrap">
+                  {broker.credentials!.map((c) => (
+                    <Badge key={c} variant="outline" className="border-primary/30 text-primary text-xs font-normal gap-1">
+                      <Award className="w-3 h-3" /> {c}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="p-8 md:w-1/3 bg-background/20 space-y-4">
@@ -119,18 +175,83 @@ export default function BrokerDetail() {
             </div>
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Closed Deals</span>
+                <span className="text-muted-foreground">
+                  {isListingBroker ? "Closed Deals" : "Verified Engagements"}
+                </span>
                 <span className="font-bold">{broker.closedDeals}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Tx Volume</span>
-                <span className="font-bold">{formatMillions(broker.transactionVolume)}</span>
-              </div>
+              {broker.transactionVolume > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Tx Volume</span>
+                  <span className="font-bold">{formatMillions(broker.transactionVolume)}</span>
+                </div>
+              )}
+              {broker.avgResponseHours != null && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Response Time</span>
+                  <span className="font-bold">~{broker.avgResponseHours}h</span>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
 
+      {reviews && reviews.length > 0 && (
+        <div>
+          <h2 className="text-xl font-heading font-bold flex items-center gap-2 mb-2">
+            <MessageSquareQuote className="w-5 h-5 text-primary" /> Reviews
+          </h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            Only reviews from verified engagements are shown.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {reviews.map((r) => (
+              <Card key={r.id} className="bg-card/30 backdrop-blur border-white/5" data-testid={`card-review-${r.id}`}>
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-semibold text-sm">{r.reviewerName}</p>
+                      {r.reviewerCompany && (
+                        <p className="text-xs text-muted-foreground">{r.reviewerCompany}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 text-lg font-heading font-bold text-foreground">
+                      <Star className="w-4 h-4 text-primary" /> {r.ratingOverall.toFixed(1)}
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] uppercase tracking-wider font-semibold ${r.source === "connection" ? "border-primary/40 text-primary" : "border-white/20 text-muted-foreground"}`}
+                  >
+                    {r.source === "connection" ? "Verified engagement" : "Demo reference"}
+                  </Badge>
+                  {r.comment && (
+                    <p className="text-sm text-muted-foreground leading-relaxed">{r.comment}</p>
+                  )}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5 text-xs text-muted-foreground border-t border-white/5 pt-4">
+                    {[
+                      ["Expertise", r.ratingExpertise],
+                      ["Communication", r.ratingCommunication],
+                      ["Speed", r.ratingSpeed],
+                      ["Quality", r.ratingQuality],
+                      ["Professionalism", r.ratingProfessionalism],
+                      ["Deal Understanding", r.ratingDealUnderstanding],
+                    ].map(([label, value]) => (
+                      <div key={String(label)} className="flex justify-between gap-2">
+                        <span>{label}</span>
+                        <span className="font-semibold text-foreground">{Number(value).toFixed(1)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {isListingBroker && (
       <div>
         <h2 className="text-xl font-heading font-bold flex items-center gap-2 mb-6">
           <Briefcase className="w-5 h-5 text-primary" /> Active Listings
@@ -195,6 +316,7 @@ export default function BrokerDetail() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

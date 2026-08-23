@@ -41,7 +41,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       ? [
           { label: "Dashboard", href: "/demo", icon: LayoutDashboard },
           { label: "My Properties", href: "/demo/assignments", icon: Building2 },
-          { label: "Find Brokers", href: "/demo/brokers", icon: Users },
+          { label: "Find Professionals", href: "/demo/professionals", icon: Users },
           { label: "Messages", href: "/demo/messages", icon: Send },
           { label: "Transactions", href: "/demo/transactions", icon: Handshake },
         ]
@@ -55,7 +55,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             : []),
           { label: "Deals", href: "/demo/deals", icon: Briefcase },
           { label: "Mandates", href: "/demo/mandates", icon: FileText },
-          { label: "Brokers", href: "/demo/brokers", icon: Users },
+          { label: "Professionals", href: "/demo/professionals", icon: Users },
           { label: "Messages", href: "/demo/messages", icon: Send },
           { label: "Transactions", href: "/demo/transactions", icon: Handshake },
           { label: "Access Requests", href: "/demo/access-requests", icon: Shield },

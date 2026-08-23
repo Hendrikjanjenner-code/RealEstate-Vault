@@ -247,6 +247,12 @@ router.post("/connections", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Broker not found" });
     return;
   }
+  if (broker.category !== "brokers") {
+    // Owner connection requests are a broker-specific workflow; other
+    // professional categories get their own engagement flow (Deal Teams).
+    res.status(400).json({ error: "Connection requests can only be sent to brokers" });
+    return;
+  }
   if (!broker.userId) {
     // No account is linked to this directory profile, so nobody could ever
     // see or accept the request. Fail loudly instead of silently dropping it.

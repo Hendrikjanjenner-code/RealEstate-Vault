@@ -283,6 +283,17 @@ export interface SignNdaInput {
   agreed: boolean;
 }
 
+export type BrokerVerificationStatus = typeof BrokerVerificationStatus[keyof typeof BrokerVerificationStatus];
+
+
+export const BrokerVerificationStatus = {
+  unverified: 'unverified',
+  verification_pending: 'verification_pending',
+  verified_professional: 'verified_professional',
+  verified_firm: 'verified_firm',
+  specialist_verified: 'specialist_verified',
+} as const;
+
 export interface Broker {
   id: number;
   /**
@@ -307,6 +318,105 @@ export interface Broker {
   bio?: string | null;
   /** @nullable */
   avatarUrl?: string | null;
+  /** Professional category slug (e.g. brokers, legal_advisors). The canonical list comes from /professionals/categories. */
+  category: string;
+  verificationStatus: BrokerVerificationStatus;
+  countries: string[];
+  languages: string[];
+  assetClasses: string[];
+  credentials: string[];
+  /**
+     * Typical first-response time in hours, when known.
+     * @nullable
+     */
+  avgResponseHours?: number | null;
+  /**
+     * Average overall rating from verified-engagement reviews (1-10), null when unreviewed.
+     * @nullable
+     */
+  avgRating?: number | null;
+  /** Number of verified-engagement reviews. */
+  reviewCount?: number;
+}
+
+export interface ProfessionalCategory {
+  /** Stable category slug used as the filter value. */
+  id: string;
+  label: string;
+  /** Number of professionals currently in this category. */
+  count: number;
+}
+
+/**
+ * connection = created via the authenticated endpoint against an accepted connection; seeded = editorial demo content, only served on demo profiles.
+ */
+export type ProfessionalReviewSource = typeof ProfessionalReviewSource[keyof typeof ProfessionalReviewSource];
+
+
+export const ProfessionalReviewSource = {
+  connection: 'connection',
+  seeded: 'seeded',
+} as const;
+
+export interface ProfessionalReview {
+  id: number;
+  professionalId: number;
+  reviewerName: string;
+  /** @nullable */
+  reviewerCompany?: string | null;
+  /** connection = created via the authenticated endpoint against an accepted connection; seeded = editorial demo content, only served on demo profiles. */
+  source: ProfessionalReviewSource;
+  /** Derived server-side from the engagement linkage; never accepted from clients. */
+  verifiedEngagement: boolean;
+  ratingExpertise: number;
+  ratingCommunication: number;
+  ratingSpeed: number;
+  ratingQuality: number;
+  ratingProfessionalism: number;
+  ratingDealUnderstanding: number;
+  ratingOverall: number;
+  /** @nullable */
+  comment?: string | null;
+  createdAt: string;
+}
+
+export interface ProfessionalReviewInput {
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  ratingExpertise: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  ratingCommunication: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  ratingSpeed: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  ratingQuality: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  ratingProfessionalism: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  ratingDealUnderstanding: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  ratingOverall: number;
+  comment?: string;
 }
 
 export interface BrokerProfileEnvelope {
@@ -646,5 +756,17 @@ country?: string;
 dealType?: string;
 search?: string;
 savedOnly?: boolean;
+};
+
+export type ListProfessionalsParams = {
+/**
+ * Category slug from /professionals/categories.
+ */
+category?: string;
+country?: string;
+/**
+ * Free-text match on name, company or city.
+ */
+q?: string;
 };
 
