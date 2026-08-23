@@ -1,0 +1,938 @@
+# Replit Master Prompt — Rebrand Real Estate Vault Into a Scalable Global Brand
+
+I want you to completely rebrand the existing **Real Estate Vault** application.
+
+IMPORTANT:
+
+Do **not** rebuild the application.
+
+Do **not** remove or change existing functionality, workflows, database architecture, permissions, NDA system, data rooms, broker network, Deal Health, professional marketplace or transaction functionality.
+
+This task is specifically about creating and implementing a **new global brand identity** for the platform.
+
+---
+
+# 1. THE PROBLEM
+
+The current name:
+
+**Real Estate Vault**
+
+is too descriptive and too narrowly focused on real estate.
+
+The platform is becoming much larger than a real estate listing or data-room product.
+
+It is evolving into infrastructure for high-value private transactions.
+
+The platform connects:
+
+* Deals
+* Investors
+* Brokers
+* Sellers
+* Buyers
+* Capital
+* Financing
+* Lawyers
+* Tax advisors
+* Valuers
+* Due diligence professionals
+* Documents
+* NDAs
+* Data rooms
+* Offers
+* Commission agreements
+* Deal teams
+* Transaction workflows
+* AI analysis
+* Deal intelligence
+* Verified transaction history
+* Professional reputation
+
+Therefore, the brand should NOT contain generic terms such as:
+
+Real Estate
+
+Property
+
+Prop
+
+Estate
+
+Vault
+
+Broker
+
+Capital
+
+Dealroom
+
+Realty
+
+The new name should be broad enough to eventually support other private-market transactions as well.
+
+---
+
+# 2. BRAND AMBITION
+
+Think about companies and brands such as:
+
+Apple
+
+Nike
+
+Tesla
+
+Stripe
+
+Uber
+
+Adyen
+
+Klarna
+
+Palantir
+
+Spotify
+
+Google
+
+Not because the visual identity should copy these companies.
+
+Instead, understand what makes their names powerful:
+
+Short.
+
+Memorable.
+
+Ownable.
+
+Easy to pronounce.
+
+International.
+
+Not overly descriptive.
+
+Capable of becoming a category-defining brand.
+
+The goal is to create a name where eventually people could naturally say:
+
+**“Put the deal on [BRAND].”**
+
+**“Send me the [BRAND] link.”**
+
+**“Is the transaction already on [BRAND]?”**
+
+The brand itself should eventually become synonymous with trusted private transactions.
+
+---
+
+# 3. NAMING REQUIREMENTS
+
+Generate potential brand names that preferably:
+
+* Contain 4–7 letters
+* Have 1–2 syllables
+* Are easy to pronounce in English
+* Are easy to pronounce in Dutch
+* Work internationally
+* Look strong in uppercase
+* Work as an app icon
+* Work as a domain
+* Can become a verb in conversation
+* Feel premium
+* Feel modern
+* Feel trustworthy
+* Feel technological
+* Feel institutional
+* Are not explicitly tied to real estate
+
+Prefer invented or semi-invented words.
+
+Avoid obvious combinations of existing industry terms.
+
+---
+
+# 4. BRAND PERSONALITY
+
+The brand should feel like:
+
+**Private markets meet modern technology.**
+
+Personality:
+
+Confident
+
+Intelligent
+
+Exclusive
+
+Fast
+
+Secure
+
+Sophisticated
+
+Minimal
+
+Institutional
+
+Innovative
+
+Trustworthy
+
+Do NOT make it:
+
+Playful
+
+Crypto-like
+
+Futuristic for the sake of being futuristic
+
+Cheap SaaS
+
+Consumer real estate
+
+Traditional estate agency
+
+---
+
+# 5. POSITIONING
+
+The platform should be positioned as:
+
+**The infrastructure behind private transactions.**
+
+It should not primarily describe itself as:
+
+“A property marketplace.”
+
+Instead it should represent the entire transaction infrastructure.
+
+---
+
+# 6. CORE BRAND IDEA
+
+The fundamental idea behind the brand is:
+
+**One trusted network where private opportunities become transactions.**
+
+The platform brings together:
+
+Opportunity
+
+Information
+
+People
+
+Capital
+
+Trust
+
+Execution
+
+Reputation
+
+---
+
+# 7. CREATE 30 BRAND NAMES
+
+Generate 30 serious naming candidates.
+
+Divide them into three strategic directions.
+
+## Direction A — Ultra Short
+
+Names that feel like:
+
+Stripe
+
+Uber
+
+Nike
+
+Tesla
+
+Short, bold and technology-oriented.
+
+## Direction B — Institutional
+
+Names that could credibly be used by:
+
+Investment banks
+
+Private equity
+
+Institutional investors
+
+Commercial real estate investors
+
+Professional advisors
+
+## Direction C — Modern European
+
+Names with the simplicity and brandability associated with companies such as:
+
+Adyen
+
+Klarna
+
+Mollie
+
+Spotify
+
+The names should feel modern without becoming childish.
+
+---
+
+# 8. SCORE EVERY NAME
+
+Score every proposed name from 1–10 for:
+
+Brandability
+
+Memorability
+
+International pronunciation
+
+Institutional credibility
+
+Technology feeling
+
+Premium feeling
+
+Scalability beyond real estate
+
+Visual logo potential
+
+Provide:
+
+**Total Brand Score / 80**
+
+---
+
+# 9. SHORTLIST
+
+Select the best 10 names.
+
+For every shortlisted name provide:
+
+Name
+
+Pronunciation
+
+Meaning / brand story
+
+Why it fits the platform
+
+Potential weakness
+
+Suggested tagline
+
+Example usage
+
+Example:
+
+**“The transaction is on [NAME].”**
+
+---
+
+# 10. FINALISTS
+
+Select the strongest 5.
+
+For each finalist create a mini brand concept.
+
+Include:
+
+Brand name
+
+Primary tagline
+
+Secondary tagline
+
+Brand positioning
+
+Brand personality
+
+Logo concept
+
+Icon concept
+
+Typography direction
+
+Colour direction
+
+Example homepage headline
+
+Example app icon
+
+---
+
+# 11. TAGLINE DIRECTION
+
+Explore powerful short taglines.
+
+Possible conceptual directions:
+
+**Where deals move.**
+
+**Private markets. Connected.**
+
+**Where opportunity moves.**
+
+**Built for serious deals.**
+
+**Move deals forward.**
+
+**The infrastructure behind every deal.**
+
+**Private markets, simplified.**
+
+**Opportunity. Connected.**
+
+**From opportunity to close.**
+
+Do not automatically use these.
+
+Create better alternatives where possible.
+
+The tagline should ideally contain 2–6 words.
+
+---
+
+# 12. BRAND ARCHITECTURE
+
+The name must work as a master brand.
+
+For example:
+
+[BRAND] Deals
+
+[BRAND] Network
+
+[BRAND] Intelligence
+
+[BRAND] Verify
+
+[BRAND] Data
+
+[BRAND] Capital
+
+[BRAND] Professionals
+
+[BRAND] Analytics
+
+[BRAND] AI
+
+[BRAND] Deal Room
+
+[BRAND] Score
+
+Test every finalist against this architecture.
+
+---
+
+# 13. VERBAL TEST
+
+For every finalist test these sentences:
+
+**“I found the opportunity on [BRAND].”**
+
+**“Send me the [BRAND] link.”**
+
+**“The NDA is already on [BRAND].”**
+
+**“We manage the transaction through [BRAND].”**
+
+**“Are you on [BRAND]?”**
+
+**“Our verified track record is on [BRAND].”**
+
+The name should sound natural in these contexts.
+
+---
+
+# 14. VISUAL IDENTITY
+
+Once the final brand has been selected, create a complete visual identity.
+
+The visual identity should be dramatically simpler than the existing Real Estate Vault identity.
+
+Move away from:
+
+Gold shields
+
+Literal vaults
+
+Buildings inside logos
+
+Keys
+
+Houses
+
+Skylines
+
+Handshake icons
+
+Generic real estate symbolism
+
+The new logo should be iconic enough to stand independently.
+
+Think:
+
+Nike swoosh
+
+Apple icon
+
+Tesla T
+
+Stripe wordmark
+
+Adyen identity
+
+Not visually similar to them, but similarly simple and recognisable.
+
+---
+
+# 15. LOGO
+
+Create:
+
+Primary logo
+
+Wordmark
+
+Standalone icon
+
+Dark-background version
+
+Light-background version
+
+Monochrome version
+
+App icon
+
+Favicon
+
+The logo should remain recognisable at:
+
+16px
+
+32px
+
+64px
+
+128px
+
+---
+
+# 16. DESIGN LANGUAGE
+
+Create a premium digital-first design system.
+
+Preferred visual direction:
+
+Deep charcoal
+
+Near-black
+
+Warm off-white
+
+One distinctive brand accent colour
+
+Use colour sparingly.
+
+Avoid excessive gradients.
+
+Avoid excessive gold.
+
+Avoid neon crypto aesthetics.
+
+The product should feel appropriate for a:
+
+€5 million transaction
+
+€50 million transaction
+
+€500 million transaction
+
+---
+
+# 17. TYPOGRAPHY
+
+Choose a modern premium sans-serif typography system.
+
+It should work for:
+
+Marketing website
+
+Dashboard
+
+Financial data
+
+Deal information
+
+Tables
+
+Mobile application
+
+Documents
+
+Large numbers
+
+Typography should communicate:
+
+Precision
+
+Confidence
+
+Clarity
+
+---
+
+# 18. PRODUCT UI
+
+Apply the new identity throughout the existing application.
+
+Update:
+
+Login
+
+Registration
+
+Dashboard
+
+Deal Discovery
+
+Deal Room
+
+Data Room
+
+Deal Health
+
+Broker profiles
+
+Professional profiles
+
+Mandates
+
+Financing
+
+Due Diligence
+
+Messages
+
+Notifications
+
+Analytics
+
+Admin
+
+Mobile navigation
+
+Do NOT change functionality unless necessary for branding consistency.
+
+---
+
+# 19. DASHBOARD EXPERIENCE
+
+The dashboard should feel like a combination of:
+
+Institutional financial software
+
+Modern private-market technology
+
+Premium transaction management
+
+Information density is acceptable.
+
+Avoid excessive empty SaaS cards.
+
+Prioritise:
+
+Deals
+
+Capital
+
+People
+
+Documents
+
+Tasks
+
+Risks
+
+Transaction progress
+
+---
+
+# 20. HOMEPAGE
+
+Create a completely new homepage for the selected brand.
+
+Hero structure:
+
+**[BRAND]**
+
+Strong headline.
+
+Short positioning sentence.
+
+Primary CTA:
+
+**Explore Opportunities**
+
+Secondary CTA:
+
+**Join the Network**
+
+The homepage should communicate within five seconds:
+
+Private opportunities.
+
+Verified professionals.
+
+Secure information.
+
+Transaction execution.
+
+---
+
+# 21. HOMEPAGE SECTIONS
+
+Include:
+
+Hero
+
+Live opportunity preview
+
+Trusted professional network
+
+How transactions work
+
+Deal intelligence
+
+Secure data rooms
+
+Deal teams
+
+Professional marketplace
+
+Verified reputation
+
+Platform statistics
+
+Final CTA
+
+---
+
+# 22. PRODUCT POSITIONING
+
+Do not lead with AI.
+
+AI is infrastructure.
+
+Users care about:
+
+Better opportunities
+
+Faster transactions
+
+Better information
+
+Trusted counterparties
+
+Protected introductions
+
+Access to capital
+
+Professional execution
+
+Reduced transaction friction
+
+AI should enable those outcomes.
+
+---
+
+# 23. CORE PLATFORM MODEL
+
+The new brand represents this complete lifecycle:
+
+**DISCOVER**
+
+Private opportunities
+
+↓
+
+**CONNECT**
+
+Verified professionals
+
+↓
+
+**ACCESS**
+
+NDA + permissions
+
+↓
+
+**UNDERSTAND**
+
+Data + intelligence
+
+↓
+
+**ASSEMBLE**
+
+Deal team
+
+↓
+
+**FINANCE**
+
+Capital and financing
+
+↓
+
+**VERIFY**
+
+Due diligence
+
+↓
+
+**NEGOTIATE**
+
+Offers and agreements
+
+↓
+
+**CLOSE**
+
+Transaction execution
+
+↓
+
+**BUILD**
+
+Verified reputation
+
+---
+
+# 24. FUTURE EXPANSION
+
+The brand must be capable of expanding beyond commercial real estate.
+
+Potential future markets:
+
+Private companies
+
+M&A
+
+Private equity
+
+Private debt
+
+Infrastructure
+
+Renewable energy projects
+
+Hospitality businesses
+
+Development projects
+
+Alternative assets
+
+Therefore never visually or verbally lock the master brand exclusively to buildings.
+
+Commercial real estate can remain the first vertical.
+
+For example:
+
+[BRAND]
+
+Private Markets Infrastructure
+
+and:
+
+[BRAND] Real Estate
+
+could eventually become one vertical.
+
+---
+
+# 25. IMPORTANT
+
+Do NOT use these previously considered names:
+
+VYRE
+
+DEED
+
+ATLAS
+
+KOVA
+
+ORYN
+
+NEX
+
+Real Estate Vault
+
+These have already been rejected because they are either too generic, too restrictive or have relevant existing market overlap.
+
+Create genuinely new naming directions.
+
+---
+
+# 26. FINAL SELECTION
+
+At the end of the naming process:
+
+Choose ONE recommended master brand.
+
+Explain briefly why it is the strongest.
+
+Then implement that name throughout the application.
+
+Before permanently removing the Real Estate Vault brand from the codebase:
+
+Create a central brand configuration.
+
+Example architecture:
+
+brand.name
+
+brand.shortName
+
+brand.tagline
+
+brand.logo
+
+brand.icon
+
+brand.colors
+
+brand.typography
+
+This must make future rebranding easy.
+
+---
+
+# 27. FINAL OBJECTIVE
+
+We are not looking for a name for a real estate website.
+
+We are creating a potential global technology brand.
+
+The long-term ambition is that the brand becomes synonymous with trusted private transactions.
+
+The desired reaction to the final identity is:
+
+**“This could be a serious international company.”**
+
+Not:
+
+**“This looks like another property portal.”**
+
+Build the brand accordingly.
