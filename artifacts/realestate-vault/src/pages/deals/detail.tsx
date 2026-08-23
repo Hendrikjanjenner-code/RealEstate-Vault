@@ -38,6 +38,7 @@ import {
   PlaceholderTab,
 } from "@/components/deal-advisory";
 import { DocumentAiPanel, AiIntelligenceTab, AssistantTab } from "@/components/deal-ai";
+import { FinancialsTab, FinancingTab } from "@/components/deal-financials";
 import { Sparkles } from "lucide-react";
 
 const DEAL_ROOM_TABS = [
@@ -319,9 +320,7 @@ export default function DealDetail() {
             </>
           )}
 
-          {activeTab === "financials" && (
-            <PlaceholderTab title="Financials" description="In-depth financial analysis, scenarios and downloadable financing pack are coming to this tab." />
-          )}
+          {activeTab === "financials" && <FinancialsTab dealId={id} />}
           {activeTab === "ai" && (
             <AiIntelligenceTab dealId={id} canManage={isBroker} transactionStructure={deal?.transactionStructure} />
           )}
@@ -331,7 +330,7 @@ export default function DealDetail() {
             <PlaceholderTab title="Due Diligence" description="The structured Due Diligence center with workstreams and findings is coming to this tab." />
           )}
           {activeTab === "financing" && (
-            <PlaceholderTab title="Financing" description="Financing scenarios, term comparisons and lender outreach are coming to this tab." />
+            <FinancingTab dealId={id} dealTitle={deal?.title ?? `deal-${id}`} />
           )}
           {activeTab === "qa" && (
             <PlaceholderTab title="Q&A" description="Structured, auditable deal Q&A between investors and the deal manager is coming to this tab." />

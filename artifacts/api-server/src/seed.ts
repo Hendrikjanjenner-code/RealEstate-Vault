@@ -15,6 +15,8 @@ import {
   notificationsTable,
   ownerAssignmentsTable,
   brokerConnectionsTable,
+  dealFinancialsTable,
+  financingScenariosTable,
 } from "@workspace/db";
 import { and, asc, eq, isNull, notLike } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -102,6 +104,8 @@ async function seed() {
   await db.delete(activityTable);
   await db.delete(accessRequestsTable);
   await db.delete(dealDocumentsTable);
+  await db.delete(financingScenariosTable);
+  await db.delete(dealFinancialsTable);
   await db.delete(dealsTable);
   await db.delete(mandatesTable);
   await db.delete(transactionsTable);
@@ -836,6 +840,57 @@ async function seed() {
   }
 
   const d = (i: number) => deals[i];
+
+  logger.info("Seeding historical deal financials");
+  // Multi-year P&L/balance lines per deal (deal currency). Hotel deals also
+  // get Occupancy/ADR/RevPAR/GOP/F&B metrics.
+  const fin = (
+    dealIdx: number,
+    year: number,
+    v: Partial<typeof dealFinancialsTable.$inferInsert>,
+  ) => ({ dealId: d(dealIdx).id, year, ...v });
+  await db.insert(dealFinancialsTable).values([
+    // Canal House Boutique Hotel — Amsterdam (52 keys)
+    fin(0, 2022, { revenue: 6100000, ebitda: 1590000, noi: 1710000, cashflow: 1180000, debtOutstanding: 14200000, workingCapital: 410000, opex: 3390000, capex: 620000, occupancyPct: 74, adr: 265, revpar: 196, gop: 2210000, fnbRevenue: 1450000 }),
+    fin(0, 2023, { revenue: 6980000, ebitda: 1930000, noi: 2050000, cashflow: 1460000, debtOutstanding: 13600000, workingCapital: 450000, opex: 3820000, capex: 380000, occupancyPct: 80, adr: 289, revpar: 231, gop: 2620000, fnbRevenue: 1680000 }),
+    fin(0, 2024, { revenue: 7620000, ebitda: 2180000, noi: 2290000, cashflow: 1690000, debtOutstanding: 13000000, workingCapital: 470000, opex: 4090000, capex: 450000, occupancyPct: 84, adr: 305, revpar: 256, gop: 2930000, fnbRevenue: 1830000 }),
+    fin(0, 2025, { revenue: 8050000, ebitda: 2350000, noi: 2440000, cashflow: 1820000, debtOutstanding: 12400000, workingCapital: 500000, opex: 4310000, capex: 520000, occupancyPct: 86, adr: 318, revpar: 273, gop: 3120000, fnbRevenue: 1940000 }),
+    // Taunusanlage Office Tower — Frankfurt
+    fin(1, 2022, { revenue: 8900000, ebitda: 7050000, noi: 7130000, cashflow: 5010000, debtOutstanding: 74000000, workingCapital: 820000, opex: 1850000, capex: 1400000 }),
+    fin(1, 2023, { revenue: 9260000, ebitda: 7380000, noi: 7440000, cashflow: 5290000, debtOutstanding: 71500000, workingCapital: 860000, opex: 1880000, capex: 2100000 }),
+    fin(1, 2024, { revenue: 9540000, ebitda: 7610000, noi: 7690000, cashflow: 5480000, debtOutstanding: 69000000, workingCapital: 900000, opex: 1930000, capex: 900000 }),
+    fin(1, 2025, { revenue: 9810000, ebitda: 7820000, noi: 7900000, cashflow: 5650000, debtOutstanding: 66500000, workingCapital: 930000, opex: 1990000, capex: 750000 }),
+    // Maasvlakte Logistics Portfolio — Rotterdam
+    fin(2, 2022, { revenue: 5480000, ebitda: 5010000, noi: 5060000, cashflow: 3720000, debtOutstanding: 41000000, workingCapital: 380000, opex: 470000, capex: 300000 }),
+    fin(2, 2023, { revenue: 5720000, ebitda: 5230000, noi: 5290000, cashflow: 3910000, debtOutstanding: 39500000, workingCapital: 400000, opex: 490000, capex: 260000 }),
+    fin(2, 2024, { revenue: 5960000, ebitda: 5450000, noi: 5510000, cashflow: 4080000, debtOutstanding: 38000000, workingCapital: 420000, opex: 510000, capex: 340000 }),
+    fin(2, 2025, { revenue: 6180000, ebitda: 5660000, noi: 5720000, cashflow: 4240000, debtOutstanding: 36500000, workingCapital: 430000, opex: 520000, capex: 280000 }),
+    // Charlottenburg Residential Ensemble — Berlin
+    fin(3, 2022, { revenue: 1980000, ebitda: 1490000, noi: 1540000, cashflow: 1010000, debtOutstanding: 21500000, workingCapital: 180000, opex: 490000, capex: 350000 }),
+    fin(3, 2023, { revenue: 2060000, ebitda: 1550000, noi: 1610000, cashflow: 1060000, debtOutstanding: 21000000, workingCapital: 190000, opex: 510000, capex: 420000 }),
+    fin(3, 2024, { revenue: 2150000, ebitda: 1620000, noi: 1680000, cashflow: 1120000, debtOutstanding: 20500000, workingCapital: 200000, opex: 530000, capex: 380000 }),
+    fin(3, 2025, { revenue: 2230000, ebitda: 1680000, noi: 1740000, cashflow: 1170000, debtOutstanding: 20000000, workingCapital: 210000, opex: 550000, capex: 300000 }),
+    // Rue Saint-Honore Flagship — Paris
+    fin(4, 2022, { revenue: 3120000, ebitda: 2860000, noi: 2900000, cashflow: 2140000, debtOutstanding: 30000000, workingCapital: 240000, opex: 260000, capex: 120000 }),
+    fin(4, 2023, { revenue: 3220000, ebitda: 2950000, noi: 2990000, cashflow: 2210000, debtOutstanding: 29200000, workingCapital: 250000, opex: 270000, capex: 90000 }),
+    fin(4, 2024, { revenue: 3330000, ebitda: 3050000, noi: 3090000, cashflow: 2290000, debtOutstanding: 28400000, workingCapital: 250000, opex: 280000, capex: 150000 }),
+    fin(4, 2025, { revenue: 3410000, ebitda: 3120000, noi: 3170000, cashflow: 2350000, debtOutstanding: 27600000, workingCapital: 260000, opex: 290000, capex: 110000 }),
+    // Cascais Coastal Resort — hotel (128 keys)
+    fin(5, 2022, { revenue: 9800000, ebitda: 2450000, noi: 2720000, cashflow: 1650000, debtOutstanding: 26000000, workingCapital: 720000, opex: 6480000, capex: 1500000, occupancyPct: 68, adr: 182, revpar: 124, gop: 3350000, fnbRevenue: 2900000 }),
+    fin(5, 2023, { revenue: 10900000, ebitda: 2890000, noi: 3170000, cashflow: 2020000, debtOutstanding: 25000000, workingCapital: 760000, opex: 7060000, capex: 980000, occupancyPct: 72, adr: 196, revpar: 141, gop: 3840000, fnbRevenue: 3240000 }),
+    fin(5, 2024, { revenue: 11800000, ebitda: 3260000, noi: 3550000, cashflow: 2330000, debtOutstanding: 24000000, workingCapital: 800000, opex: 7540000, capex: 1200000, occupancyPct: 76, adr: 208, revpar: 158, gop: 4260000, fnbRevenue: 3520000 }),
+    fin(5, 2025, { revenue: 12400000, ebitda: 3480000, noi: 3780000, cashflow: 2510000, debtOutstanding: 23000000, workingCapital: 830000, opex: 7860000, capex: 1050000, occupancyPct: 78, adr: 215, revpar: 168, gop: 4520000, fnbRevenue: 3680000 }),
+    // Castellana Corporate Campus — Madrid
+    fin(6, 2022, { revenue: 6400000, ebitda: 5240000, noi: 5310000, cashflow: 3710000, debtOutstanding: 52000000, workingCapital: 560000, opex: 1160000, capex: 800000 }),
+    fin(6, 2023, { revenue: 6680000, ebitda: 5470000, noi: 5540000, cashflow: 3890000, debtOutstanding: 50500000, workingCapital: 590000, opex: 1210000, capex: 950000 }),
+    fin(6, 2024, { revenue: 6920000, ebitda: 5670000, noi: 5750000, cashflow: 4040000, debtOutstanding: 49000000, workingCapital: 610000, opex: 1250000, capex: 700000 }),
+    fin(6, 2025, { revenue: 7150000, ebitda: 5860000, noi: 5930000, cashflow: 4180000, debtOutstanding: 47500000, workingCapital: 630000, opex: 1290000, capex: 620000 }),
+    // Graben Quarter Mixed-Use House — Vienna
+    fin(7, 2022, { revenue: 1520000, ebitda: 1260000, noi: 1310000, cashflow: 880000, debtOutstanding: 16000000, workingCapital: 140000, opex: 260000, capex: 180000 }),
+    fin(7, 2023, { revenue: 1580000, ebitda: 1310000, noi: 1360000, cashflow: 920000, debtOutstanding: 15600000, workingCapital: 150000, opex: 270000, capex: 140000 }),
+    fin(7, 2024, { revenue: 1640000, ebitda: 1360000, noi: 1410000, cashflow: 960000, debtOutstanding: 15200000, workingCapital: 150000, opex: 280000, capex: 200000 }),
+    fin(7, 2025, { revenue: 1700000, ebitda: 1410000, noi: 1460000, cashflow: 1000000, debtOutstanding: 14800000, workingCapital: 160000, opex: 290000, capex: 160000 }),
+  ]);
 
   logger.info("Seeding deal documents");
   const docsFor = (dealId: number, items: [string, string, number, boolean][]) =>

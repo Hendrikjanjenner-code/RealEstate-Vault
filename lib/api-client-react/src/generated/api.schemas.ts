@@ -1381,6 +1381,142 @@ export interface ChecklistTemplateInput {
   items: ChecklistTemplateInputItemsItem[];
 }
 
+export interface DealFinancialYear {
+  id: number;
+  dealId: number;
+  year: number;
+  revenue?: number | null;
+  ebitda?: number | null;
+  noi?: number | null;
+  cashflow?: number | null;
+  debtOutstanding?: number | null;
+  workingCapital?: number | null;
+  opex?: number | null;
+  capex?: number | null;
+  occupancyPct?: number | null;
+  adr?: number | null;
+  revpar?: number | null;
+  gop?: number | null;
+  fnbRevenue?: number | null;
+}
+
+export interface DealFinancialsResponse {
+  currency: string;
+  assetClass: string;
+  years: DealFinancialYear[];
+}
+
+export interface DealFinancialYearInput {
+  /**
+     * @minimum 1900
+     * @maximum 2200
+     */
+  year: number;
+  revenue?: number | null;
+  ebitda?: number | null;
+  noi?: number | null;
+  cashflow?: number | null;
+  debtOutstanding?: number | null;
+  workingCapital?: number | null;
+  opex?: number | null;
+  capex?: number | null;
+  occupancyPct?: number | null;
+  adr?: number | null;
+  revpar?: number | null;
+  gop?: number | null;
+  fnbRevenue?: number | null;
+}
+
+export interface DealFinancialsUpsertBody {
+  years: DealFinancialYearInput[];
+}
+
+export interface FinancingScenarioBody {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  name: string;
+  /** @exclusiveMinimum 0 */
+  purchasePrice: number;
+  /** @minimum 0 */
+  equity: number;
+  /** @minimum 0 */
+  debtAmount: number;
+  /**
+     * @minimum 0
+     * @maximum 30
+     */
+  interestRatePct: number;
+  /**
+     * @minimum 0
+     * @maximum 50
+     */
+  amortizationYears: number;
+  /**
+     * @minimum 1
+     * @maximum 50
+     */
+  termYears: number;
+  noiOverride?: number | null;
+}
+
+export type FinancingScenarioMetricsNoiSource = typeof FinancingScenarioMetricsNoiSource[keyof typeof FinancingScenarioMetricsNoiSource];
+
+
+export const FinancingScenarioMetricsNoiSource = {
+  historical: 'historical',
+  override: 'override',
+  none: 'none',
+} as const;
+
+export interface FinancingScenarioMetrics {
+  ltvPct: number | null;
+  dscr: number | null;
+  debtYieldPct: number | null;
+  annualDebtService: number | null;
+  noiUsed: number | null;
+  noiSource: FinancingScenarioMetricsNoiSource;
+}
+
+export interface FinancingScenario {
+  id: number;
+  dealId: number;
+  name: string;
+  purchasePrice: number;
+  equity: number;
+  debtAmount: number;
+  interestRatePct: number;
+  amortizationYears: number;
+  termYears: number;
+  noiOverride?: number | null;
+  metrics: FinancingScenarioMetrics;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FinancingReadinessFactor {
+  key: string;
+  label: string;
+  score: number;
+  maxScore: number;
+  explanation: string;
+}
+
+export interface FinancingReadinessResponse {
+  score: number;
+  maxScore: number;
+  factors: FinancingReadinessFactor[];
+  disclaimer: string;
+}
+
+export interface FinancingPackResponse {
+  report: string;
+  generatedAt: string;
+  generatedBy: string;
+  provenance: string;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */

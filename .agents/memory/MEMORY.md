@@ -12,4 +12,5 @@
 - [Public/anonymous endpoint rules](public-endpoint-redaction.md) — honour locationPrivacy, count distinct verified populations, fall back to static data only on API error (empty ≠ error).
 - [Broken-merge route corruption](merge-corruption-route-files.md) — a merge scrambled route handlers (wrong schemas, swapped bodies) while still typechecking; diff against last good commit and restore.
 - [AI endpoint authz policy](ai-endpoint-authz.md) — AI assistant/findings/report endpoints filter by document access class; redact deal facts for non-granted viewers; fail runs on invalid model output.
+- [Manager-fallback authz](manager-fallback-authz.md) — confidential endpoints need strict brokerUserId manager check, not the any-broker unowned-deal fallback; row mutations must re-check current deal access.
 - [Trust claims need structural enforcement](trust-claims-structural.md) — completion review rejects caller-settable "verified" flags; derive verification server-side from a referenced entity (e.g. accepted connection) and gate seeded data to demo profiles.

@@ -60,7 +60,7 @@ type DealDocument = typeof dealDocumentsTable.$inferSelect;
 // Authorization — mirrors the data-room documents routes exactly.
 // ---------------------------------------------------------------------------
 
-type ViewerAccess =
+export type ViewerAccess =
   | { mode: "manager" }
   | { mode: "engagement"; access: Map<string, string> }
   | { mode: "granted" }
@@ -73,7 +73,7 @@ type ViewerAccess =
  * - granted: owner / signed NDA / non-confidential deal — all documents
  * - basic: any other authenticated user — only non-NDA documents
  */
-async function resolveViewerAccess(
+export async function resolveViewerAccess(
   req: Request,
   deal: Deal,
 ): Promise<ViewerAccess> {
@@ -88,7 +88,7 @@ async function resolveViewerAccess(
   return { mode: "basic" };
 }
 
-function canViewDocument(viewer: ViewerAccess, doc: DealDocument): boolean {
+export function canViewDocument(viewer: ViewerAccess, doc: DealDocument): boolean {
   switch (viewer.mode) {
     case "manager":
       return true;
@@ -101,12 +101,12 @@ function canViewDocument(viewer: ViewerAccess, doc: DealDocument): boolean {
   }
 }
 
-async function loadDeal(id: number): Promise<Deal | undefined> {
+export async function loadDeal(id: number): Promise<Deal | undefined> {
   const [deal] = await db.select().from(dealsTable).where(eq(dealsTable.id, id));
   return deal;
 }
 
-async function loadAuthorizedDocuments(
+export async function loadAuthorizedDocuments(
   deal: Deal,
   viewer: ViewerAccess,
 ): Promise<DealDocument[]> {
@@ -197,7 +197,7 @@ function presentRun(run: typeof aiAnalysisRunsTable.$inferSelect) {
   };
 }
 
-function actorName(req: Request): string | null {
+export function actorName(req: Request): string | null {
   const u = req.user as { firstName?: string | null; lastName?: string | null; email?: string | null };
   const name = [u.firstName, u.lastName].filter(Boolean).join(" ").trim();
   return name || u.email || null;

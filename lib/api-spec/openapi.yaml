@@ -1678,6 +1678,270 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/financials:
+    get:
+      operationId: getDealFinancials
+      tags: [deal-financials]
+      summary: Historical financial years for a deal (manager and granted viewers only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Financial history
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DealFinancialsResponse" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access to this deal's financials
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+    put:
+      operationId: upsertDealFinancials
+      tags: [deal-financials]
+      summary: Replace the historical financial years of a deal (deal manager only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DealFinancialsUpsertBody" }
+      responses:
+        "200":
+          description: Updated financial history
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DealFinancialsResponse" }
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: Not the deal manager
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/financing/scenarios:
+    get:
+      operationId: listFinancingScenarios
+      tags: [deal-financials]
+      summary: List the caller's financing scenarios for a deal, with computed LTV, DSCR and Debt Yield
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Scenarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/FinancingScenario" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access to this deal's financing tools
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+    post:
+      operationId: createFinancingScenario
+      tags: [deal-financials]
+      summary: Create a named financing scenario for the caller on this deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FinancingScenarioBody" }
+      responses:
+        "201":
+          description: Created scenario
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FinancingScenario" }
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access to this deal's financing tools
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /financing/scenarios/{id}:
+    patch:
+      operationId: updateFinancingScenario
+      tags: [deal-financials]
+      summary: Update one of the caller's financing scenarios
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FinancingScenarioBody" }
+      responses:
+        "200":
+          description: Updated scenario
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FinancingScenario" }
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found or not yours
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+    delete:
+      operationId: deleteFinancingScenario
+      tags: [deal-financials]
+      summary: Delete one of the caller's financing scenarios
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found or not yours
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/financing/readiness:
+    get:
+      operationId: getFinancingReadiness
+      tags: [deal-financials]
+      summary: Financing readiness score (documentation, history, capacity) — explicitly not a financing guarantee
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Readiness score
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FinancingReadinessResponse" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access to this deal's financing tools
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/financing/pack:
+    post:
+      operationId: prepareFinancingPack
+      tags: [deal-financials]
+      summary: Prepare a structured financing pack (executive summary, transaction overview, figures, ratios, ownership, missing information) as a downloadable report. Audited.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Financing pack
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FinancingPackResponse" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "403":
+          description: No access to this deal's financing tools
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /mandates:
     get:
       operationId: listMandates
@@ -3088,3 +3352,140 @@ components:
               name: { type: string, minLength: 1 }
               description: { type: string }
               required: { type: boolean }
+    DealFinancialYear:
+      type: object
+      required: [id, dealId, year]
+      properties:
+        id: { type: integer }
+        dealId: { type: integer }
+        year: { type: integer }
+        revenue: { type: number, nullable: true }
+        ebitda: { type: number, nullable: true }
+        noi: { type: number, nullable: true }
+        cashflow: { type: number, nullable: true }
+        debtOutstanding: { type: number, nullable: true }
+        workingCapital: { type: number, nullable: true }
+        opex: { type: number, nullable: true }
+        capex: { type: number, nullable: true }
+        occupancyPct: { type: number, nullable: true }
+        adr: { type: number, nullable: true }
+        revpar: { type: number, nullable: true }
+        gop: { type: number, nullable: true }
+        fnbRevenue: { type: number, nullable: true }
+    DealFinancialsResponse:
+      type: object
+      required: [currency, assetClass, years]
+      properties:
+        currency: { type: string }
+        assetClass: { type: string }
+        years:
+          type: array
+          items: { $ref: "#/components/schemas/DealFinancialYear" }
+    DealFinancialYearInput:
+      type: object
+      required: [year]
+      properties:
+        year: { type: integer, minimum: 1900, maximum: 2200 }
+        revenue: { type: number, nullable: true }
+        ebitda: { type: number, nullable: true }
+        noi: { type: number, nullable: true }
+        cashflow: { type: number, nullable: true }
+        debtOutstanding: { type: number, nullable: true }
+        workingCapital: { type: number, nullable: true }
+        opex: { type: number, nullable: true }
+        capex: { type: number, nullable: true }
+        occupancyPct: { type: number, nullable: true }
+        adr: { type: number, nullable: true }
+        revpar: { type: number, nullable: true }
+        gop: { type: number, nullable: true }
+        fnbRevenue: { type: number, nullable: true }
+    DealFinancialsUpsertBody:
+      type: object
+      required: [years]
+      properties:
+        years:
+          type: array
+          items: { $ref: "#/components/schemas/DealFinancialYearInput" }
+    FinancingScenarioBody:
+      type: object
+      required:
+        [name, purchasePrice, equity, debtAmount, interestRatePct, amortizationYears, termYears]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        purchasePrice: { type: number, exclusiveMinimum: 0 }
+        equity: { type: number, minimum: 0 }
+        debtAmount: { type: number, minimum: 0 }
+        interestRatePct: { type: number, minimum: 0, maximum: 30 }
+        amortizationYears: { type: integer, minimum: 0, maximum: 50 }
+        termYears: { type: integer, minimum: 1, maximum: 50 }
+        noiOverride: { type: number, nullable: true }
+    FinancingScenarioMetrics:
+      type: object
+      required: [ltvPct, dscr, debtYieldPct, annualDebtService, noiUsed, noiSource]
+      properties:
+        ltvPct: { type: number, nullable: true }
+        dscr: { type: number, nullable: true }
+        debtYieldPct: { type: number, nullable: true }
+        annualDebtService: { type: number, nullable: true }
+        noiUsed: { type: number, nullable: true }
+        noiSource:
+          type: string
+          enum: [historical, override, none]
+    FinancingScenario:
+      type: object
+      required:
+        [
+          id,
+          dealId,
+          name,
+          purchasePrice,
+          equity,
+          debtAmount,
+          interestRatePct,
+          amortizationYears,
+          termYears,
+          metrics,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id: { type: integer }
+        dealId: { type: integer }
+        name: { type: string }
+        purchasePrice: { type: number }
+        equity: { type: number }
+        debtAmount: { type: number }
+        interestRatePct: { type: number }
+        amortizationYears: { type: integer }
+        termYears: { type: integer }
+        noiOverride: { type: number, nullable: true }
+        metrics: { $ref: "#/components/schemas/FinancingScenarioMetrics" }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    FinancingReadinessFactor:
+      type: object
+      required: [key, label, score, maxScore, explanation]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        score: { type: number }
+        maxScore: { type: number }
+        explanation: { type: string }
+    FinancingReadinessResponse:
+      type: object
+      required: [score, maxScore, factors, disclaimer]
+      properties:
+        score: { type: number }
+        maxScore: { type: number }
+        factors:
+          type: array
+          items: { $ref: "#/components/schemas/FinancingReadinessFactor" }
+        disclaimer: { type: string }
+    FinancingPackResponse:
+      type: object
+      required: [report, generatedAt, generatedBy, provenance]
+      properties:
+        report: { type: string }
+        generatedAt: { type: string }
+        generatedBy: { type: string }
+        provenance: { type: string }

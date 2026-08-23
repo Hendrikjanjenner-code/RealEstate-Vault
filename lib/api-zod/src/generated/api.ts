@@ -1894,6 +1894,290 @@ export const GenerateDealAiReportResponse = zod.object({
 
 
 /**
+ * @summary Historical financial years for a deal (manager and granted viewers only)
+ */
+export const GetDealFinancialsParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetDealFinancialsResponse = zod.object({
+  "currency": zod.string(),
+  "assetClass": zod.string(),
+  "years": zod.array(zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "year": zod.int(),
+  "revenue": zod.number().nullish(),
+  "ebitda": zod.number().nullish(),
+  "noi": zod.number().nullish(),
+  "cashflow": zod.number().nullish(),
+  "debtOutstanding": zod.number().nullish(),
+  "workingCapital": zod.number().nullish(),
+  "opex": zod.number().nullish(),
+  "capex": zod.number().nullish(),
+  "occupancyPct": zod.number().nullish(),
+  "adr": zod.number().nullish(),
+  "revpar": zod.number().nullish(),
+  "gop": zod.number().nullish(),
+  "fnbRevenue": zod.number().nullish()
+}))
+})
+
+
+/**
+ * @summary Replace the historical financial years of a deal (deal manager only)
+ */
+export const UpsertDealFinancialsParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const upsertDealFinancialsBodyYearsItemYearMin = 1900;
+export const upsertDealFinancialsBodyYearsItemYearMax = 2200;
+
+
+
+export const UpsertDealFinancialsBody = zod.object({
+  "years": zod.array(zod.object({
+  "year": zod.int().min(upsertDealFinancialsBodyYearsItemYearMin).max(upsertDealFinancialsBodyYearsItemYearMax),
+  "revenue": zod.number().nullish(),
+  "ebitda": zod.number().nullish(),
+  "noi": zod.number().nullish(),
+  "cashflow": zod.number().nullish(),
+  "debtOutstanding": zod.number().nullish(),
+  "workingCapital": zod.number().nullish(),
+  "opex": zod.number().nullish(),
+  "capex": zod.number().nullish(),
+  "occupancyPct": zod.number().nullish(),
+  "adr": zod.number().nullish(),
+  "revpar": zod.number().nullish(),
+  "gop": zod.number().nullish(),
+  "fnbRevenue": zod.number().nullish()
+}))
+})
+
+export const UpsertDealFinancialsResponse = zod.object({
+  "currency": zod.string(),
+  "assetClass": zod.string(),
+  "years": zod.array(zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "year": zod.int(),
+  "revenue": zod.number().nullish(),
+  "ebitda": zod.number().nullish(),
+  "noi": zod.number().nullish(),
+  "cashflow": zod.number().nullish(),
+  "debtOutstanding": zod.number().nullish(),
+  "workingCapital": zod.number().nullish(),
+  "opex": zod.number().nullish(),
+  "capex": zod.number().nullish(),
+  "occupancyPct": zod.number().nullish(),
+  "adr": zod.number().nullish(),
+  "revpar": zod.number().nullish(),
+  "gop": zod.number().nullish(),
+  "fnbRevenue": zod.number().nullish()
+}))
+})
+
+
+/**
+ * @summary List the caller's financing scenarios for a deal, with computed LTV, DSCR and Debt Yield
+ */
+export const ListFinancingScenariosParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const ListFinancingScenariosResponseItem = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "name": zod.string(),
+  "purchasePrice": zod.number(),
+  "equity": zod.number(),
+  "debtAmount": zod.number(),
+  "interestRatePct": zod.number(),
+  "amortizationYears": zod.int(),
+  "termYears": zod.int(),
+  "noiOverride": zod.number().nullish(),
+  "metrics": zod.object({
+  "ltvPct": zod.number().nullable(),
+  "dscr": zod.number().nullable(),
+  "debtYieldPct": zod.number().nullable(),
+  "annualDebtService": zod.number().nullable(),
+  "noiUsed": zod.number().nullable(),
+  "noiSource": zod.enum(['historical', 'override', 'none'])
+}),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListFinancingScenariosResponse = zod.array(ListFinancingScenariosResponseItem)
+
+
+/**
+ * @summary Create a named financing scenario for the caller on this deal
+ */
+export const CreateFinancingScenarioParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const createFinancingScenarioBodyNameMax = 80;
+
+export const createFinancingScenarioBodyPurchasePriceExclusiveMin = 0;
+
+export const createFinancingScenarioBodyEquityMin = 0;
+
+export const createFinancingScenarioBodyDebtAmountMin = 0;
+
+export const createFinancingScenarioBodyInterestRatePctMin = 0;
+export const createFinancingScenarioBodyInterestRatePctMax = 30;
+
+export const createFinancingScenarioBodyAmortizationYearsMin = 0;
+export const createFinancingScenarioBodyAmortizationYearsMax = 50;
+
+export const createFinancingScenarioBodyTermYearsMax = 50;
+
+
+
+export const CreateFinancingScenarioBody = zod.object({
+  "name": zod.string().min(1).max(createFinancingScenarioBodyNameMax),
+  "purchasePrice": zod.number().gt(createFinancingScenarioBodyPurchasePriceExclusiveMin),
+  "equity": zod.number().min(createFinancingScenarioBodyEquityMin),
+  "debtAmount": zod.number().min(createFinancingScenarioBodyDebtAmountMin),
+  "interestRatePct": zod.number().min(createFinancingScenarioBodyInterestRatePctMin).max(createFinancingScenarioBodyInterestRatePctMax),
+  "amortizationYears": zod.int().min(createFinancingScenarioBodyAmortizationYearsMin).max(createFinancingScenarioBodyAmortizationYearsMax),
+  "termYears": zod.int().min(1).max(createFinancingScenarioBodyTermYearsMax),
+  "noiOverride": zod.number().nullish()
+})
+
+export const CreateFinancingScenarioResponse = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "name": zod.string(),
+  "purchasePrice": zod.number(),
+  "equity": zod.number(),
+  "debtAmount": zod.number(),
+  "interestRatePct": zod.number(),
+  "amortizationYears": zod.int(),
+  "termYears": zod.int(),
+  "noiOverride": zod.number().nullish(),
+  "metrics": zod.object({
+  "ltvPct": zod.number().nullable(),
+  "dscr": zod.number().nullable(),
+  "debtYieldPct": zod.number().nullable(),
+  "annualDebtService": zod.number().nullable(),
+  "noiUsed": zod.number().nullable(),
+  "noiSource": zod.enum(['historical', 'override', 'none'])
+}),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Update one of the caller's financing scenarios
+ */
+export const UpdateFinancingScenarioParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const updateFinancingScenarioBodyNameMax = 80;
+
+export const updateFinancingScenarioBodyPurchasePriceExclusiveMin = 0;
+
+export const updateFinancingScenarioBodyEquityMin = 0;
+
+export const updateFinancingScenarioBodyDebtAmountMin = 0;
+
+export const updateFinancingScenarioBodyInterestRatePctMin = 0;
+export const updateFinancingScenarioBodyInterestRatePctMax = 30;
+
+export const updateFinancingScenarioBodyAmortizationYearsMin = 0;
+export const updateFinancingScenarioBodyAmortizationYearsMax = 50;
+
+export const updateFinancingScenarioBodyTermYearsMax = 50;
+
+
+
+export const UpdateFinancingScenarioBody = zod.object({
+  "name": zod.string().min(1).max(updateFinancingScenarioBodyNameMax),
+  "purchasePrice": zod.number().gt(updateFinancingScenarioBodyPurchasePriceExclusiveMin),
+  "equity": zod.number().min(updateFinancingScenarioBodyEquityMin),
+  "debtAmount": zod.number().min(updateFinancingScenarioBodyDebtAmountMin),
+  "interestRatePct": zod.number().min(updateFinancingScenarioBodyInterestRatePctMin).max(updateFinancingScenarioBodyInterestRatePctMax),
+  "amortizationYears": zod.int().min(updateFinancingScenarioBodyAmortizationYearsMin).max(updateFinancingScenarioBodyAmortizationYearsMax),
+  "termYears": zod.int().min(1).max(updateFinancingScenarioBodyTermYearsMax),
+  "noiOverride": zod.number().nullish()
+})
+
+export const UpdateFinancingScenarioResponse = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "name": zod.string(),
+  "purchasePrice": zod.number(),
+  "equity": zod.number(),
+  "debtAmount": zod.number(),
+  "interestRatePct": zod.number(),
+  "amortizationYears": zod.int(),
+  "termYears": zod.int(),
+  "noiOverride": zod.number().nullish(),
+  "metrics": zod.object({
+  "ltvPct": zod.number().nullable(),
+  "dscr": zod.number().nullable(),
+  "debtYieldPct": zod.number().nullable(),
+  "annualDebtService": zod.number().nullable(),
+  "noiUsed": zod.number().nullable(),
+  "noiSource": zod.enum(['historical', 'override', 'none'])
+}),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete one of the caller's financing scenarios
+ */
+export const DeleteFinancingScenarioParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const DeleteFinancingScenarioResponse = zod.void()
+
+
+/**
+ * @summary Financing readiness score (documentation, history, capacity) — explicitly not a financing guarantee
+ */
+export const GetFinancingReadinessParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetFinancingReadinessResponse = zod.object({
+  "score": zod.number(),
+  "maxScore": zod.number(),
+  "factors": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "score": zod.number(),
+  "maxScore": zod.number(),
+  "explanation": zod.string()
+})),
+  "disclaimer": zod.string()
+})
+
+
+/**
+ * @summary Prepare a structured financing pack (executive summary, transaction overview, figures, ratios, ownership, missing information) as a downloadable report. Audited.
+ */
+export const PrepareFinancingPackParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const PrepareFinancingPackResponse = zod.object({
+  "report": zod.string(),
+  "generatedAt": zod.string(),
+  "generatedBy": zod.string(),
+  "provenance": zod.string()
+})
+
+
+/**
  * @summary List investor mandates
  */
 export const ListMandatesResponseItem = zod.object({
