@@ -87,6 +87,15 @@ function hasBrokerCredential(req: Request): boolean {
 }
 
 /**
+ * Shared public demo personas (issued to anonymous visitors via demo login).
+ * Real accounts get their id from the identity provider's numeric subject
+ * claim and can never carry this reserved prefix.
+ */
+export function isDemoUserId(userId: string): boolean {
+  return userId.startsWith("demo-");
+}
+
+/**
  * Ownership gate for broker mutations on a deal's data room.
  * Deals owned by an identified broker may only be mutated by that
  * authenticated broker. Unowned (seeded/demo) deals may be managed by any
@@ -96,7 +105,13 @@ export function canManageDealDocuments(req: Request, deal: Deal): boolean {
   if (deal.brokerUserId != null) {
     return req.isAuthenticated() && req.user.id === deal.brokerUserId;
   }
-  return hasBrokerCredential(req);
+  // Unowned (legacy/seeded) deals fall back to any broker — but never to the
+  // shared public demo personas, whose sessions any anonymous visitor can get.
+  return (
+    req.isAuthenticated() &&
+    req.user.role === "broker" &&
+    !isDemoUserId(req.user.id)
+  );
 }
 
 /**
@@ -508,6 +523,21 @@ router.post("/deals/:id/access-requests", async (req, res): Promise<void> => {
   // Authenticated owners cannot request access to their own deal.
   if (req.isAuthenticated() && isOwner(deal, req.user.id)) {
     res.status(400).json({ error: "You already own this listing" });
+    return;
+  }
+
+  // Shared demo personas may only run the NDA/data-room flow on demo deals:
+  // any anonymous visitor can obtain these identities, so an approval on a
+  // real broker's deal would amount to public disclosure.
+  if (
+    req.isAuthenticated() &&
+    isDemoUserId(req.user.id) &&
+    !(deal.brokerUserId != null && isDemoUserId(deal.brokerUserId))
+  ) {
+    res.status(403).json({
+      error:
+        "Demo accounts can only request access to demo listings. Sign in with your own account to request access to this deal.",
+    });
     return;
   }
 

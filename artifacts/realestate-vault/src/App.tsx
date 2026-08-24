@@ -86,14 +86,33 @@ function RolePicker() {
 
 function SignInPrompt() {
   const { login } = useAuth();
+  // Demo entry works without any external account: the API signs the visitor
+  // in as a fixed, fictional demo persona and returns them to this page.
+  const demoLoginUrl = (persona: 'investor' | 'broker') => {
+    const base = import.meta.env.BASE_URL;
+    const returnTo = window.location.pathname + window.location.search;
+    return `${base}api/demo-login?as=${persona}&returnTo=${encodeURIComponent(returnTo)}`;
+  };
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-background p-8 text-center">
       <BrandMark className="h-12 w-12" />
       <div>
-        <h1 className="text-2xl font-heading font-bold text-foreground">Sign in to continue</h1>
-        <p className="text-muted-foreground mt-2">You need an account to browse deals, mandates, and your data rooms.</p>
+        <h1 className="text-2xl font-heading font-bold text-foreground">Explore {brand.name}</h1>
+        <p className="text-muted-foreground mt-2 max-w-md">
+          Browse the platform instantly with a demo account — no sign-up needed — or sign in with your own account.
+        </p>
       </div>
-      <Button onClick={login} size="lg">Sign in</Button>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8" data-testid="button-demo-investor">
+          <a href={demoLoginUrl('investor')}><Search className="w-5 h-5 mr-2" /> Explore as Investor</a>
+        </Button>
+        <Button asChild size="lg" variant="outline" className="border-primary/30 px-8" data-testid="button-demo-broker">
+          <a href={demoLoginUrl('broker')}><Briefcase className="w-5 h-5 mr-2" /> Explore as Broker</a>
+        </Button>
+      </div>
+      <Button onClick={login} variant="ghost" className="text-muted-foreground hover:text-foreground" data-testid="button-sign-in">
+        Sign in with your own account
+      </Button>
     </div>
   );
 }

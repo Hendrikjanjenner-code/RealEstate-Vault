@@ -212,28 +212,79 @@ router.post('/users/me/role', async (req: Request, res: Response) => {
 // Demo entry: signs the visitor in as a seeded demo persona without going
 // through Replit Auth. Only works for the fixed, clearly fictional demo
 // accounts created by the seed script — never for real users.
-const DEMO_PERSONAS: Record<string, string> = {
-  investor: 'demo-investor-jonathan',
-  broker: 'demo-broker-willem',
-  owner: 'demo-owner-lucas',
+const DEMO_PERSONAS: Record<
+  string,
+  { id: string; email: string; firstName: string; lastName: string; role: string }
+> = {
+  investor: {
+    id: 'demo-investor-jonathan',
+    email: 'jonathan@demo.realestate-vault.example',
+    firstName: 'Jonathan',
+    lastName: 'Meyer',
+    role: 'investor',
+  },
+  broker: {
+    id: 'demo-broker-willem',
+    email: 'willem@demo.realestate-vault.example',
+    firstName: 'Willem',
+    lastName: 'van der Berg',
+    role: 'broker',
+  },
+  owner: {
+    id: 'demo-owner-lucas',
+    email: 'lucas@demo.realestate-vault.example',
+    firstName: 'Lucas',
+    lastName: 'Janssen',
+    role: 'owner',
+  },
 };
 
 router.get('/demo-login', async (req: Request, res: Response) => {
+  // Login-CSRF guard: a cross-site page must not be able to silently swap a
+  // signed-in user's session for a demo session via a forced navigation.
+  const fetchSite = req.headers['sec-fetch-site'];
+  if (fetchSite === 'cross-site') {
+    res.status(403).json({ message: 'Demo login must be initiated from this site.' });
+    return;
+  }
+
   const persona = typeof req.query.as === 'string' ? req.query.as : 'investor';
-  const demoUserId = DEMO_PERSONAS[persona];
-  if (!demoUserId) {
+  const demoPersona = DEMO_PERSONAS[persona];
+  if (!demoPersona) {
     res.status(400).json({ message: 'Unknown demo persona. Use ?as=investor, ?as=broker, or ?as=owner.' });
     return;
   }
 
-  const [user] = await db
+  let [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.id, demoUserId));
+    .where(eq(usersTable.id, demoPersona.id));
   if (!user) {
-    res.status(503).json({
-      message: 'Demo accounts are not seeded yet. Run the seed script first.',
-    });
+    // Self-provision the fixed demo persona (e.g. a freshly published
+    // environment that never ran the seed script) so public visitors can
+    // always explore without a Replit account. Idempotent and limited to the
+    // hardcoded, clearly fictional demo ids; isDemo keeps their activity from
+    // ever counting toward real profiles.
+    [user] = await db
+      .insert(usersTable)
+      .values({ ...demoPersona, isDemo: true })
+      .onConflictDoNothing()
+      .returning();
+    if (!user) {
+      [user] = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.id, demoPersona.id));
+    }
+  }
+  if (!user) {
+    res.status(503).json({ message: 'Demo account is unavailable right now.' });
+    return;
+  }
+  // Never issue a demo session for a row that is not actually a demo account,
+  // even if it somehow occupies a reserved demo id.
+  if (!user.isDemo) {
+    res.status(403).json({ message: 'This account is not a demo account.' });
     return;
   }
 
