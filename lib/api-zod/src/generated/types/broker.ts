@@ -5,6 +5,7 @@
  * RealEstate Vault API
  * OpenAPI spec version: 0.1.0
  */
+import type { BrokerTrustTier } from './brokerTrustTier';
 import type { BrokerVerificationStatus } from './brokerVerificationStatus';
 
 export interface Broker {
@@ -50,4 +51,14 @@ export interface Broker {
   avgRating?: number | null;
   /** Number of verified-engagement reviews. */
   reviewCount?: number;
+  /**
+     * Server-computed trust score (0-100) from verifiable platform signals. Never caller-settable.
+     * @nullable
+     */
+  trustScore?: number | null;
+  /**
+     * Trust tier derived from trustScore.
+     * @nullable
+     */
+  trustTier?: BrokerTrustTier;
 }

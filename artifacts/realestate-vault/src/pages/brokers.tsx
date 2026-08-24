@@ -8,6 +8,7 @@ import {
   getListBrokerConnectionsQueryKey,
 } from "@workspace/api-client-react";
 import { useAuth } from "@workspace/replit-auth-web";
+import { TrustBadge } from "@/components/trust-badge";
 import {
   Dialog,
   DialogContent,
@@ -172,6 +173,9 @@ export default function Brokers() {
                             </Badge>
                           )}
                         </h3>
+                        <div className="mt-1">
+                          <TrustBadge professionalId={broker.id} />
+                        </div>
                         <p className="text-sm font-medium text-muted-foreground">{broker.title}</p>
                         <p className="text-xs text-muted-foreground/80 flex items-center gap-1 mt-1">
                           <Building2 className="w-3 h-3" /> {broker.company}

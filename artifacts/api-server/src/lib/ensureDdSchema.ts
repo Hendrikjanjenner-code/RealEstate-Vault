@@ -69,6 +69,10 @@ const STATEMENTS: string[] = [
   `ALTER TABLE "ai_findings" ADD COLUMN IF NOT EXISTS "classified_by_user_id" text`,
   `ALTER TABLE "ai_findings" ADD COLUMN IF NOT EXISTS "classified_by_name" text`,
   `ALTER TABLE "ai_findings" ADD COLUMN IF NOT EXISTS "classified_at" timestamp`,
+  // Trust-score demo provenance: demo accounts are explicitly flagged so
+  // their activity never counts toward real profiles' trust signals.
+  `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_demo" boolean DEFAULT false NOT NULL`,
+  `UPDATE "users" SET "is_demo" = true WHERE "id" LIKE 'demo-%' AND "is_demo" = false`,
 ];
 
 /** FK constraints are added separately, guarded against duplicate_object. */

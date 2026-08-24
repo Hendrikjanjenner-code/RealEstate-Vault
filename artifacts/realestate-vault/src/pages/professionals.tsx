@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { VerificationBadge } from "@/components/verification-badge";
+import { TrustBadge } from "@/components/trust-badge";
 
 export default function Professionals() {
   const [category, setCategory] = useState<string | null>(null);
@@ -134,6 +135,7 @@ export default function Professionals() {
 
                 <div className="mt-4 flex items-center gap-2 flex-wrap">
                   <VerificationBadge status={p.verificationStatus} />
+                  <TrustBadge professionalId={p.id} score={p.trustScore} tier={p.trustTier} />
                   {p.avgRating != null && (
                     <span className="inline-flex items-center gap-1 text-sm text-foreground font-semibold">
                       <Star className="w-4 h-4 text-primary" /> {p.avgRating.toFixed(1)}

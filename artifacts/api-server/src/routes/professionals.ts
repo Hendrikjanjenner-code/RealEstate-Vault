@@ -1,11 +1,12 @@
 import { toJson } from "../lib/serialize";
 import { Router, type IRouter } from "express";
-import { desc, eq, and } from "drizzle-orm";
+import { desc, eq, and, inArray } from "drizzle-orm";
 import {
   db,
   brokersTable,
   brokerConnectionsTable,
   professionalReviewsTable,
+  usersTable,
   type Broker,
   type ProfessionalReview,
 } from "@workspace/db";
@@ -16,7 +17,10 @@ import {
   ListProfessionalReviewsResponse,
   CreateProfessionalReviewBody,
   CreateProfessionalReviewResponse,
+  GetProfessionalTrustParams,
+  GetProfessionalTrustResponse,
 } from "@workspace/api-zod";
+import { computeTrustReport, computeTrustReports } from "../lib/trustScore";
 
 const router: IRouter = Router();
 
@@ -47,16 +51,74 @@ const VERIFICATION_TIER_WEIGHT: Record<string, number> = {
 export type ReviewAggregate = { avgRating: number | null; reviewCount: number };
 
 // A review counts (for serving and for ranking) only when its verification
-// can be trusted: 'connection' reviews are created server-side against an
-// accepted connection; 'seeded' editorial reviews are only honoured on demo
-// profiles, never on real accounts.
+// can be trusted: 'connection' reviews must reference an ACCEPTED connection
+// whose owner is the reviewer (validated against the connections table at
+// aggregation time, not just the stored flag); 'seeded' editorial reviews are
+// only honoured on demo profiles, never on real accounts. On real profiles,
+// connection reviews written by demo accounts are ignored as well.
 function isServableReview(
   review: ProfessionalReview,
   professional: Pick<Broker, "isDemo">,
+  connectionsById: Map<number, { ownerUserId: string; status: string; brokerId: number }>,
+  demoUserIds: Set<string>,
 ): boolean {
   if (!review.verifiedEngagement) return false;
-  if (review.source === "connection") return true;
+  if (review.source === "connection") {
+    if (review.connectionId == null || review.reviewerUserId == null) return false;
+    const connection = connectionsById.get(review.connectionId);
+    if (
+      !connection ||
+      connection.status !== "accepted" ||
+      connection.ownerUserId !== review.reviewerUserId ||
+      connection.brokerId !== review.professionalId
+    ) {
+      return false;
+    }
+    if (!professional.isDemo && demoUserIds.has(review.reviewerUserId)) return false;
+    return true;
+  }
   return review.source === "seeded" && professional.isDemo;
+}
+
+// Batched provenance lookup used to validate 'connection' reviews against the
+// actual connections table and to identify demo reviewers.
+async function getReviewProvenance(reviews: ProfessionalReview[]): Promise<{
+  connectionsById: Map<number, { ownerUserId: string; status: string; brokerId: number }>;
+  demoUserIds: Set<string>;
+}> {
+  const connectionIds = [
+    ...new Set(
+      reviews.map((r) => r.connectionId).filter((id): id is number => id != null),
+    ),
+  ];
+  const reviewerIds = [
+    ...new Set(
+      reviews.map((r) => r.reviewerUserId).filter((id): id is string => id != null),
+    ),
+  ];
+  const [connections, demoReviewers] = await Promise.all([
+    connectionIds.length
+      ? db
+          .select({
+            id: brokerConnectionsTable.id,
+            ownerUserId: brokerConnectionsTable.ownerUserId,
+            status: brokerConnectionsTable.status,
+            brokerId: brokerConnectionsTable.brokerId,
+          })
+          .from(brokerConnectionsTable)
+          .where(inArray(brokerConnectionsTable.id, connectionIds))
+      : Promise.resolve([]),
+    reviewerIds.length
+      ? db
+          .select({ id: usersTable.id })
+          .from(usersTable)
+          .where(and(inArray(usersTable.id, reviewerIds), eq(usersTable.isDemo, true)))
+      : Promise.resolve([]),
+  ]);
+  return {
+    connectionsById: new Map(connections.map((c) => [c.id, c])),
+    demoUserIds: new Set(demoReviewers.map((u) => u.id)),
+  };
 }
 
 export async function getReviewAggregates(
@@ -69,10 +131,18 @@ export async function getReviewAggregates(
     .select()
     .from(professionalReviewsTable)
     .where(eq(professionalReviewsTable.verifiedEngagement, true));
+
+  const { connectionsById, demoUserIds } = await getReviewProvenance(reviews);
+
   const grouped = new Map<number, ProfessionalReview[]>();
   for (const review of reviews) {
     const professional = byId.get(review.professionalId);
-    if (!professional || !isServableReview(review, professional)) continue;
+    if (
+      !professional ||
+      !isServableReview(review, professional, connectionsById, demoUserIds)
+    ) {
+      continue;
+    }
     const list = grouped.get(review.professionalId) ?? [];
     list.push(review);
     grouped.set(review.professionalId, list);
@@ -146,15 +216,36 @@ router.get("/professionals", async (req, res): Promise<void> => {
     return true;
   });
 
-  const aggregates = await getReviewAggregates(filtered);
+  const [aggregates, trustReports] = await Promise.all([
+    getReviewAggregates(filtered),
+    computeTrustReports(filtered),
+  ]);
   const ranked = filtered
     .map((p) => ({ p, aggregate: aggregates.get(p.id) }))
     .sort(
       (a, b) => rankScore(b.p, b.aggregate) - rankScore(a.p, a.aggregate),
     )
-    .map(({ p, aggregate }) => presentProfessional(p, aggregate));
+    .map(({ p, aggregate }) => ({
+      ...presentProfessional(p, aggregate),
+      trustScore: trustReports.get(p.id)?.score ?? null,
+      trustTier: trustReports.get(p.id)?.tier ?? null,
+    }));
 
   res.json(ListProfessionalsResponse.parse(toJson(ranked)));
+});
+
+router.get("/professionals/:id/trust", async (req, res): Promise<void> => {
+  const params = GetProfessionalTrustParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const report = await computeTrustReport(params.data.id);
+  if (!report) {
+    res.status(404).json({ error: "Professional not found" });
+    return;
+  }
+  res.json(GetProfessionalTrustResponse.parse(toJson(report)));
 });
 
 router.get("/professionals/categories", async (_req, res): Promise<void> => {
@@ -189,18 +280,20 @@ router.get("/professionals/:id/reviews", async (req, res): Promise<void> => {
   }
 
   // Only reviews whose verification can be trusted are ever served.
-  const reviews = (
-    await db
-      .select()
-      .from(professionalReviewsTable)
-      .where(
-        and(
-          eq(professionalReviewsTable.professionalId, params.data.id),
-          eq(professionalReviewsTable.verifiedEngagement, true),
-        ),
-      )
-      .orderBy(desc(professionalReviewsTable.createdAt))
-  ).filter((review) => isServableReview(review, professional));
+  const allReviews = await db
+    .select()
+    .from(professionalReviewsTable)
+    .where(
+      and(
+        eq(professionalReviewsTable.professionalId, params.data.id),
+        eq(professionalReviewsTable.verifiedEngagement, true),
+      ),
+    )
+    .orderBy(desc(professionalReviewsTable.createdAt));
+  const { connectionsById, demoUserIds } = await getReviewProvenance(allReviews);
+  const reviews = allReviews.filter((review) =>
+    isServableReview(review, professional, connectionsById, demoUserIds),
+  );
 
   res.json(ListProfessionalReviewsResponse.parse(toJson(reviews)));
 });

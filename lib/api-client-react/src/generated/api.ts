@@ -119,6 +119,7 @@ import type {
   TeamInvitationInput,
   TimelineEvent,
   Transaction,
+  TrustReport,
   UploadUrlRequest,
   UploadUrlResponse
 } from './api.schemas';
@@ -2738,6 +2739,83 @@ export function useListProfessionalCategories<TData = Awaited<ReturnType<typeof 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListProfessionalCategoriesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetProfessionalTrustUrl = (id: number,) => {
+
+
+
+
+  return `/api/professionals/${id}/trust`
+}
+
+/**
+ * @summary Server-computed trust report for a professional profile. Every signal is derived from verifiable platform data; self-claimed figures are marked unconfirmed and weighted lightly.
+ */
+export const getProfessionalTrust = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<TrustReport> => {
+
+  return customFetch<TrustReport>(getGetProfessionalTrustUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetProfessionalTrustQueryKey = (id: number,) => {
+    return [
+    `/api/professionals/${id}/trust`
+    ] as const;
+    }
+
+
+export const getGetProfessionalTrustQueryOptions = <TData = Awaited<ReturnType<typeof getProfessionalTrust>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProfessionalTrust>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProfessionalTrustQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProfessionalTrust>>> = ({ signal }) => getProfessionalTrust(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProfessionalTrust>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetProfessionalTrustQueryResult = NonNullable<Awaited<ReturnType<typeof getProfessionalTrust>>>
+export type GetProfessionalTrustQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Server-computed trust report for a professional profile. Every signal is derived from verifiable platform data; self-claimed figures are marked unconfirmed and weighted lightly.
+ */
+
+export function useGetProfessionalTrust<TData = Awaited<ReturnType<typeof getProfessionalTrust>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProfessionalTrust>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetProfessionalTrustQueryOptions(id,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

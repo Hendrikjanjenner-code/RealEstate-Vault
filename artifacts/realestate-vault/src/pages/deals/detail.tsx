@@ -1,4 +1,5 @@
 import { formatMillions } from "@/lib/utils";
+import { TrustBadge } from "@/components/trust-badge";
 import { useState } from "react";
 import { Link, useRoute } from "wouter";
 import {
@@ -690,6 +691,11 @@ export default function DealDetail() {
               <div>
                 <p className="font-semibold">{deal.brokerName}</p>
                 <p className="text-sm text-muted-foreground">{deal.brokerCompany}</p>
+                {deal.brokerProfileId != null && (
+                  <div className="mt-1.5">
+                    <TrustBadge professionalId={deal.brokerProfileId} />
+                  </div>
+                )}
               </div>
             </div>
             {deal.brokerProfileId != null ? (

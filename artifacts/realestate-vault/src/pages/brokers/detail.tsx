@@ -7,6 +7,7 @@ import {
   useListProfessionalCategories,
 } from "@workspace/api-client-react";
 import { VerificationBadge } from "@/components/verification-badge";
+import { TrustBadge } from "@/components/trust-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -104,6 +105,12 @@ export default function BrokerDetail() {
                     </Badge>
                   )}
                   <VerificationBadge status={broker.verificationStatus} />
+                  <TrustBadge
+                    professionalId={broker.id}
+                    score={broker.trustScore}
+                    tier={broker.trustTier}
+                    size="lg"
+                  />
                 </div>
                 <p className="text-sm text-muted-foreground/80 flex items-center gap-1 mt-1">
                   <Building2 className="w-4 h-4" /> {broker.company}

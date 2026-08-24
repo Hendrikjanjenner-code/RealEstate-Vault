@@ -37,6 +37,8 @@ import {
   ListTransactionsResponse,
 } from "@workspace/api-zod";
 
+import { computeTrustReports } from "../lib/trustScore";
+
 const router: IRouter = Router();
 
 router.get("/brokers", async (_req, res): Promise<void> => {
@@ -127,7 +129,16 @@ router.get("/brokers/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(GetBrokerResponse.parse(toJson(broker)));
+  const trust = await computeTrustReports([broker]);
+  res.json(
+    GetBrokerResponse.parse(
+      toJson({
+        ...broker,
+        trustScore: trust.get(broker.id)?.score ?? null,
+        trustTier: trust.get(broker.id)?.tier ?? null,
+      }),
+    ),
+  );
 });
 
 router.get("/brokers/:id/deals", async (req, res): Promise<void> => {

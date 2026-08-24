@@ -304,6 +304,19 @@ export const BrokerVerificationStatus = {
   specialist_verified: 'specialist_verified',
 } as const;
 
+/**
+ * Trust tier derived from trustScore.
+ * @nullable
+ */
+export type BrokerTrustTier = typeof BrokerTrustTier[keyof typeof BrokerTrustTier] | null;
+
+
+export const BrokerTrustTier = {
+  new: 'new',
+  developing: 'developing',
+  established: 'established',
+} as const;
+
 export interface Broker {
   id: number;
   /**
@@ -347,6 +360,45 @@ export interface Broker {
   avgRating?: number | null;
   /** Number of verified-engagement reviews. */
   reviewCount?: number;
+  /**
+     * Server-computed trust score (0-100) from verifiable platform signals. Never caller-settable.
+     * @nullable
+     */
+  trustScore?: number | null;
+  /**
+     * Trust tier derived from trustScore.
+     * @nullable
+     */
+  trustTier?: BrokerTrustTier;
+}
+
+export interface TrustSignal {
+  key: string;
+  label: string;
+  /** True when the signal is verified by the platform itself; false for self-claimed data, which is weighted lightly. */
+  confirmed: boolean;
+  points: number;
+  maxPoints: number;
+  detail: string;
+}
+
+export type TrustReportTier = typeof TrustReportTier[keyof typeof TrustReportTier];
+
+
+export const TrustReportTier = {
+  new: 'new',
+  developing: 'developing',
+  established: 'established',
+} as const;
+
+export interface TrustReport {
+  professionalId: number;
+  /** 0-100, sum of signal points. */
+  score: number;
+  tier: TrustReportTier;
+  /** Demo profiles are clearly flagged; their seeded evidence is illustrative only. */
+  isDemo: boolean;
+  signals: TrustSignal[];
 }
 
 export interface ProfessionalCategory {

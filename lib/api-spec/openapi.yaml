@@ -736,6 +736,27 @@ paths:
               schema:
                 type: array
                 items: { $ref: "#/components/schemas/ProfessionalCategory" }
+  /professionals/{id}/trust:
+    get:
+      operationId: getProfessionalTrust
+      tags: [professionals]
+      summary: Server-computed trust report for a professional profile. Every signal is derived from verifiable platform data; self-claimed figures are marked unconfirmed and weighted lightly.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Trust report
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TrustReport" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /professionals/{id}/reviews:
     get:
       operationId: listProfessionalReviews
@@ -2889,6 +2910,29 @@ components:
         avgResponseHours: { type: ["number", "null"], description: "Typical first-response time in hours, when known." }
         avgRating: { type: ["number", "null"], description: "Average overall rating from verified-engagement reviews (1-10), null when unreviewed." }
         reviewCount: { type: integer, description: "Number of verified-engagement reviews." }
+        trustScore: { type: ["number", "null"], description: "Server-computed trust score (0-100) from verifiable platform signals. Never caller-settable." }
+        trustTier: { type: ["string", "null"], enum: [new, developing, established, null], description: "Trust tier derived from trustScore." }
+    TrustSignal:
+      type: object
+      required: [key, label, confirmed, points, maxPoints, detail]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        confirmed: { type: boolean, description: "True when the signal is verified by the platform itself; false for self-claimed data, which is weighted lightly." }
+        points: { type: number }
+        maxPoints: { type: number }
+        detail: { type: string }
+    TrustReport:
+      type: object
+      required: [professionalId, score, tier, isDemo, signals]
+      properties:
+        professionalId: { type: integer }
+        score: { type: number, description: "0-100, sum of signal points." }
+        tier: { type: string, enum: [new, developing, established] }
+        isDemo: { type: boolean, description: "Demo profiles are clearly flagged; their seeded evidence is illustrative only." }
+        signals:
+          type: array
+          items: { $ref: "#/components/schemas/TrustSignal" }
     ProfessionalCategory:
       type: object
       required: [id, label, count]

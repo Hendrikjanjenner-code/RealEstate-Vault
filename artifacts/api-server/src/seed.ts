@@ -131,7 +131,7 @@ async function seed() {
   for (const user of DEMO_USERS) {
     await db
       .insert(usersTable)
-      .values(user)
+      .values({ ...user, isDemo: true })
       .onConflictDoUpdate({
         target: usersTable.id,
         set: {
@@ -140,6 +140,7 @@ async function seed() {
           lastName: user.lastName,
           role: user.role,
           profileImageUrl: user.profileImageUrl,
+          isDemo: true,
         },
       });
   }

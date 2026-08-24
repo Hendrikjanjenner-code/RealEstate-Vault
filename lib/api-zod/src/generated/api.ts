@@ -666,7 +666,9 @@ export const ListBrokersResponseItem = zod.object({
   "credentials": zod.array(zod.string()),
   "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
   "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
-  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.'),
+  "trustScore": zod.number().nullish().describe('Server-computed trust score (0-100) from verifiable platform signals. Never caller-settable.'),
+  "trustTier": zod.union([zod.literal('new'),zod.literal('developing'),zod.literal('established'),zod.literal(null)]).nullish().describe('Trust tier derived from trustScore.')
 })
 export const ListBrokersResponse = zod.array(ListBrokersResponseItem)
 
@@ -700,7 +702,9 @@ export const GetMyBrokerProfileResponse = zod.object({
   "credentials": zod.array(zod.string()),
   "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
   "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
-  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.'),
+  "trustScore": zod.number().nullish().describe('Server-computed trust score (0-100) from verifiable platform signals. Never caller-settable.'),
+  "trustTier": zod.union([zod.literal('new'),zod.literal('developing'),zod.literal('established'),zod.literal(null)]).nullish().describe('Trust tier derived from trustScore.')
 }),zod.null()])
 })
 
@@ -754,7 +758,9 @@ export const UpsertMyBrokerProfileResponse = zod.object({
   "credentials": zod.array(zod.string()),
   "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
   "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
-  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.'),
+  "trustScore": zod.number().nullish().describe('Server-computed trust score (0-100) from verifiable platform signals. Never caller-settable.'),
+  "trustTier": zod.union([zod.literal('new'),zod.literal('developing'),zod.literal('established'),zod.literal(null)]).nullish().describe('Trust tier derived from trustScore.')
 })
 
 
@@ -790,7 +796,9 @@ export const GetBrokerResponse = zod.object({
   "credentials": zod.array(zod.string()),
   "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
   "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
-  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.'),
+  "trustScore": zod.number().nullish().describe('Server-computed trust score (0-100) from verifiable platform signals. Never caller-settable.'),
+  "trustTier": zod.union([zod.literal('new'),zod.literal('developing'),zod.literal('established'),zod.literal(null)]).nullish().describe('Trust tier derived from trustScore.')
 })
 
 
@@ -872,7 +880,9 @@ export const ListProfessionalsResponseItem = zod.object({
   "credentials": zod.array(zod.string()),
   "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
   "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
-  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.'),
+  "trustScore": zod.number().nullish().describe('Server-computed trust score (0-100) from verifiable platform signals. Never caller-settable.'),
+  "trustTier": zod.union([zod.literal('new'),zod.literal('developing'),zod.literal('established'),zod.literal(null)]).nullish().describe('Trust tier derived from trustScore.')
 })
 export const ListProfessionalsResponse = zod.array(ListProfessionalsResponseItem)
 
@@ -886,6 +896,29 @@ export const ListProfessionalCategoriesResponseItem = zod.object({
   "count": zod.int().describe('Number of professionals currently in this category.')
 })
 export const ListProfessionalCategoriesResponse = zod.array(ListProfessionalCategoriesResponseItem)
+
+
+/**
+ * @summary Server-computed trust report for a professional profile. Every signal is derived from verifiable platform data; self-claimed figures are marked unconfirmed and weighted lightly.
+ */
+export const GetProfessionalTrustParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetProfessionalTrustResponse = zod.object({
+  "professionalId": zod.int(),
+  "score": zod.number().describe('0-100, sum of signal points.'),
+  "tier": zod.enum(['new', 'developing', 'established']),
+  "isDemo": zod.boolean().describe('Demo profiles are clearly flagged; their seeded evidence is illustrative only.'),
+  "signals": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "confirmed": zod.boolean().describe('True when the signal is verified by the platform itself; false for self-claimed data, which is weighted lightly.'),
+  "points": zod.number(),
+  "maxPoints": zod.number(),
+  "detail": zod.string()
+}))
+})
 
 
 /**
@@ -1023,7 +1056,9 @@ export const GetDealTeamResponse = zod.object({
   "credentials": zod.array(zod.string()),
   "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
   "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
-  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.'),
+  "trustScore": zod.number().nullish().describe('Server-computed trust score (0-100) from verifiable platform signals. Never caller-settable.'),
+  "trustTier": zod.union([zod.literal('new'),zod.literal('developing'),zod.literal('established'),zod.literal(null)]).nullish().describe('Trust tier derived from trustScore.')
 }),
   "permissions": zod.array(zod.object({
   "category": zod.string(),
@@ -1086,7 +1121,9 @@ export const ListDealTeamCandidatesResponseItem = zod.object({
   "credentials": zod.array(zod.string()),
   "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
   "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
-  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.'),
+  "trustScore": zod.number().nullish().describe('Server-computed trust score (0-100) from verifiable platform signals. Never caller-settable.'),
+  "trustTier": zod.union([zod.literal('new'),zod.literal('developing'),zod.literal('established'),zod.literal(null)]).nullish().describe('Trust tier derived from trustScore.')
 }),
   "matchScore": zod.number(),
   "matchReasons": zod.array(zod.string())
@@ -1163,7 +1200,9 @@ export const CreateTeamInvitationResponse = zod.object({
   "credentials": zod.array(zod.string()),
   "avgResponseHours": zod.number().nullish().describe('Typical first-response time in hours, when known.'),
   "avgRating": zod.number().nullish().describe('Average overall rating from verified-engagement reviews (1-10), null when unreviewed.'),
-  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.')
+  "reviewCount": zod.int().optional().describe('Number of verified-engagement reviews.'),
+  "trustScore": zod.number().nullish().describe('Server-computed trust score (0-100) from verifiable platform signals. Never caller-settable.'),
+  "trustTier": zod.union([zod.literal('new'),zod.literal('developing'),zod.literal('established'),zod.literal(null)]).nullish().describe('Trust tier derived from trustScore.')
 }),
   "permissions": zod.array(zod.object({
   "category": zod.string(),
