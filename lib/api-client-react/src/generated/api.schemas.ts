@@ -283,6 +283,87 @@ export interface AccessRequestUpdate {
   requestKey?: string;
 }
 
+export type LoiDraftDefaults = {
+  exclusivityDays: number;
+  validityDays: number;
+};
+
+export interface LoiDraft {
+  title: string;
+  /** Draft LOI paragraphs pre-filled with deal facts; term fields show placeholders until submission. */
+  paragraphs: string[];
+  currency: string;
+  /** @nullable */
+  askingPrice?: number | null;
+  defaults: LoiDraftDefaults;
+}
+
+export type LoiStatus = typeof LoiStatus[keyof typeof LoiStatus];
+
+
+export const LoiStatus = {
+  submitted: 'submitted',
+  under_review: 'under_review',
+  accepted: 'accepted',
+  rejected: 'rejected',
+} as const;
+
+export interface Loi {
+  id: number;
+  dealId: number;
+  /** @nullable */
+  accessRequestId?: number | null;
+  investorName: string;
+  investorCompany: string;
+  /** The exact LOI paragraphs as submitted; preserved verbatim even if the template changes later. */
+  documentText: string[];
+  offerPrice: number;
+  currency: string;
+  /** @nullable */
+  conditions?: string | null;
+  exclusivityDays: number;
+  validityDays: number;
+  status: LoiStatus;
+  submittedAt: string;
+  /** @nullable */
+  decidedAt?: string | null;
+}
+
+export interface DealLois {
+  lois: Loi[];
+  /** True only for the deal manager (listing broker), computed server-side. */
+  canManage: boolean;
+}
+
+export interface LoiInput {
+  /** @exclusiveMinimum 0 */
+  offerPrice: number;
+  conditions?: string;
+  /**
+     * @minimum 1
+     * @maximum 365
+     */
+  exclusivityDays: number;
+  /**
+     * @minimum 1
+     * @maximum 180
+     */
+  validityDays: number;
+}
+
+export type LoiStatusUpdateStatus = typeof LoiStatusUpdateStatus[keyof typeof LoiStatusUpdateStatus];
+
+
+export const LoiStatusUpdateStatus = {
+  under_review: 'under_review',
+  accepted: 'accepted',
+  rejected: 'rejected',
+} as const;
+
+export interface LoiStatusUpdate {
+  status: LoiStatusUpdateStatus;
+}
+
 export interface SessionResponse {
   broker: boolean;
 }

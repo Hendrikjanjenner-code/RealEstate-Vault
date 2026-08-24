@@ -9,6 +9,8 @@ import {
   varchar,
   primaryKey,
 } from "drizzle-orm/pg-core";
+import { uniqueIndex } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -111,3 +113,43 @@ export const accessRequestsTable = pgTable("access_requests", {
 });
 
 export type AccessRequest = typeof accessRequestsTable.$inferSelect;
+
+// Letters of Intent submitted by investors after signing the NDA. The full
+// rendered LOI text is stored VERBATIM at submission time so later template
+// changes never alter what was submitted (same principle as the NDA record).
+export const loisTable = pgTable(
+  "lois",
+  {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  // The nda_signed access request that unlocked this LOI.
+  accessRequestId: integer("access_request_id"),
+  investorUserId: varchar("investor_user_id").notNull(),
+  investorName: text("investor_name").notNull(),
+  investorCompany: text("investor_company").notNull(),
+  // Verbatim LOI paragraphs as submitted (JSON array of strings serialized as text).
+  documentText: text("document_text").notNull(),
+  offerPrice: doublePrecision("offer_price").notNull(),
+  currency: text("currency").notNull().default("EUR"),
+  conditions: text("conditions"),
+  exclusivityDays: integer("exclusivity_days").notNull(),
+  validityDays: integer("validity_days").notNull(),
+  // submitted -> under_review -> accepted | rejected
+  status: text("status").notNull().default("submitted"),
+  submittedAt: timestamp("submitted_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  decidedAt: timestamp("decided_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  },
+  (table) => [
+    // At most one open (submitted/under_review/accepted) LOI per investor per deal.
+    uniqueIndex("lois_open_per_investor_idx")
+      .on(table.dealId, table.investorUserId)
+      .where(sql`"status" IN ('submitted', 'under_review', 'accepted')`),
+  ],
+);
+
+export type Loi = typeof loisTable.$inferSelect;

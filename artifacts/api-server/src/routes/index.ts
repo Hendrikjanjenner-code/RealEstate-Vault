@@ -14,6 +14,7 @@ import messagesRouter from "./messages";
 import ownerNetworkRouter from "./owner-network";
 import dashboardRouter from "./dashboard";
 import notificationsRouter from "./notifications";
+import loisRouter from "./lois";
 import storageRouter from "./storage";
 import publicRouter from "./public";
 
@@ -54,5 +55,6 @@ router.use(ownerNetworkRouter);
 router.use(messagesRouter);
 router.use(dashboardRouter);
 router.use(notificationsRouter);
+router.use(loisRouter);
 
 export default router;

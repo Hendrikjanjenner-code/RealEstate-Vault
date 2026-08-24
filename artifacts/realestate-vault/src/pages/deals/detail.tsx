@@ -1,5 +1,6 @@
 import { formatMillions } from "@/lib/utils";
 import { TrustBadge } from "@/components/trust-badge";
+import { DealLoiPanel } from "@/components/deal-loi";
 import { useState } from "react";
 import { Link, useRoute } from "wouter";
 import {
@@ -680,6 +681,10 @@ export default function DealDetail() {
                 </Button>
               </a>
             )}
+
+            <div className="mt-4">
+              <DealLoiPanel dealId={id} ndaSigned={!!mySignedRequest} />
+            </div>
           </div>
 
           <div className="rounded-2xl bg-card/30 backdrop-blur border border-white/5 p-6">

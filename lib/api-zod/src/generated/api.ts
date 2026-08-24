@@ -564,6 +564,132 @@ export const RequestDealAccessResponse = zod.object({
 
 
 /**
+ * @summary Pre-generated LOI draft for a deal, filled with deal facts. Only available to an investor whose NDA for this deal is signed.
+ */
+export const GetLoiDraftParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetLoiDraftResponse = zod.object({
+  "title": zod.string(),
+  "paragraphs": zod.array(zod.string()).describe('Draft LOI paragraphs pre-filled with deal facts; term fields show placeholders until submission.'),
+  "currency": zod.string(),
+  "askingPrice": zod.number().nullish(),
+  "defaults": zod.object({
+  "exclusivityDays": zod.int(),
+  "validityDays": zod.int()
+})
+})
+
+
+/**
+ * @summary LOIs for a deal. The deal manager sees all submitted LOIs; an investor sees only their own.
+ */
+export const ListDealLoisParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const ListDealLoisResponse = zod.object({
+  "lois": zod.array(zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "accessRequestId": zod.int().nullish(),
+  "investorName": zod.string(),
+  "investorCompany": zod.string(),
+  "documentText": zod.array(zod.string()).describe('The exact LOI paragraphs as submitted; preserved verbatim even if the template changes later.'),
+  "offerPrice": zod.number(),
+  "currency": zod.string(),
+  "conditions": zod.string().nullish(),
+  "exclusivityDays": zod.int(),
+  "validityDays": zod.int(),
+  "status": zod.enum(['submitted', 'under_review', 'accepted', 'rejected']),
+  "submittedAt": zod.string(),
+  "decidedAt": zod.string().nullish()
+})),
+  "canManage": zod.boolean().describe('True only for the deal manager (listing broker), computed server-side.')
+})
+
+
+/**
+ * @summary Submit a Letter of Intent for a deal. The rendered LOI text is stored verbatim. Requires a signed NDA for this deal.
+ */
+export const SubmitLoiParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const submitLoiBodyOfferPriceExclusiveMin = 0;
+
+export const submitLoiBodyExclusivityDaysMax = 365;
+
+export const submitLoiBodyValidityDaysMax = 180;
+
+
+
+export const SubmitLoiBody = zod.object({
+  "offerPrice": zod.number().gt(submitLoiBodyOfferPriceExclusiveMin),
+  "conditions": zod.string().optional(),
+  "exclusivityDays": zod.int().min(1).max(submitLoiBodyExclusivityDaysMax),
+  "validityDays": zod.int().min(1).max(submitLoiBodyValidityDaysMax)
+})
+
+export const SubmitLoiResponse = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "accessRequestId": zod.int().nullish(),
+  "investorName": zod.string(),
+  "investorCompany": zod.string(),
+  "documentText": zod.array(zod.string()).describe('The exact LOI paragraphs as submitted; preserved verbatim even if the template changes later.'),
+  "offerPrice": zod.number(),
+  "currency": zod.string(),
+  "conditions": zod.string().nullish(),
+  "exclusivityDays": zod.int(),
+  "validityDays": zod.int(),
+  "status": zod.enum(['submitted', 'under_review', 'accepted', 'rejected']),
+  "submittedAt": zod.string(),
+  "decidedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Printable/downloadable record of a submitted LOI as self-contained HTML, reproducing the verbatim submitted text. Add ?download=1 for a file attachment. Visible only to the submitting investor and the deal manager.
+ */
+export const GetLoiRecordParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetLoiRecordResponse = zod.unknown()
+
+
+/**
+ * @summary Deal-manager-only status transition for a submitted LOI (under_review, accepted, rejected).
+ */
+export const UpdateLoiStatusParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const UpdateLoiStatusBody = zod.object({
+  "status": zod.enum(['under_review', 'accepted', 'rejected'])
+})
+
+export const UpdateLoiStatusResponse = zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "accessRequestId": zod.int().nullish(),
+  "investorName": zod.string(),
+  "investorCompany": zod.string(),
+  "documentText": zod.array(zod.string()).describe('The exact LOI paragraphs as submitted; preserved verbatim even if the template changes later.'),
+  "offerPrice": zod.number(),
+  "currency": zod.string(),
+  "conditions": zod.string().nullish(),
+  "exclusivityDays": zod.int(),
+  "validityDays": zod.int(),
+  "status": zod.enum(['submitted', 'under_review', 'accepted', 'rejected']),
+  "submittedAt": zod.string(),
+  "decidedAt": zod.string().nullish()
+})
+
+
+/**
  * @summary List access requests
  */
 export const ListAccessRequestsResponseItem = zod.object({

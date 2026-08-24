@@ -185,6 +185,9 @@ importers:
       '@workspace/integrations-openai-ai-server':
         specifier: workspace:*
         version: link:../../lib/integrations-openai-ai-server
+      '@workspace/loi-terms':
+        specifier: workspace:*
+        version: link:../../lib/loi-terms
       '@workspace/nda-terms':
         specifier: workspace:*
         version: link:../../lib/nda-terms
@@ -945,6 +948,8 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.5
+
+  lib/loi-terms: {}
 
   lib/nda-terms: {}
 

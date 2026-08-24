@@ -73,6 +73,30 @@ const STATEMENTS: string[] = [
   // their activity never counts toward real profiles' trust signals.
   `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_demo" boolean DEFAULT false NOT NULL`,
   `UPDATE "users" SET "is_demo" = true WHERE "id" LIKE 'demo-%' AND "is_demo" = false`,
+  // Letters of Intent: verbatim submitted LOI text per deal + investor.
+  `CREATE TABLE IF NOT EXISTS "lois" (
+    "id" serial PRIMARY KEY,
+    "deal_id" integer NOT NULL,
+    "access_request_id" integer,
+    "investor_user_id" varchar NOT NULL,
+    "investor_name" text NOT NULL,
+    "investor_company" text NOT NULL,
+    "document_text" text NOT NULL,
+    "offer_price" double precision NOT NULL,
+    "currency" text DEFAULT 'EUR' NOT NULL,
+    "conditions" text,
+    "exclusivity_days" integer NOT NULL,
+    "validity_days" integer NOT NULL,
+    "status" text DEFAULT 'submitted' NOT NULL,
+    "submitted_at" timestamp with time zone DEFAULT now() NOT NULL,
+    "decided_at" timestamp with time zone,
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL
+  )`,
+  // At most one open (submitted/under_review/accepted) LOI per investor per
+  // deal — enforced by the database, not just the read-then-insert check.
+  `CREATE UNIQUE INDEX IF NOT EXISTS "lois_open_per_investor_idx"
+    ON "lois" ("deal_id", "investor_user_id")
+    WHERE "status" IN ('submitted', 'under_review', 'accepted')`,
 ];
 
 /** FK constraints are added separately, guarded against duplicate_object. */

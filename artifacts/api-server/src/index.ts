@@ -25,15 +25,19 @@ normalizeLegacyMandateStatuses().catch((err) => {
 
 // Additive schema guard so published deployments get the DD/Q&A tables and
 // ai_findings classification columns without a manual migration step.
-ensureDdSchema().catch((err) => {
-  logger.error({ err }, "Failed to ensure DD/Q&A schema");
-});
+// Await the guard so freshly published deployments never accept requests
+// before the guarded tables (DD/Q&A, LOIs, ...) exist.
+ensureDdSchema()
+  .catch((err) => {
+    logger.error({ err }, "Failed to ensure DD/Q&A schema");
+  })
+  .then(() => {
+    app.listen(port, (err) => {
+      if (err) {
+        logger.error({ err }, "Error listening on port");
+        process.exit(1);
+      }
 
-app.listen(port, (err) => {
-  if (err) {
-    logger.error({ err }, "Error listening on port");
-    process.exit(1);
-  }
-
-  logger.info({ port }, "Server listening");
-});
+      logger.info({ port }, "Server listening");
+    });
+  });

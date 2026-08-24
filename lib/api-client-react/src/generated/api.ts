@@ -61,6 +61,7 @@ import type {
   DealFinancialsResponse,
   DealFinancialsUpsertBody,
   DealInput,
+  DealLois,
   DealQuestion,
   DealQuestionCreateBody,
   DealQuestionUpdateBody,
@@ -92,6 +93,10 @@ import type {
   ListPublicDealTeasersParams,
   LogoutBrowserSessionParams,
   LogoutSuccess,
+  Loi,
+  LoiDraft,
+  LoiInput,
+  LoiStatusUpdate,
   Mandate,
   MandateInput,
   MandateStatusInput,
@@ -1988,6 +1993,381 @@ export const useRequestDealAccess = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getRequestDealAccessMutationOptions(options));
+    }
+
+export const getGetLoiDraftUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/loi-draft`
+}
+
+/**
+ * @summary Pre-generated LOI draft for a deal, filled with deal facts. Only available to an investor whose NDA for this deal is signed.
+ */
+export const getLoiDraft = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<LoiDraft> => {
+
+  return customFetch<LoiDraft>(getGetLoiDraftUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLoiDraftQueryKey = (id: number,) => {
+    return [
+    `/api/deals/${id}/loi-draft`
+    ] as const;
+    }
+
+
+export const getGetLoiDraftQueryOptions = <TData = Awaited<ReturnType<typeof getLoiDraft>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLoiDraft>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLoiDraftQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLoiDraft>>> = ({ signal }) => getLoiDraft(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLoiDraft>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLoiDraftQueryResult = NonNullable<Awaited<ReturnType<typeof getLoiDraft>>>
+export type GetLoiDraftQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Pre-generated LOI draft for a deal, filled with deal facts. Only available to an investor whose NDA for this deal is signed.
+ */
+
+export function useGetLoiDraft<TData = Awaited<ReturnType<typeof getLoiDraft>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLoiDraft>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLoiDraftQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListDealLoisUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/lois`
+}
+
+/**
+ * @summary LOIs for a deal. The deal manager sees all submitted LOIs; an investor sees only their own.
+ */
+export const listDealLois = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<DealLois> => {
+
+  return customFetch<DealLois>(getListDealLoisUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDealLoisQueryKey = (id: number,) => {
+    return [
+    `/api/deals/${id}/lois`
+    ] as const;
+    }
+
+
+export const getListDealLoisQueryOptions = <TData = Awaited<ReturnType<typeof listDealLois>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDealLois>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDealLoisQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDealLois>>> = ({ signal }) => listDealLois(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDealLois>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDealLoisQueryResult = NonNullable<Awaited<ReturnType<typeof listDealLois>>>
+export type ListDealLoisQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary LOIs for a deal. The deal manager sees all submitted LOIs; an investor sees only their own.
+ */
+
+export function useListDealLois<TData = Awaited<ReturnType<typeof listDealLois>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDealLois>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDealLoisQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSubmitLoiUrl = (id: number,) => {
+
+
+
+
+  return `/api/deals/${id}/lois`
+}
+
+/**
+ * @summary Submit a Letter of Intent for a deal. The rendered LOI text is stored verbatim. Requires a signed NDA for this deal.
+ */
+export const submitLoi = async (id: number,
+    loiInput: LoiInput, options?: Parameters<typeof customFetch>[1]): Promise<Loi> => {
+
+  return customFetch<Loi>(getSubmitLoiUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(loiInput)
+  }
+);}
+
+
+
+
+
+export const getSubmitLoiMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitLoi>>, TError,{id: number;data: BodyType<LoiInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitLoi>>, TError,{id: number;data: BodyType<LoiInput>}, TContext> => {
+
+const mutationKey = ['submitLoi'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitLoi>>, {id: number;data: BodyType<LoiInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  submitLoi(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitLoiMutationResult = NonNullable<Awaited<ReturnType<typeof submitLoi>>>
+    export type SubmitLoiMutationBody = BodyType<LoiInput>
+    export type SubmitLoiMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Submit a Letter of Intent for a deal. The rendered LOI text is stored verbatim. Requires a signed NDA for this deal.
+ */
+export const useSubmitLoi = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitLoi>>, TError,{id: number;data: BodyType<LoiInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitLoi>>,
+        TError,
+        {id: number;data: BodyType<LoiInput>},
+        TContext
+      > => {
+      return useMutation(getSubmitLoiMutationOptions(options));
+    }
+
+export const getGetLoiRecordUrl = (id: number,) => {
+
+
+
+
+  return `/api/lois/${id}/record`
+}
+
+/**
+ * @summary Printable/downloadable record of a submitted LOI as self-contained HTML, reproducing the verbatim submitted text. Add ?download=1 for a file attachment. Visible only to the submitting investor and the deal manager.
+ */
+export const getLoiRecord = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<string> => {
+
+  return customFetch<string>(getGetLoiRecordUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLoiRecordQueryKey = (id: number,) => {
+    return [
+    `/api/lois/${id}/record`
+    ] as const;
+    }
+
+
+export const getGetLoiRecordQueryOptions = <TData = Awaited<ReturnType<typeof getLoiRecord>>, TError = ErrorType<ApiMessage>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLoiRecord>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLoiRecordQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLoiRecord>>> = ({ signal }) => getLoiRecord(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLoiRecord>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLoiRecordQueryResult = NonNullable<Awaited<ReturnType<typeof getLoiRecord>>>
+export type GetLoiRecordQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Printable/downloadable record of a submitted LOI as self-contained HTML, reproducing the verbatim submitted text. Add ?download=1 for a file attachment. Visible only to the submitting investor and the deal manager.
+ */
+
+export function useGetLoiRecord<TData = Awaited<ReturnType<typeof getLoiRecord>>, TError = ErrorType<ApiMessage>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLoiRecord>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLoiRecordQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateLoiStatusUrl = (id: number,) => {
+
+
+
+
+  return `/api/lois/${id}`
+}
+
+/**
+ * @summary Deal-manager-only status transition for a submitted LOI (under_review, accepted, rejected).
+ */
+export const updateLoiStatus = async (id: number,
+    loiStatusUpdate: LoiStatusUpdate, options?: Parameters<typeof customFetch>[1]): Promise<Loi> => {
+
+  return customFetch<Loi>(getUpdateLoiStatusUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(loiStatusUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateLoiStatusMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateLoiStatus>>, TError,{id: number;data: BodyType<LoiStatusUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateLoiStatus>>, TError,{id: number;data: BodyType<LoiStatusUpdate>}, TContext> => {
+
+const mutationKey = ['updateLoiStatus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateLoiStatus>>, {id: number;data: BodyType<LoiStatusUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateLoiStatus(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateLoiStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateLoiStatus>>>
+    export type UpdateLoiStatusMutationBody = BodyType<LoiStatusUpdate>
+    export type UpdateLoiStatusMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Deal-manager-only status transition for a submitted LOI (under_review, accepted, rejected).
+ */
+export const useUpdateLoiStatus = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateLoiStatus>>, TError,{id: number;data: BodyType<LoiStatusUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateLoiStatus>>,
+        TError,
+        {id: number;data: BodyType<LoiStatusUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateLoiStatusMutationOptions(options));
     }
 
 export const getListAccessRequestsUrl = () => {

@@ -532,6 +532,140 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/AccessRequestCreateResult" }
+  /deals/{id}/loi-draft:
+    get:
+      operationId: getLoiDraft
+      tags: [lois]
+      summary: Pre-generated LOI draft for a deal, filled with deal facts. Only available to an investor whose NDA for this deal is signed.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: LOI draft
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LoiDraft" }
+        "403":
+          description: NDA not signed for this deal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /deals/{id}/lois:
+    get:
+      operationId: listDealLois
+      tags: [lois]
+      summary: LOIs for a deal. The deal manager sees all submitted LOIs; an investor sees only their own.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: LOIs
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DealLois" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+    post:
+      operationId: submitLoi
+      tags: [lois]
+      summary: Submit a Letter of Intent for a deal. The rendered LOI text is stored verbatim. Requires a signed NDA for this deal.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoiInput" }
+      responses:
+        "201":
+          description: Submitted LOI
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Loi" }
+        "403":
+          description: NDA not signed for this deal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "409":
+          description: An open LOI already exists for this deal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /lois/{id}/record:
+    get:
+      operationId: getLoiRecord
+      tags: [lois]
+      summary: Printable/downloadable record of a submitted LOI as self-contained HTML, reproducing the verbatim submitted text. Add ?download=1 for a file attachment. Visible only to the submitting investor and the deal manager.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Self-contained HTML record (append ?download=1 for a file attachment)
+          content:
+            text/html:
+              schema: { type: string }
+        "403":
+          description: Not a party to this LOI
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /lois/{id}:
+    patch:
+      operationId: updateLoiStatus
+      tags: [lois]
+      summary: Deal-manager-only status transition for a submitted LOI (under_review, accepted, rejected).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoiStatusUpdate" }
+      responses:
+        "200":
+          description: Updated LOI
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Loi" }
+        "403":
+          description: Not the deal manager
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "409":
+          description: Invalid status transition
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /access-requests:
     get:
       operationId: listAccessRequests
@@ -2858,6 +2992,65 @@ components:
         requestKey:
           type: string
           description: "Secret issued to the requester at creation; required to transition to nda_signed."
+    LoiDraft:
+      type: object
+      required: [title, paragraphs, currency, defaults]
+      properties:
+        title: { type: string }
+        paragraphs:
+          type: array
+          items: { type: string }
+          description: "Draft LOI paragraphs pre-filled with deal facts; term fields show placeholders until submission."
+        currency: { type: string }
+        askingPrice: { type: ["number", "null"] }
+        defaults:
+          type: object
+          required: [exclusivityDays, validityDays]
+          properties:
+            exclusivityDays: { type: integer }
+            validityDays: { type: integer }
+    Loi:
+      type: object
+      required: [id, dealId, investorName, investorCompany, documentText, offerPrice, currency, exclusivityDays, validityDays, status, submittedAt]
+      properties:
+        id: { type: integer }
+        dealId: { type: integer }
+        accessRequestId: { type: ["integer", "null"] }
+        investorName: { type: string }
+        investorCompany: { type: string }
+        documentText:
+          type: array
+          items: { type: string }
+          description: "The exact LOI paragraphs as submitted; preserved verbatim even if the template changes later."
+        offerPrice: { type: number }
+        currency: { type: string }
+        conditions: { type: ["string", "null"] }
+        exclusivityDays: { type: integer }
+        validityDays: { type: integer }
+        status: { type: string, enum: [submitted, under_review, accepted, rejected] }
+        submittedAt: { type: string }
+        decidedAt: { type: ["string", "null"] }
+    DealLois:
+      type: object
+      required: [lois, canManage]
+      properties:
+        lois:
+          type: array
+          items: { $ref: "#/components/schemas/Loi" }
+        canManage: { type: boolean, description: "True only for the deal manager (listing broker), computed server-side." }
+    LoiInput:
+      type: object
+      required: [offerPrice, exclusivityDays, validityDays]
+      properties:
+        offerPrice: { type: number, exclusiveMinimum: 0 }
+        conditions: { type: string }
+        exclusivityDays: { type: integer, minimum: 1, maximum: 365 }
+        validityDays: { type: integer, minimum: 1, maximum: 180 }
+    LoiStatusUpdate:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [under_review, accepted, rejected] }
     SessionResponse:
       type: object
       required: [broker]

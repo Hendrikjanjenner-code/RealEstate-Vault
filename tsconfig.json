@@ -22,6 +22,9 @@
       "path": "./lib/nda-terms"
     },
     {
+      "path": "./lib/loi-terms"
+    },
+    {
       "path": "lib/replit-auth-web"
     },
     {
