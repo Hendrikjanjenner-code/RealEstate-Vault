@@ -2699,6 +2699,19 @@ paths:
               schema:
                 type: array
                 items: { $ref: "#/components/schemas/ActivityItem" }
+  /dashboard/lois:
+    get:
+      operationId: listDashboardLois
+      tags: [dashboard]
+      summary: Open LOIs (submitted or under review) across the deals managed by the current broker
+      responses:
+        "200":
+          description: Open LOI overview, strictly filtered to deals whose brokerUserId is the caller
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardLois" }
+        "401":
+          description: Not authenticated
 components:
   parameters:
     AuthorizationSessionHeader:
@@ -3046,6 +3059,28 @@ components:
         conditions: { type: string }
         exclusivityDays: { type: integer, minimum: 1, maximum: 365 }
         validityDays: { type: integer, minimum: 1, maximum: 180 }
+    DashboardLois:
+      type: object
+      required: [submittedCount, underReviewCount, lois]
+      properties:
+        submittedCount: { type: integer, description: "Open LOIs still in submitted status across the manager's deals." }
+        underReviewCount: { type: integer, description: "Open LOIs in under_review status across the manager's deals." }
+        lois:
+          type: array
+          items: { $ref: "#/components/schemas/DashboardLoi" }
+    DashboardLoi:
+      type: object
+      required: [id, dealId, dealTitle, investorName, investorCompany, offerPrice, currency, status, submittedAt]
+      properties:
+        id: { type: integer }
+        dealId: { type: integer }
+        dealTitle: { type: string }
+        investorName: { type: string }
+        investorCompany: { type: string }
+        offerPrice: { type: number }
+        currency: { type: string }
+        status: { type: string, enum: [submitted, under_review] }
+        submittedAt: { type: string }
     LoiStatusUpdate:
       type: object
       required: [status]

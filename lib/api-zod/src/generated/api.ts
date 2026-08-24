@@ -3149,3 +3149,23 @@ export const ListActivityResponseItem = zod.object({
 export const ListActivityResponse = zod.array(ListActivityResponseItem)
 
 
+/**
+ * @summary Open LOIs (submitted or under review) across the deals managed by the current broker
+ */
+export const ListDashboardLoisResponse = zod.object({
+  "submittedCount": zod.int().describe('Open LOIs still in submitted status across the manager\'s deals.'),
+  "underReviewCount": zod.int().describe('Open LOIs in under_review status across the manager\'s deals.'),
+  "lois": zod.array(zod.object({
+  "id": zod.int(),
+  "dealId": zod.int(),
+  "dealTitle": zod.string(),
+  "investorName": zod.string(),
+  "investorCompany": zod.string(),
+  "offerPrice": zod.number(),
+  "currency": zod.string(),
+  "status": zod.enum(['submitted', 'under_review']),
+  "submittedAt": zod.string()
+}))
+})
+
+

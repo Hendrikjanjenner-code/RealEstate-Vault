@@ -351,6 +351,34 @@ export interface LoiInput {
   validityDays: number;
 }
 
+export type DashboardLoiStatus = typeof DashboardLoiStatus[keyof typeof DashboardLoiStatus];
+
+
+export const DashboardLoiStatus = {
+  submitted: 'submitted',
+  under_review: 'under_review',
+} as const;
+
+export interface DashboardLoi {
+  id: number;
+  dealId: number;
+  dealTitle: string;
+  investorName: string;
+  investorCompany: string;
+  offerPrice: number;
+  currency: string;
+  status: DashboardLoiStatus;
+  submittedAt: string;
+}
+
+export interface DashboardLois {
+  /** Open LOIs still in submitted status across the manager's deals. */
+  submittedCount: number;
+  /** Open LOIs in under_review status across the manager's deals. */
+  underReviewCount: number;
+  lois: DashboardLoi[];
+}
+
 export type LoiStatusUpdateStatus = typeof LoiStatusUpdateStatus[keyof typeof LoiStatusUpdateStatus];
 
 

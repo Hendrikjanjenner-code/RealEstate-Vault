@@ -1,6 +1,6 @@
 import { toJson } from "../lib/serialize";
 import { Router, type IRouter } from "express";
-import { and, desc, eq, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import {
   db,
   dealsTable,
@@ -9,10 +9,12 @@ import {
   transactionsTable,
   threadsTable,
   activityTable,
+  loisTable,
 } from "@workspace/db";
 import {
   GetDashboardStatsResponse,
   ListActivityResponse,
+  ListDashboardLoisResponse,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -97,6 +99,48 @@ router.get("/dashboard/activity", async (_req, res): Promise<void> => {
     .limit(20);
 
   res.json(ListActivityResponse.parse(toJson(items)));
+});
+
+// Open LOIs (submitted / under_review) strictly across the deals this user
+// manages (brokerUserId match only — no any-broker fallback; LOIs carry
+// confidential bid information).
+router.get("/dashboard/lois", async (req, res): Promise<void> => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const rows = await db
+    .select({
+      id: loisTable.id,
+      dealId: loisTable.dealId,
+      dealTitle: dealsTable.title,
+      investorName: loisTable.investorName,
+      investorCompany: loisTable.investorCompany,
+      offerPrice: loisTable.offerPrice,
+      currency: loisTable.currency,
+      status: loisTable.status,
+      submittedAt: loisTable.submittedAt,
+    })
+    .from(loisTable)
+    .innerJoin(dealsTable, eq(loisTable.dealId, dealsTable.id))
+    .where(
+      and(
+        eq(dealsTable.brokerUserId, req.user.id),
+        inArray(loisTable.status, ["submitted", "under_review"]),
+      ),
+    )
+    .orderBy(desc(loisTable.submittedAt));
+
+  res.json(
+    ListDashboardLoisResponse.parse(
+      toJson({
+        submittedCount: rows.filter((r) => r.status === "submitted").length,
+        underReviewCount: rows.filter((r) => r.status === "under_review")
+          .length,
+        lois: rows,
+      }),
+    ),
+  );
 });
 
 export default router;

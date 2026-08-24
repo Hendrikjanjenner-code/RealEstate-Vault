@@ -45,6 +45,7 @@ import type {
   ChecklistStatusInput,
   ChecklistTemplate,
   ChecklistTemplateInput,
+  DashboardLois,
   DashboardStats,
   DdCenterResponse,
   DdItem,
@@ -7651,6 +7652,83 @@ export function useListActivity<TData = Awaited<ReturnType<typeof listActivity>>
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListActivityQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListDashboardLoisUrl = () => {
+
+
+
+
+  return `/api/dashboard/lois`
+}
+
+/**
+ * @summary Open LOIs (submitted or under review) across the deals managed by the current broker
+ */
+export const listDashboardLois = async ( options?: Parameters<typeof customFetch>[1]): Promise<DashboardLois> => {
+
+  return customFetch<DashboardLois>(getListDashboardLoisUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDashboardLoisQueryKey = () => {
+    return [
+    `/api/dashboard/lois`
+    ] as const;
+    }
+
+
+export const getListDashboardLoisQueryOptions = <TData = Awaited<ReturnType<typeof listDashboardLois>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDashboardLois>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDashboardLoisQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDashboardLois>>> = ({ signal }) => listDashboardLois({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDashboardLois>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDashboardLoisQueryResult = NonNullable<Awaited<ReturnType<typeof listDashboardLois>>>
+export type ListDashboardLoisQueryError = ErrorType<void>
+
+
+/**
+ * @summary Open LOIs (submitted or under review) across the deals managed by the current broker
+ */
+
+export function useListDashboardLois<TData = Awaited<ReturnType<typeof listDashboardLois>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDashboardLois>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDashboardLoisQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

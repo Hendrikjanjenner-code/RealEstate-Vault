@@ -1,4 +1,4 @@
-import { useGetDashboardStats, useListActivity } from "@workspace/api-client-react";
+import { useGetDashboardStats, useListActivity, useListDashboardLois } from "@workspace/api-client-react";
 import { useAuth } from "@workspace/replit-auth-web";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +18,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: activity, isLoading: activityLoading } = useListActivity();
+  const { data: loiData, isLoading: loisLoading } = useListDashboardLois();
 
   if (statsLoading) {
     return (
@@ -68,6 +69,63 @@ export default function Dashboard() {
           </Link>
         ))}
       </div>
+
+      {/* Open LOIs across managed deals */}
+      <Card className="bg-card" data-testid="card-open-lois">
+        <CardHeader className="pb-2">
+          <CardTitle className="font-heading text-base flex items-center gap-3 flex-wrap">
+            Open Letters of Intent
+            {loiData && (
+              <span className="text-[11px] font-normal text-muted-foreground uppercase tracking-wider" data-testid="text-loi-counts">
+                {loiData.submittedCount} new · {loiData.underReviewCount} under review
+              </span>
+            )}
+          </CardTitle>
+          <CardDescription className="text-xs">New bids and LOIs in review across your deals.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loisLoading ? (
+            <div className="space-y-3">
+              {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+            </div>
+          ) : !loiData || loiData.lois.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-2" data-testid="text-no-open-lois">No open LOIs right now — new bids will appear here.</p>
+          ) : (
+            <div className="divide-y divide-border/60">
+              {loiData.lois.map((loi) => {
+                const ageDays = Math.max(0, Math.floor((Date.now() - new Date(loi.submittedAt).getTime()) / 86400000));
+                return (
+                  <Link
+                    key={loi.id}
+                    href={`/demo/deals/${loi.dealId}`}
+                    className="flex items-center justify-between gap-4 py-2.5 first:pt-0 hover:bg-white/[0.03] transition-colors rounded-sm px-1 -mx-1"
+                    data-testid={`row-open-loi-${loi.id}`}
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm text-foreground leading-snug truncate">
+                        <span className="font-medium">{loi.investorName}</span>
+                        <span className="text-muted-foreground"> ({loi.investorCompany})</span>
+                        <span className="text-muted-foreground"> — {loi.dealTitle}</span>
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 [font-feature-settings:'tnum'_1]">
+                        {ageDays === 0 ? "Today" : ageDays === 1 ? "1 day ago" : `${ageDays} days ago`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-sm font-heading font-bold text-foreground [font-feature-settings:'tnum'_1,'lnum'_1]">
+                        {loi.currency === "EUR" ? "€" : loi.currency === "USD" ? "$" : `${loi.currency} `}{(loi.offerPrice / 1000000).toFixed(1)}M
+                      </span>
+                      <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${loi.status === "submitted" ? "border-primary/40 text-primary" : "border-white/20 text-muted-foreground"}`}>
+                        {loi.status === "submitted" ? "New" : "Under review"}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="col-span-2 bg-card">
