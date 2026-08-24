@@ -5,15 +5,18 @@ import {
   dealsTable,
   accessRequestsTable,
   loisTable,
+  loiCountersTable,
   notificationsTable,
   activityTable,
   type Deal,
   type Loi,
+  type LoiCounter,
 } from "@workspace/db";
 import {
   LOI_TITLE,
   LOI_DEFAULTS,
   buildLoiParagraphs,
+  buildCounterParagraphs,
   type LoiFacts,
 } from "@workspace/loi-terms";
 import {
@@ -27,6 +30,12 @@ import {
   UpdateLoiStatusParams,
   UpdateLoiStatusBody,
   UpdateLoiStatusResponse,
+  CounterLoiParams,
+  CounterLoiBody,
+  CounterLoiResponse,
+  RespondToLoiCounterParams,
+  RespondToLoiCounterBody,
+  RespondToLoiCounterResponse,
 } from "@workspace/api-zod";
 import { toJson } from "../lib/serialize";
 
@@ -93,6 +102,11 @@ function loiFacts(
 
 function presentLoi(loi: Loi) {
   const { investorUserId: _hidden, documentText, createdAt: _c, ...rest } = loi;
+  return { ...rest, documentText: JSON.parse(documentText) as string[] };
+}
+
+function presentCounter(counter: LoiCounter) {
+  const { documentText, ...rest } = counter;
   return { ...rest, documentText: JSON.parse(documentText) as string[] };
 }
 
@@ -175,7 +189,12 @@ router.post("/deals/:id/lois", async (req, res): Promise<void> => {
       and(
         eq(loisTable.dealId, deal.id),
         eq(loisTable.investorUserId, req.user.id),
-        inArray(loisTable.status, ["submitted", "under_review", "accepted"]),
+        inArray(loisTable.status, [
+          "submitted",
+          "under_review",
+          "countered",
+          "accepted",
+        ]),
       ),
     )
     .limit(1);
@@ -277,9 +296,24 @@ router.get("/deals/:id/lois", async (req, res): Promise<void> => {
           ),
     )
     .orderBy(desc(loisTable.submittedAt));
+  const counters = lois.length
+    ? await db
+        .select()
+        .from(loiCountersTable)
+        .where(inArray(loiCountersTable.loiId, lois.map((l) => l.id)))
+        .orderBy(desc(loiCountersTable.createdAt))
+    : [];
   res.json(
     ListDealLoisResponse.parse(
-      toJson({ lois: lois.map(presentLoi), canManage }),
+      toJson({
+        lois: lois.map((loi) => ({
+          ...presentLoi(loi),
+          counters: counters
+            .filter((c) => c.loiId === loi.id)
+            .map(presentCounter),
+        })),
+        canManage,
+      }),
     ),
   );
 });
@@ -287,8 +321,12 @@ router.get("/deals/:id/lois", async (req, res): Promise<void> => {
 const LOI_TRANSITIONS: Record<string, string[]> = {
   submitted: ["under_review", "accepted", "rejected"],
   under_review: ["accepted", "rejected"],
+  // While countered, the ball is with the investor; the manager may still
+  // reject outright (which closes any open counter).
+  countered: ["rejected"],
   accepted: [],
   rejected: [],
+  withdrawn: [],
 };
 
 // Manager-only status transitions.
@@ -326,12 +364,28 @@ router.patch("/lois/:id", async (req, res): Promise<void> => {
   }
   const decided = body.data.status === "accepted" || body.data.status === "rejected";
   // Conditional update: transition only from the status we validated against,
-  // so a concurrent decision can never be overwritten from stale state.
-  const [updated] = await db
-    .update(loisTable)
-    .set({ status: body.data.status, decidedAt: decided ? new Date() : null })
-    .where(and(eq(loisTable.id, loi.id), eq(loisTable.status, loi.status)))
-    .returning();
+  // so a concurrent decision can never be overwritten from stale state. When
+  // the decision terminates the LOI, any still-proposed counter is closed as
+  // superseded in the same transaction so no open counter can outlive its LOI.
+  const updated = await db.transaction(async (tx) => {
+    const [row] = await tx
+      .update(loisTable)
+      .set({ status: body.data.status, decidedAt: decided ? new Date() : null })
+      .where(and(eq(loisTable.id, loi.id), eq(loisTable.status, loi.status)))
+      .returning();
+    if (row && decided) {
+      await tx
+        .update(loiCountersTable)
+        .set({ status: "superseded", respondedAt: new Date() })
+        .where(
+          and(
+            eq(loiCountersTable.loiId, loi.id),
+            eq(loiCountersTable.status, "proposed"),
+          ),
+        );
+    }
+    return row;
+  });
   if (!updated) {
     res.status(409).json({
       error: "This LOI was updated by someone else — reload and try again",
@@ -353,6 +407,214 @@ router.patch("/lois/:id", async (req, res): Promise<void> => {
   });
 
   res.json(UpdateLoiStatusResponse.parse(toJson(presentLoi(updated))));
+});
+
+// LOI statuses from which the manager may issue a counterproposal. Countering
+// an already-countered LOI supersedes the previous open counter.
+const COUNTERABLE_STATUSES = ["submitted", "under_review", "countered"];
+
+// Manager-only: attach a counterproposal to an LOI. The rendered counter text
+// is preserved verbatim, exactly like the original LOI.
+router.post("/lois/:id/counter", async (req, res): Promise<void> => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const params = CounterLoiParams.safeParse(req.params);
+  const body = CounterLoiBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({
+      error: params.success ? body.error?.message : params.error.message,
+    });
+    return;
+  }
+  const [loi] = await db
+    .select()
+    .from(loisTable)
+    .where(eq(loisTable.id, params.data.id));
+  if (!loi) {
+    res.status(404).json({ error: "LOI not found" });
+    return;
+  }
+  const deal = await loadDeal(loi.dealId);
+  if (!deal || !isDealManager(req, deal)) {
+    res
+      .status(403)
+      .json({ error: "Only the deal manager can issue a counterproposal" });
+    return;
+  }
+  if (!COUNTERABLE_STATUSES.includes(loi.status)) {
+    res.status(409).json({
+      error: `Cannot counter an LOI in status ${loi.status.replace(/_/g, " ")}`,
+    });
+    return;
+  }
+
+  const paragraphs = buildCounterParagraphs(
+    loiFacts(deal, loi.investorName, loi.investorCompany),
+    {
+      offerPrice: body.data.offerPrice,
+      conditions: body.data.conditions?.trim() || null,
+      exclusivityDays: body.data.exclusivityDays,
+      validityDays: body.data.validityDays,
+    },
+  );
+
+  // One transaction: supersede any earlier open counter, insert the new one,
+  // and move the LOI to countered — conditionally on the status we validated,
+  // so a concurrent decision rolls the whole counter back.
+  const counter = await db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(loisTable)
+      .set({ status: "countered", decidedAt: null })
+      .where(and(eq(loisTable.id, loi.id), eq(loisTable.status, loi.status)))
+      .returning({ id: loisTable.id });
+    if (!updated) return null;
+    await tx
+      .update(loiCountersTable)
+      .set({ status: "superseded", respondedAt: new Date() })
+      .where(
+        and(
+          eq(loiCountersTable.loiId, loi.id),
+          eq(loiCountersTable.status, "proposed"),
+        ),
+      );
+    const [row] = await tx
+      .insert(loiCountersTable)
+      .values({
+        loiId: loi.id,
+        documentText: JSON.stringify(paragraphs),
+        offerPrice: body.data.offerPrice,
+        currency: loi.currency,
+        conditions: body.data.conditions?.trim() || null,
+        exclusivityDays: body.data.exclusivityDays,
+        validityDays: body.data.validityDays,
+        status: "proposed",
+      })
+      .returning();
+    return row;
+  });
+  if (!counter) {
+    res.status(409).json({
+      error: "This LOI was updated by someone else — reload and try again",
+    });
+    return;
+  }
+
+  await db.insert(activityTable).values({
+    type: "loi_countered",
+    description: `Counterproposal issued on the LOI from ${loi.investorName} for ${deal.title}`,
+  });
+  await db.insert(notificationsTable).values({
+    userId: loi.investorUserId,
+    type: "loi_countered",
+    message: `The deal manager responded to your Letter of Intent for ${deal.title} with a counterproposal.`,
+    dealId: deal.id,
+    accessRequestId: loi.accessRequestId,
+  });
+
+  res.status(201).json(CounterLoiResponse.parse(toJson(presentCounter(counter))));
+});
+
+// Investor-only: accept or withdraw in response to an open counterproposal on
+// their own LOI. Accepting makes the counter the agreed version (verbatim);
+// withdrawing closes the LOI.
+router.post("/loi-counters/:id/respond", async (req, res): Promise<void> => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const params = RespondToLoiCounterParams.safeParse(req.params);
+  const body = RespondToLoiCounterBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({
+      error: params.success ? body.error?.message : params.error.message,
+    });
+    return;
+  }
+  const [counter] = await db
+    .select()
+    .from(loiCountersTable)
+    .where(eq(loiCountersTable.id, params.data.id));
+  if (!counter) {
+    res.status(404).json({ error: "Counterproposal not found" });
+    return;
+  }
+  const [loi] = await db
+    .select()
+    .from(loisTable)
+    .where(eq(loisTable.id, counter.loiId));
+  if (!loi || loi.investorUserId !== req.user.id) {
+    res.status(403).json({
+      error: "Only the investor who submitted the LOI can respond to this counterproposal",
+    });
+    return;
+  }
+  if (counter.status !== "proposed" || loi.status !== "countered") {
+    res.status(409).json({ error: "This counterproposal is no longer open" });
+    return;
+  }
+
+  const accept = body.data.action === "accept";
+  const now = new Date();
+  // One transaction, both updates conditional: the counter must still be
+  // proposed AND the LOI still countered, or everything rolls back — a
+  // concurrent manager rejection can never race into contradictory states.
+  // The original LOI row's text is never rewritten — the accepted counter
+  // itself is the agreed version, so every version's text stays verbatim.
+  const updatedCounter = await db.transaction(async (tx) => {
+    const [c] = await tx
+      .update(loiCountersTable)
+      .set({ status: accept ? "accepted" : "withdrawn", respondedAt: now })
+      .where(
+        and(
+          eq(loiCountersTable.id, counter.id),
+          eq(loiCountersTable.status, "proposed"),
+        ),
+      )
+      .returning();
+    if (!c) return null;
+    const [l] = await tx
+      .update(loisTable)
+      .set({ status: accept ? "accepted" : "withdrawn", decidedAt: now })
+      .where(and(eq(loisTable.id, loi.id), eq(loisTable.status, "countered")))
+      .returning({ id: loisTable.id });
+    if (!l) {
+      tx.rollback();
+    }
+    return c;
+  }).catch((err) => {
+    if (err instanceof Error && /Rollback/i.test(err.message)) return null;
+    throw err;
+  });
+  if (!updatedCounter) {
+    res.status(409).json({ error: "This counterproposal is no longer open" });
+    return;
+  }
+
+  const deal = await loadDeal(loi.dealId);
+  const dealTitle = deal?.title ?? `deal #${loi.dealId}`;
+  await db.insert(activityTable).values({
+    type: "loi_counter_response",
+    description: accept
+      ? `${loi.investorName} accepted the counterproposal for ${dealTitle}`
+      : `${loi.investorName} withdrew their LOI for ${dealTitle} after a counterproposal`,
+  });
+  if (deal?.brokerUserId) {
+    await db.insert(notificationsTable).values({
+      userId: deal.brokerUserId,
+      type: "loi_counter_response",
+      message: accept
+        ? `${loi.investorName} (${loi.investorCompany}) accepted your counterproposal for ${dealTitle}.`
+        : `${loi.investorName} (${loi.investorCompany}) withdrew their Letter of Intent for ${dealTitle}.`,
+      dealId: loi.dealId,
+      accessRequestId: loi.accessRequestId,
+    });
+  }
+
+  res.json(
+    RespondToLoiCounterResponse.parse(toJson(presentCounter(updatedCounter))),
+  );
 });
 
 // Printable/downloadable record of a submitted LOI (self-contained HTML,

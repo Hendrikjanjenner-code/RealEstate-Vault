@@ -5,6 +5,7 @@
  * RealEstate Vault API
  * OpenAPI spec version: 0.1.0
  */
+import type { LoiCounter } from './loiCounter';
 import type { LoiStatus } from './loiStatus';
 
 export interface Loi {
@@ -26,4 +27,6 @@ export interface Loi {
   submittedAt: string;
   /** @nullable */
   decidedAt?: string | null;
+  /** Counterproposal history for this LOI, newest first. Each counter's text is preserved verbatim as issued. */
+  counters?: LoiCounter[];
 }

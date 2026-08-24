@@ -7,7 +7,10 @@ import {
   getListDealLoisQueryKey,
   useSubmitLoi,
   useUpdateLoiStatus,
+  useCounterLoi,
+  useRespondToLoiCounter,
   type Loi,
+  type LoiCounter,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,9 +22,45 @@ import { FileText, Download, ScrollText } from "lucide-react";
 const STATUS_STYLE: Record<string, string> = {
   submitted: "border-primary/40 text-primary",
   under_review: "border-amber-400/40 text-amber-300",
+  countered: "border-sky-400/40 text-sky-300",
   accepted: "border-emerald-400/40 text-emerald-300",
   rejected: "border-red-400/40 text-red-300",
+  withdrawn: "border-white/20 text-muted-foreground",
+  proposed: "border-sky-400/40 text-sky-300",
+  superseded: "border-white/20 text-muted-foreground",
 };
+
+function terms(t: {
+  currency: string;
+  offerPrice: number;
+  exclusivityDays: number;
+  validityDays: number;
+}): string {
+  return `${t.currency} ${t.offerPrice.toLocaleString("en-US")} · exclusivity ${t.exclusivityDays}d · valid ${t.validityDays}d`;
+}
+
+/** Version history of an LOI: original terms plus every counter, verbatim. */
+function LoiHistory({ loi }: { loi: Loi }) {
+  const counters = loi.counters ?? [];
+  if (counters.length === 0) return null;
+  return (
+    <div className="space-y-1.5 pt-1 border-t border-white/5" data-testid={`history-loi-${loi.id}`}>
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Version history</p>
+      <ul className="space-y-1">
+        {counters.map((c) => (
+          <li key={c.id} className="flex items-center justify-between gap-2 text-xs text-muted-foreground" data-testid={`row-counter-${c.id}`}>
+            <span className="truncate">Counter — {terms(c)}{c.conditions ? ` · ${c.conditions}` : ""}</span>
+            <LoiStatusBadge status={c.status} />
+          </li>
+        ))}
+        <li className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+          <span className="truncate">Original LOI — {terms(loi)}</span>
+          <span className="text-[10px] uppercase tracking-wider">v1</span>
+        </li>
+      </ul>
+    </div>
+  );
+}
 
 function LoiStatusBadge({ status }: { status: string }) {
   return (
@@ -73,11 +112,22 @@ export function DealLoiPanel({
   });
   const submitLoi = useSubmitLoi();
   const updateStatus = useUpdateLoiStatus();
+  const counterLoi = useCounterLoi();
+  const respondToCounter = useRespondToLoiCounter();
+  // Which LOI the manager is drafting a counter for, plus its form fields.
+  const [counteringId, setCounteringId] = useState<number | null>(null);
+  const [counterPrice, setCounterPrice] = useState("");
+  const [counterConditions, setCounterConditions] = useState("");
+  const [counterExclusivity, setCounterExclusivity] = useState("");
+  const [counterValidity, setCounterValidity] = useState("");
 
   const canManage = loiData?.canManage ?? false;
   const lois = loiData?.lois ?? [];
   const myOpenLoi = !canManage
-    ? lois.find((l) => l.status !== "rejected")
+    ? lois.find((l) => l.status !== "rejected" && l.status !== "withdrawn")
+    : undefined;
+  const myOpenCounter = myOpenLoi?.status === "countered"
+    ? (myOpenLoi.counters ?? []).find((c) => c.status === "proposed")
     : undefined;
 
   const invalidate = () =>
@@ -111,6 +161,56 @@ export function DealLoiPanel({
         onError: () => {
           toast({ title: "Submission failed", description: "Please review your terms and try again.", variant: "destructive" });
         },
+      },
+    );
+  };
+
+  const handleCounter = (loi: Loi) => {
+    const price = Number(counterPrice);
+    const excl = Number(counterExclusivity || loi.exclusivityDays);
+    const val = Number(counterValidity || loi.validityDays);
+    if (!Number.isFinite(price) || price <= 0) {
+      toast({ title: "Invalid counter", description: "Enter a valid counter price.", variant: "destructive" });
+      return;
+    }
+    counterLoi.mutate(
+      {
+        id: loi.id,
+        data: {
+          offerPrice: price,
+          conditions: counterConditions.trim() || undefined,
+          exclusivityDays: excl,
+          validityDays: val,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast({ title: "Counterproposal sent", description: "The investor has been notified of your counterproposal." });
+          setCounteringId(null);
+          setCounterPrice("");
+          setCounterConditions("");
+          setCounterExclusivity("");
+          setCounterValidity("");
+          invalidate();
+        },
+        onError: () => toast({ title: "Counter failed", description: "Could not issue the counterproposal.", variant: "destructive" }),
+      },
+    );
+  };
+
+  const respond = (counter: LoiCounter, action: "accept" | "withdraw") => {
+    respondToCounter.mutate(
+      { id: counter.id, data: { action } },
+      {
+        onSuccess: () => {
+          toast(
+            action === "accept"
+              ? { title: "Counter accepted", description: "The agreed terms are those of the counterproposal." }
+              : { title: "LOI withdrawn", description: "Your Letter of Intent has been withdrawn." },
+          );
+          invalidate();
+        },
+        onError: () => toast({ title: "Response failed", description: "Could not respond to the counterproposal.", variant: "destructive" }),
       },
     );
   };
@@ -153,7 +253,7 @@ export function DealLoiPanel({
                   <LoiStatusBadge status={loi.status} />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Offer {loi.currency} {loi.offerPrice.toLocaleString("en-US")} · exclusivity {loi.exclusivityDays}d · valid {loi.validityDays}d
+                  Offer {terms(loi)}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Button asChild size="sm" variant="ghost" className="h-7 px-2 text-xs border border-white/10">
@@ -176,7 +276,51 @@ export function DealLoiPanel({
                       </Button>
                     </>
                   )}
+                  {(loi.status === "submitted" || loi.status === "under_review" || loi.status === "countered") && counteringId !== loi.id && (
+                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs border border-sky-400/30 text-sky-300" onClick={() => { setCounteringId(loi.id); setCounterPrice(""); setCounterConditions(""); setCounterExclusivity(""); setCounterValidity(""); }} data-testid={`button-loi-counter-${loi.id}`}>
+                      {loi.status === "countered" ? "New counter" : "Counter"}
+                    </Button>
+                  )}
+                  {loi.status === "countered" && (
+                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs border border-red-400/30 text-red-300" onClick={() => transition(loi, "rejected")} data-testid={`button-loi-reject-${loi.id}`}>
+                      Reject
+                    </Button>
+                  )}
                 </div>
+                {counteringId === loi.id && (
+                  <form
+                    className="space-y-2 p-2 rounded-md bg-background/60 border border-sky-400/20"
+                    onSubmit={(e) => { e.preventDefault(); handleCounter(loi); }}
+                    data-testid={`form-counter-${loi.id}`}
+                  >
+                    <p className="text-[10px] uppercase tracking-wider text-sky-300 font-semibold">Counterproposal</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <Label htmlFor={`counter-price-${loi.id}`} className="text-[10px] uppercase tracking-wider text-muted-foreground">Price ({loi.currency})</Label>
+                        <Input id={`counter-price-${loi.id}`} required type="number" min="1" value={counterPrice} onChange={(e) => setCounterPrice(e.target.value)} placeholder={String(loi.offerPrice)} className="h-8 bg-background/50 border-white/10 text-xs" data-testid={`input-counter-price-${loi.id}`} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor={`counter-excl-${loi.id}`} className="text-[10px] uppercase tracking-wider text-muted-foreground">Exclusivity (d)</Label>
+                        <Input id={`counter-excl-${loi.id}`} type="number" min="1" max="365" value={counterExclusivity} onChange={(e) => setCounterExclusivity(e.target.value)} placeholder={String(loi.exclusivityDays)} className="h-8 bg-background/50 border-white/10 text-xs" data-testid={`input-counter-exclusivity-${loi.id}`} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor={`counter-valid-${loi.id}`} className="text-[10px] uppercase tracking-wider text-muted-foreground">Validity (d)</Label>
+                        <Input id={`counter-valid-${loi.id}`} type="number" min="1" max="180" value={counterValidity} onChange={(e) => setCounterValidity(e.target.value)} placeholder={String(loi.validityDays)} className="h-8 bg-background/50 border-white/10 text-xs" data-testid={`input-counter-validity-${loi.id}`} />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor={`counter-cond-${loi.id}`} className="text-[10px] uppercase tracking-wider text-muted-foreground">Amended conditions (optional)</Label>
+                      <Input id={`counter-cond-${loi.id}`} value={counterConditions} onChange={(e) => setCounterConditions(e.target.value)} placeholder="e.g. shorter exclusivity, no financing condition" className="h-8 bg-background/50 border-white/10 text-xs" data-testid={`input-counter-conditions-${loi.id}`} />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="button" size="sm" variant="ghost" className="h-7 flex-1 text-xs border border-white/10" onClick={() => setCounteringId(null)}>Cancel</Button>
+                      <Button type="submit" size="sm" disabled={counterLoi.isPending || !counterPrice} className="h-7 flex-1 text-xs bg-sky-500/90 text-white hover:bg-sky-500 font-bold" data-testid={`button-send-counter-${loi.id}`}>
+                        {counterLoi.isPending ? "Sending..." : "Send counter"}
+                      </Button>
+                    </div>
+                  </form>
+                )}
+                <LoiHistory loi={loi} />
               </li>
             ))}
           </ul>
@@ -190,8 +334,31 @@ export function DealLoiPanel({
             <LoiStatusBadge status={myOpenLoi.status} />
           </div>
           <p className="text-xs text-muted-foreground">
-            Offer {myOpenLoi.currency} {myOpenLoi.offerPrice.toLocaleString("en-US")} · exclusivity {myOpenLoi.exclusivityDays}d · valid {myOpenLoi.validityDays}d
+            Offer {terms(myOpenLoi)}
           </p>
+          {myOpenCounter && (
+            <div className="space-y-2 p-3 rounded-lg bg-sky-500/5 border border-sky-400/20" data-testid="card-counter-offer">
+              <p className="text-[10px] uppercase tracking-wider text-sky-300 font-semibold">Counterproposal from the deal manager</p>
+              <p className="text-xs text-foreground">{terms(myOpenCounter)}</p>
+              {myOpenCounter.conditions && (
+                <p className="text-xs text-muted-foreground">Conditions: {myOpenCounter.conditions}</p>
+              )}
+              <div className="p-2 rounded-md bg-background/60 border border-white/5 max-h-36 overflow-y-auto text-xs text-muted-foreground leading-relaxed space-y-1.5">
+                {myOpenCounter.documentText.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" disabled={respondToCounter.isPending} onClick={() => respond(myOpenCounter, "accept")} className="h-8 flex-1 text-xs bg-emerald-500/90 text-white hover:bg-emerald-500 font-bold" data-testid="button-accept-counter">
+                  {respondToCounter.isPending ? "Working..." : "Accept counter"}
+                </Button>
+                <Button size="sm" variant="ghost" disabled={respondToCounter.isPending} onClick={() => respond(myOpenCounter, "withdraw")} className="h-8 flex-1 text-xs border border-red-400/30 text-red-300" data-testid="button-withdraw-loi">
+                  Withdraw LOI
+                </Button>
+              </div>
+            </div>
+          )}
+          <LoiHistory loi={myOpenLoi} />
           <div className="flex gap-2">
             <Button asChild size="sm" variant="ghost" className="h-8 text-xs border border-white/10 flex-1">
               <a href={recordUrl(myOpenLoi.id)} target="_blank" rel="noreferrer" data-testid="link-my-loi-record">

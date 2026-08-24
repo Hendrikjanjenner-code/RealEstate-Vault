@@ -145,11 +145,36 @@ export const loisTable = pgTable(
     .defaultNow(),
   },
   (table) => [
-    // At most one open (submitted/under_review/accepted) LOI per investor per deal.
+    // At most one open (submitted/under_review/countered/accepted) LOI per
+    // investor per deal. A countered LOI is still an active negotiation.
     uniqueIndex("lois_open_per_investor_idx")
       .on(table.dealId, table.investorUserId)
-      .where(sql`"status" IN ('submitted', 'under_review', 'accepted')`),
+      .where(sql`"status" IN ('submitted', 'under_review', 'countered', 'accepted')`),
   ],
 );
 
 export type Loi = typeof loisTable.$inferSelect;
+
+// Counterproposals attached by the deal manager to an LOI. Each counter's
+// rendered text is stored VERBATIM at creation time; accepting a counter never
+// rewrites the original LOI text, so every version of the negotiation is
+// preserved exactly as issued.
+export const loiCountersTable = pgTable("loi_counters", {
+  id: serial("id").primaryKey(),
+  loiId: integer("loi_id").notNull(),
+  // Verbatim counterproposal paragraphs (JSON array of strings serialized as text).
+  documentText: text("document_text").notNull(),
+  offerPrice: doublePrecision("offer_price").notNull(),
+  currency: text("currency").notNull().default("EUR"),
+  conditions: text("conditions"),
+  exclusivityDays: integer("exclusivity_days").notNull(),
+  validityDays: integer("validity_days").notNull(),
+  // proposed -> accepted | withdrawn | superseded
+  status: text("status").notNull().default("proposed"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  respondedAt: timestamp("responded_at", { withTimezone: true }),
+});
+
+export type LoiCounter = typeof loiCountersTable.$inferSelect;

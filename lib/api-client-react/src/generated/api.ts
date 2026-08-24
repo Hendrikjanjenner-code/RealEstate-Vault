@@ -95,6 +95,9 @@ import type {
   LogoutBrowserSessionParams,
   LogoutSuccess,
   Loi,
+  LoiCounter,
+  LoiCounterInput,
+  LoiCounterResponse,
   LoiDraft,
   LoiInput,
   LoiStatusUpdate,
@@ -2369,6 +2372,150 @@ export const useUpdateLoiStatus = <TError = ErrorType<ApiMessage>,
         TContext
       > => {
       return useMutation(getUpdateLoiStatusMutationOptions(options));
+    }
+
+export const getCounterLoiUrl = (id: number,) => {
+
+
+
+
+  return `/api/lois/${id}/counter`
+}
+
+/**
+ * @summary Deal-manager-only counterproposal to a submitted, under-review or already-countered LOI. The rendered counter text is stored verbatim; a new counter supersedes any earlier open counter. Moves the LOI to status countered and notifies the investor.
+ */
+export const counterLoi = async (id: number,
+    loiCounterInput: LoiCounterInput, options?: Parameters<typeof customFetch>[1]): Promise<LoiCounter> => {
+
+  return customFetch<LoiCounter>(getCounterLoiUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(loiCounterInput)
+  }
+);}
+
+
+
+
+
+export const getCounterLoiMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof counterLoi>>, TError,{id: number;data: BodyType<LoiCounterInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof counterLoi>>, TError,{id: number;data: BodyType<LoiCounterInput>}, TContext> => {
+
+const mutationKey = ['counterLoi'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof counterLoi>>, {id: number;data: BodyType<LoiCounterInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  counterLoi(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CounterLoiMutationResult = NonNullable<Awaited<ReturnType<typeof counterLoi>>>
+    export type CounterLoiMutationBody = BodyType<LoiCounterInput>
+    export type CounterLoiMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Deal-manager-only counterproposal to a submitted, under-review or already-countered LOI. The rendered counter text is stored verbatim; a new counter supersedes any earlier open counter. Moves the LOI to status countered and notifies the investor.
+ */
+export const useCounterLoi = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof counterLoi>>, TError,{id: number;data: BodyType<LoiCounterInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof counterLoi>>,
+        TError,
+        {id: number;data: BodyType<LoiCounterInput>},
+        TContext
+      > => {
+      return useMutation(getCounterLoiMutationOptions(options));
+    }
+
+export const getRespondToLoiCounterUrl = (id: number,) => {
+
+
+
+
+  return `/api/loi-counters/${id}/respond`
+}
+
+/**
+ * @summary Investor response to an open counterproposal on their own LOI. Accepting marks the counter accepted (it becomes the agreed version, preserved verbatim) and the LOI accepted; withdrawing marks the counter withdrawn and the LOI withdrawn. Notifies the deal manager.
+ */
+export const respondToLoiCounter = async (id: number,
+    loiCounterResponse: LoiCounterResponse, options?: Parameters<typeof customFetch>[1]): Promise<LoiCounter> => {
+
+  return customFetch<LoiCounter>(getRespondToLoiCounterUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(loiCounterResponse)
+  }
+);}
+
+
+
+
+
+export const getRespondToLoiCounterMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondToLoiCounter>>, TError,{id: number;data: BodyType<LoiCounterResponse>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof respondToLoiCounter>>, TError,{id: number;data: BodyType<LoiCounterResponse>}, TContext> => {
+
+const mutationKey = ['respondToLoiCounter'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof respondToLoiCounter>>, {id: number;data: BodyType<LoiCounterResponse>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  respondToLoiCounter(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RespondToLoiCounterMutationResult = NonNullable<Awaited<ReturnType<typeof respondToLoiCounter>>>
+    export type RespondToLoiCounterMutationBody = BodyType<LoiCounterResponse>
+    export type RespondToLoiCounterMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Investor response to an open counterproposal on their own LOI. Accepting marks the counter accepted (it becomes the agreed version, preserved verbatim) and the LOI accepted; withdrawing marks the counter withdrawn and the LOI withdrawn. Notifies the deal manager.
+ */
+export const useRespondToLoiCounter = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondToLoiCounter>>, TError,{id: number;data: BodyType<LoiCounterResponse>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof respondToLoiCounter>>,
+        TError,
+        {id: number;data: BodyType<LoiCounterResponse>},
+        TContext
+      > => {
+      return useMutation(getRespondToLoiCounterMutationOptions(options));
     }
 
 export const getListAccessRequestsUrl = () => {

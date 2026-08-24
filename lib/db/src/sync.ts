@@ -163,7 +163,83 @@ async function main() {
       }
     }
 
+    // Indexes: create missing ones, and RECREATE any whose definition drifted
+    // (e.g. a partial unique index whose WHERE predicate changed — plain
+    // CREATE INDEX IF NOT EXISTS would silently keep the stale predicate and
+    // lose the invariant the schema declares).
+    const { rows: dbIndexes } = await client.query<{
+      indexname: string;
+      indexdef: string;
+    }>(`SELECT indexname, indexdef FROM pg_indexes WHERE schemaname = 'public'`);
+    const dbIndexDefs = new Map(dbIndexes.map((r) => [r.indexname, r.indexdef]));
+
+    /**
+     * Whether the live index named `indexName` matches the schema's DDL.
+     * String comparison is unreliable (pg_indexes canonicalizes `IN (...)` to
+     * `= ANY (ARRAY[...])`, adds casts, etc.), so we build a short-lived
+     * shadow index from the schema DDL and compare Postgres's own canonical
+     * definitions. Returns null when the shadow cannot be built (e.g. rows
+     * violate a new unique predicate) — recreation would fail for the same
+     * reason.
+     */
+    const indexMatchesSchema = async (
+      indexName: string,
+      indexStmt: string,
+      existingDef: string,
+    ): Promise<boolean | null> => {
+      const shadowName = `${indexName.slice(0, 52)}_synccheck`;
+      try {
+        await client.query(`DROP INDEX IF EXISTS "${shadowName}"`);
+        await client.query(
+          indexStmt.replace(`"${indexName}"`, `"${shadowName}"`),
+        );
+        const { rows } = await client.query<{ indexdef: string }>(
+          `SELECT indexdef FROM pg_indexes WHERE schemaname = 'public' AND indexname = $1`,
+          [shadowName],
+        );
+        const shadowDef = rows[0]?.indexdef.split(shadowName).join(indexName);
+        return shadowDef != null && shadowDef === existingDef;
+      } catch {
+        return null;
+      } finally {
+        await client.query(`DROP INDEX IF EXISTS "${shadowName}"`).catch(() => {});
+      }
+    };
+
     for (const indexStmt of schema.indexes) {
+      const nameMatch = indexStmt.match(/^CREATE (?:UNIQUE )?INDEX "([^"]+)"/);
+      const indexName = nameMatch?.[1];
+      const existingDef = indexName ? dbIndexDefs.get(indexName) : undefined;
+
+      const matches =
+        indexName && existingDef
+          ? await indexMatchesSchema(indexName, indexStmt, existingDef)
+          : undefined;
+      if (matches === null) {
+        warnings.push(
+          `index "${indexName}" definition could not be verified against the schema (building it fails — existing rows may violate it); left unchanged.`,
+        );
+        continue;
+      }
+      if (indexName && existingDef && matches === false) {
+        // Definition drifted: replace atomically. If existing rows violate the
+        // new (stricter) definition, the transaction rolls back and the old
+        // index stays in place — surfaced as a loud warning for manual dedupe.
+        try {
+          await client.query("BEGIN");
+          await client.query(`DROP INDEX "${indexName}"`);
+          await client.query(indexStmt);
+          await client.query("COMMIT");
+          applied.push(`recreated index "${indexName}" (definition changed)`);
+        } catch (err) {
+          await client.query("ROLLBACK");
+          warnings.push(
+            `index "${indexName}" definition drifted but could not be recreated (existing rows may violate it): ${err instanceof Error ? err.message : String(err)} — old index kept; deduplicate and re-run.`,
+          );
+        }
+        continue;
+      }
+
       await client.query(
         indexStmt.replace(/^CREATE (UNIQUE )?INDEX /, (m) => m + "IF NOT EXISTS "),
       );

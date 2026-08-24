@@ -70,3 +70,28 @@ export function buildLoiParagraphs(
   ];
   return paragraphs;
 }
+
+export const LOI_COUNTER_TITLE = "Counterproposal to Letter of Intent";
+
+/**
+ * The full counterproposal body as an ordered list of paragraphs. Rendered
+ * once when the deal manager issues the counter and stored VERBATIM, so
+ * template edits never change an issued counter.
+ */
+export function buildCounterParagraphs(
+  facts: LoiFacts,
+  terms: LoiTerms,
+): string[] {
+  const broker = facts.brokerName
+    ? `${facts.brokerName}${facts.brokerCompany ? ` (${facts.brokerCompany})` : ""}`
+    : "the listing broker";
+  const price = money(terms.offerPrice, facts.currency);
+  return [
+    `This Counterproposal is issued by ${broker}, acting for the seller of the property known as "${facts.dealTitle}", located in ${facts.city}, ${facts.country} (the "Property"), in response to the Letter of Intent submitted by ${facts.investorName}, acting for ${facts.investorCompany} (the "Prospective Purchaser").`,
+    `1. Counter price: the seller proposes a purchase price of ${price} for the Property, replacing the indicative price stated in the Letter of Intent.`,
+    `2. Conditions: all conditions of the original Letter of Intent remain applicable unless expressly amended herein.${terms.conditions ? ` Amended or additional conditions: ${terms.conditions}` : ""}`,
+    `3. Exclusivity: upon acceptance of this Counterproposal, the seller grants the Prospective Purchaser an exclusivity period of ${terms.exclusivityDays} calendar days.`,
+    `4. Validity: this Counterproposal remains open for acceptance for ${terms.validityDays} calendar days from the date of issue, after which it lapses automatically unless extended in writing.`,
+    `5. Effect of acceptance: upon acceptance by the Prospective Purchaser, the terms of this Counterproposal supersede the corresponding terms of the Letter of Intent; all other provisions of the Letter of Intent, including its non-binding nature and confidentiality undertakings, remain in force.`,
+  ];
+}

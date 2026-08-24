@@ -304,9 +304,38 @@ export type LoiStatus = typeof LoiStatus[keyof typeof LoiStatus];
 export const LoiStatus = {
   submitted: 'submitted',
   under_review: 'under_review',
+  countered: 'countered',
   accepted: 'accepted',
   rejected: 'rejected',
+  withdrawn: 'withdrawn',
 } as const;
+
+export type LoiCounterStatus = typeof LoiCounterStatus[keyof typeof LoiCounterStatus];
+
+
+export const LoiCounterStatus = {
+  proposed: 'proposed',
+  accepted: 'accepted',
+  withdrawn: 'withdrawn',
+  superseded: 'superseded',
+} as const;
+
+export interface LoiCounter {
+  id: number;
+  loiId: number;
+  /** The exact counterproposal paragraphs as issued; preserved verbatim even if the template changes later. */
+  documentText: string[];
+  offerPrice: number;
+  currency: string;
+  /** @nullable */
+  conditions?: string | null;
+  exclusivityDays: number;
+  validityDays: number;
+  status: LoiCounterStatus;
+  createdAt: string;
+  /** @nullable */
+  respondedAt?: string | null;
+}
 
 export interface Loi {
   id: number;
@@ -327,6 +356,36 @@ export interface Loi {
   submittedAt: string;
   /** @nullable */
   decidedAt?: string | null;
+  /** Counterproposal history for this LOI, newest first. Each counter's text is preserved verbatim as issued. */
+  counters?: LoiCounter[];
+}
+
+export interface LoiCounterInput {
+  /** @exclusiveMinimum 0 */
+  offerPrice: number;
+  conditions?: string;
+  /**
+     * @minimum 1
+     * @maximum 365
+     */
+  exclusivityDays: number;
+  /**
+     * @minimum 1
+     * @maximum 180
+     */
+  validityDays: number;
+}
+
+export type LoiCounterResponseAction = typeof LoiCounterResponseAction[keyof typeof LoiCounterResponseAction];
+
+
+export const LoiCounterResponseAction = {
+  accept: 'accept',
+  withdraw: 'withdraw',
+} as const;
+
+export interface LoiCounterResponse {
+  action: LoiCounterResponseAction;
 }
 
 export interface DealLois {

@@ -12,6 +12,8 @@ export type LoiStatus = typeof LoiStatus[keyof typeof LoiStatus];
 export const LoiStatus = {
   submitted: 'submitted',
   under_review: 'under_review',
+  countered: 'countered',
   accepted: 'accepted',
   rejected: 'rejected',
+  withdrawn: 'withdrawn',
 } as const;

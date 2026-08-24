@@ -602,9 +602,22 @@ export const ListDealLoisResponse = zod.object({
   "conditions": zod.string().nullish(),
   "exclusivityDays": zod.int(),
   "validityDays": zod.int(),
-  "status": zod.enum(['submitted', 'under_review', 'accepted', 'rejected']),
+  "status": zod.enum(['submitted', 'under_review', 'countered', 'accepted', 'rejected', 'withdrawn']),
   "submittedAt": zod.string(),
-  "decidedAt": zod.string().nullish()
+  "decidedAt": zod.string().nullish(),
+  "counters": zod.array(zod.object({
+  "id": zod.int(),
+  "loiId": zod.int(),
+  "documentText": zod.array(zod.string()).describe('The exact counterproposal paragraphs as issued; preserved verbatim even if the template changes later.'),
+  "offerPrice": zod.number(),
+  "currency": zod.string(),
+  "conditions": zod.string().nullish(),
+  "exclusivityDays": zod.int(),
+  "validityDays": zod.int(),
+  "status": zod.enum(['proposed', 'accepted', 'withdrawn', 'superseded']),
+  "createdAt": zod.string(),
+  "respondedAt": zod.string().nullish()
+})).optional().describe('Counterproposal history for this LOI, newest first. Each counter\'s text is preserved verbatim as issued.')
 })),
   "canManage": zod.boolean().describe('True only for the deal manager (listing broker), computed server-side.')
 })
@@ -644,9 +657,22 @@ export const SubmitLoiResponse = zod.object({
   "conditions": zod.string().nullish(),
   "exclusivityDays": zod.int(),
   "validityDays": zod.int(),
-  "status": zod.enum(['submitted', 'under_review', 'accepted', 'rejected']),
+  "status": zod.enum(['submitted', 'under_review', 'countered', 'accepted', 'rejected', 'withdrawn']),
   "submittedAt": zod.string(),
-  "decidedAt": zod.string().nullish()
+  "decidedAt": zod.string().nullish(),
+  "counters": zod.array(zod.object({
+  "id": zod.int(),
+  "loiId": zod.int(),
+  "documentText": zod.array(zod.string()).describe('The exact counterproposal paragraphs as issued; preserved verbatim even if the template changes later.'),
+  "offerPrice": zod.number(),
+  "currency": zod.string(),
+  "conditions": zod.string().nullish(),
+  "exclusivityDays": zod.int(),
+  "validityDays": zod.int(),
+  "status": zod.enum(['proposed', 'accepted', 'withdrawn', 'superseded']),
+  "createdAt": zod.string(),
+  "respondedAt": zod.string().nullish()
+})).optional().describe('Counterproposal history for this LOI, newest first. Each counter\'s text is preserved verbatim as issued.')
 })
 
 
@@ -683,9 +709,85 @@ export const UpdateLoiStatusResponse = zod.object({
   "conditions": zod.string().nullish(),
   "exclusivityDays": zod.int(),
   "validityDays": zod.int(),
-  "status": zod.enum(['submitted', 'under_review', 'accepted', 'rejected']),
+  "status": zod.enum(['submitted', 'under_review', 'countered', 'accepted', 'rejected', 'withdrawn']),
   "submittedAt": zod.string(),
-  "decidedAt": zod.string().nullish()
+  "decidedAt": zod.string().nullish(),
+  "counters": zod.array(zod.object({
+  "id": zod.int(),
+  "loiId": zod.int(),
+  "documentText": zod.array(zod.string()).describe('The exact counterproposal paragraphs as issued; preserved verbatim even if the template changes later.'),
+  "offerPrice": zod.number(),
+  "currency": zod.string(),
+  "conditions": zod.string().nullish(),
+  "exclusivityDays": zod.int(),
+  "validityDays": zod.int(),
+  "status": zod.enum(['proposed', 'accepted', 'withdrawn', 'superseded']),
+  "createdAt": zod.string(),
+  "respondedAt": zod.string().nullish()
+})).optional().describe('Counterproposal history for this LOI, newest first. Each counter\'s text is preserved verbatim as issued.')
+})
+
+
+/**
+ * @summary Deal-manager-only counterproposal to a submitted, under-review or already-countered LOI. The rendered counter text is stored verbatim; a new counter supersedes any earlier open counter. Moves the LOI to status countered and notifies the investor.
+ */
+export const CounterLoiParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const counterLoiBodyOfferPriceExclusiveMin = 0;
+
+export const counterLoiBodyExclusivityDaysMax = 365;
+
+export const counterLoiBodyValidityDaysMax = 180;
+
+
+
+export const CounterLoiBody = zod.object({
+  "offerPrice": zod.number().gt(counterLoiBodyOfferPriceExclusiveMin),
+  "conditions": zod.string().optional(),
+  "exclusivityDays": zod.int().min(1).max(counterLoiBodyExclusivityDaysMax),
+  "validityDays": zod.int().min(1).max(counterLoiBodyValidityDaysMax)
+})
+
+export const CounterLoiResponse = zod.object({
+  "id": zod.int(),
+  "loiId": zod.int(),
+  "documentText": zod.array(zod.string()).describe('The exact counterproposal paragraphs as issued; preserved verbatim even if the template changes later.'),
+  "offerPrice": zod.number(),
+  "currency": zod.string(),
+  "conditions": zod.string().nullish(),
+  "exclusivityDays": zod.int(),
+  "validityDays": zod.int(),
+  "status": zod.enum(['proposed', 'accepted', 'withdrawn', 'superseded']),
+  "createdAt": zod.string(),
+  "respondedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Investor response to an open counterproposal on their own LOI. Accepting marks the counter accepted (it becomes the agreed version, preserved verbatim) and the LOI accepted; withdrawing marks the counter withdrawn and the LOI withdrawn. Notifies the deal manager.
+ */
+export const RespondToLoiCounterParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const RespondToLoiCounterBody = zod.object({
+  "action": zod.enum(['accept', 'withdraw'])
+})
+
+export const RespondToLoiCounterResponse = zod.object({
+  "id": zod.int(),
+  "loiId": zod.int(),
+  "documentText": zod.array(zod.string()).describe('The exact counterproposal paragraphs as issued; preserved verbatim even if the template changes later.'),
+  "offerPrice": zod.number(),
+  "currency": zod.string(),
+  "conditions": zod.string().nullish(),
+  "exclusivityDays": zod.int(),
+  "validityDays": zod.int(),
+  "status": zod.enum(['proposed', 'accepted', 'withdrawn', 'superseded']),
+  "createdAt": zod.string(),
+  "respondedAt": zod.string().nullish()
 })
 
 

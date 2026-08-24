@@ -8,6 +8,7 @@ import {
   useGetLoiDraft,
   useListDealLois,
   useSubmitLoi,
+  useRespondToLoiCounter,
 } from '@workspace/api-client-react';
 import { Feather } from '@expo/vector-icons';
 import { useColors } from '@/hooks/useColors';
@@ -18,8 +19,10 @@ import { openLoiRecord } from '@/lib/loi-record';
 const STATUS_LABEL: Record<string, string> = {
   submitted: 'Submitted',
   under_review: 'Under Review',
+  countered: 'Countered',
   accepted: 'Accepted',
   rejected: 'Rejected',
+  withdrawn: 'Withdrawn',
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -78,10 +81,20 @@ export function DealLoiSection({ dealId, ndaSigned }: { dealId: number; ndaSigne
     },
   });
   const submitLoi = useSubmitLoi();
+  const respondToCounter = useRespondToLoiCounter();
+  const [counterError, setCounterError] = useState<string | null>(null);
 
   const canManage = loiData?.canManage ?? false;
   const lois = loiData?.lois ?? [];
-  const myOpenLoi = !canManage ? lois.find((l) => l.status !== 'rejected') : undefined;
+  // Rejected and withdrawn LOIs are closed; the investor may submit a new one.
+  const myOpenLoi = !canManage
+    ? lois.find((l) => l.status !== 'rejected' && l.status !== 'withdrawn')
+    : undefined;
+  // The manager's open counterproposal awaiting this investor's response.
+  const myOpenCounter =
+    myOpenLoi?.status === 'countered'
+      ? (myOpenLoi.counters ?? []).find((ct) => ct.status === 'proposed')
+      : undefined;
 
   // Nothing to show: managers review LOIs on the web, and investors only see
   // this step once their NDA is signed or they already have an LOI.
@@ -128,6 +141,20 @@ export function DealLoiSection({ dealId, ndaSigned }: { dealId: number; ndaSigne
     );
   };
 
+  const respond = (counterId: number, action: 'accept' | 'withdraw') => {
+    setCounterError(null);
+    respondToCounter.mutate(
+      { id: counterId, data: { action } },
+      {
+        onSuccess: () => {
+          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          invalidate();
+        },
+        onError: () => setCounterError('Could not respond to the counterproposal. Please try again.'),
+      },
+    );
+  };
+
   const viewRecord = async (loiId: number) => {
     setRecordError(null);
     setRecordLoading(true);
@@ -159,6 +186,63 @@ export function DealLoiSection({ dealId, ndaSigned }: { dealId: number; ndaSigne
           <Text style={{ color: c.mutedForeground, fontSize: 12, fontFamily: 'Inter_400Regular' }}>
             Offer {myOpenLoi.currency} {myOpenLoi.offerPrice.toLocaleString('en-US')} {'\u00B7'} exclusivity {myOpenLoi.exclusivityDays}d {'\u00B7'} valid {myOpenLoi.validityDays}d
           </Text>
+
+          {/* Counterproposal awaiting the investor's response */}
+          {myOpenCounter && (
+            <View
+              testID="card-counter-offer"
+              style={{
+                backgroundColor: c.secondary,
+                borderWidth: StyleSheet.hairlineWidth,
+                borderColor: c.primary,
+                borderRadius: colors.radius,
+                padding: 14,
+                gap: 8,
+              }}
+            >
+              <Text style={{ color: c.primary, fontSize: 11, fontFamily: 'Inter_700Bold', textTransform: 'uppercase', letterSpacing: 1 }}>
+                Counterproposal from the deal manager
+              </Text>
+              <Text style={{ color: c.foreground, fontSize: 13, fontFamily: 'Inter_600SemiBold' }}>
+                {myOpenCounter.currency} {myOpenCounter.offerPrice.toLocaleString('en-US')} {'\u00B7'} exclusivity {myOpenCounter.exclusivityDays}d {'\u00B7'} valid {myOpenCounter.validityDays}d
+              </Text>
+              {myOpenCounter.conditions ? (
+                <Text style={{ color: c.mutedForeground, fontSize: 12, fontFamily: 'Inter_400Regular' }}>
+                  Conditions: {myOpenCounter.conditions}
+                </Text>
+              ) : null}
+              <View style={{ maxHeight: 180, overflow: 'hidden', gap: 6 }}>
+                {myOpenCounter.documentText.map((p, i) => (
+                  <Text key={i} style={{ color: c.mutedForeground, fontSize: 11, fontFamily: 'Inter_400Regular', lineHeight: 16 }}>
+                    {p}
+                  </Text>
+                ))}
+              </View>
+              {counterError && (
+                <Text style={{ color: c.destructive, fontSize: 13, fontFamily: 'Inter_500Medium' }}>{counterError}</Text>
+              )}
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <GoldButton
+                    testID="button-accept-counter"
+                    label={respondToCounter.isPending ? 'Working...' : 'Accept Counter'}
+                    icon="check"
+                    loading={respondToCounter.isPending}
+                    onPress={() => respond(myOpenCounter.id, 'accept')}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <GoldButton
+                    testID="button-withdraw-loi"
+                    label="Withdraw LOI"
+                    variant="outline"
+                    onPress={() => respond(myOpenCounter.id, 'withdraw')}
+                  />
+                </View>
+              </View>
+            </View>
+          )}
+
           <GoldButton
             testID="button-view-loi-record"
             label={recordLoading ? 'Opening...' : 'View LOI Record'}

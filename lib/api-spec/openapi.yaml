@@ -666,6 +666,68 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ApiMessage" }
+  /lois/{id}/counter:
+    post:
+      operationId: counterLoi
+      tags: [lois]
+      summary: Deal-manager-only counterproposal to a submitted, under-review or already-countered LOI. The rendered counter text is stored verbatim; a new counter supersedes any earlier open counter. Moves the LOI to status countered and notifies the investor.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoiCounterInput" }
+      responses:
+        "201":
+          description: Issued counterproposal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LoiCounter" }
+        "403":
+          description: Not the deal manager
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "409":
+          description: LOI is not in a counterable state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+  /loi-counters/{id}/respond:
+    post:
+      operationId: respondToLoiCounter
+      tags: [lois]
+      summary: Investor response to an open counterproposal on their own LOI. Accepting marks the counter accepted (it becomes the agreed version, preserved verbatim) and the LOI accepted; withdrawing marks the counter withdrawn and the LOI withdrawn. Notifies the deal manager.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoiCounterResponse" }
+      responses:
+        "200":
+          description: Updated counterproposal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LoiCounter" }
+        "403":
+          description: Not the investor who submitted the LOI
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
+        "409":
+          description: Counter is no longer open
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiMessage" }
   /access-requests:
     get:
       operationId: listAccessRequests
@@ -3040,9 +3102,44 @@ components:
         conditions: { type: ["string", "null"] }
         exclusivityDays: { type: integer }
         validityDays: { type: integer }
-        status: { type: string, enum: [submitted, under_review, accepted, rejected] }
+        status: { type: string, enum: [submitted, under_review, countered, accepted, rejected, withdrawn] }
         submittedAt: { type: string }
         decidedAt: { type: ["string", "null"] }
+        counters:
+          type: array
+          items: { $ref: "#/components/schemas/LoiCounter" }
+          description: "Counterproposal history for this LOI, newest first. Each counter's text is preserved verbatim as issued."
+    LoiCounter:
+      type: object
+      required: [id, loiId, documentText, offerPrice, currency, exclusivityDays, validityDays, status, createdAt]
+      properties:
+        id: { type: integer }
+        loiId: { type: integer }
+        documentText:
+          type: array
+          items: { type: string }
+          description: "The exact counterproposal paragraphs as issued; preserved verbatim even if the template changes later."
+        offerPrice: { type: number }
+        currency: { type: string }
+        conditions: { type: ["string", "null"] }
+        exclusivityDays: { type: integer }
+        validityDays: { type: integer }
+        status: { type: string, enum: [proposed, accepted, withdrawn, superseded] }
+        createdAt: { type: string }
+        respondedAt: { type: ["string", "null"] }
+    LoiCounterInput:
+      type: object
+      required: [offerPrice, exclusivityDays, validityDays]
+      properties:
+        offerPrice: { type: number, exclusiveMinimum: 0 }
+        conditions: { type: string }
+        exclusivityDays: { type: integer, minimum: 1, maximum: 365 }
+        validityDays: { type: integer, minimum: 1, maximum: 180 }
+    LoiCounterResponse:
+      type: object
+      required: [action]
+      properties:
+        action: { type: string, enum: [accept, withdraw] }
     DealLois:
       type: object
       required: [lois, canManage]
