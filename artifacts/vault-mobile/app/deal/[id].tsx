@@ -29,6 +29,7 @@ import colors from '@/constants/colors';
 import { Badge, Card, ErrorState, GoldButton, LoadingState, ScreenHeader } from '@/components/VaultUI';
 import { formatMillions, resolveImageUrl } from '@/lib/format';
 import { openSignedNdaRecord } from '@/lib/nda-record';
+import { DealLoiSection } from '@/components/DealLoi';
 import { useAuth } from '@/lib/auth';
 
 type AccessState = 'locked' | 'requested' | 'nda_sent' | 'granted' | 'rejected';
@@ -441,6 +442,9 @@ export default function DealDetailScreen() {
             )}
           </Card>
         )}
+
+        {/* Letter of Intent (after NDA signature) */}
+        <DealLoiSection dealId={id} ndaSigned={!!signedRequest} />
 
         {/* Overview */}
         <Card style={{ padding: 18, gap: 10 }}>
