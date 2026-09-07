@@ -28,3 +28,9 @@ mtime_ms = 1787428777588
 storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:cfaca115-a7e6-46db-9e34-34e2ba477ffb/9aed793b-39f9-45ce-82be-db215a746e9d/045c7666-05c8-48aa-966d-5e646d888241"
 storage_version_token = "1787428806526961"
 content_type = "image/png"
+
+[[outputs]]
+id = "jjiHbQXTYu_icEo7Y_rus"
+uri = "file://.local/outputs/Closa-Deck.pdf"
+type = "pdf"
+title = "Closa Deck.pdf"
